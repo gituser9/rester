@@ -172,16 +172,6 @@ Item {
                     searchEngine.searchString = text
                 }
 
-                Text {
-                    anchors.fill: parent
-                    text: searchTextInput.placeholderText
-                    visible: !searchTextInput.text && !searchTextInput.activeFocus
-                    leftPadding: 10
-                    rightPadding: 10
-                    verticalAlignment: TextEdit.AlignVCenter
-                    color: 'grey'
-                }
-
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true

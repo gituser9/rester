@@ -33,12 +33,16 @@ Query* HarRequest::toQuery() noexcept
     qry->setUrl(urlArr.first());
     qry->setName(urlArr.first().replace("http://", "").replace("https://", ""));
 
-    QVariantMap queryHeaders;
+    QVariantList queryHeaders;
     QVariantList queryParams;
     queryParams.reserve(queryParams.size());
 
     for (const HarItem& header : headers) {
-        queryHeaders[header.name] = header.value;
+        QVariantMap map = {
+            { "isEnabled", true },
+            { "name", header.name },
+            { "value", header.value },
+        };
     }
 
     for (const HarItem& param : queryString) {

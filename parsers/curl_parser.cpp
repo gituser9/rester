@@ -155,7 +155,7 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
     }
 
     // set body type
-    QString contentType = Util::getHeaderValue("Content-Type", query->headers()).toLower();
+    QString contentType = Util::getHeaderValue("Content-Type", query->headerList()).toLower();
 
     if (!contentType.isEmpty()) {
         if (contentType.contains("application/json")) {
@@ -277,15 +277,13 @@ QStringList CurlParser::split(std::string line) const noexcept
 QString CurlParser::generateCurlHeaders(Query* query) const noexcept
 {
     QString headerString;
-    QMapIterator iter(query->headers());
 
-    while (iter.hasNext()) {
-        iter.next();
+    for (auto header : query->headerList()) {
+        if (!header.isEnabled()) {
+            continue;
+        }
 
-        QString name = iter.key();
-        QString value = iter.value().toString();
-
-        headerString += "  --header '" + name + ": " + value + "' \\" + "\n";
+        headerString += "  --header '" + header.name() + ": " + header.value() + "' \\" + "\n";
     }
 
     return headerString;

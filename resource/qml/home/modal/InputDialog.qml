@@ -37,15 +37,5 @@ Dialog {
         text: currentText
         width: parent.width
         placeholderText: placeholder
-
-        Text {
-            anchors.fill: parent
-            text: tfInput.placeholderText
-            visible: !tfInput.text && !tfInput.activeFocus
-            leftPadding: 10
-            rightPadding: 10
-            verticalAlignment: TextEdit.AlignVCenter
-            color: 'grey'
-        }
     }
 }

@@ -16,6 +16,7 @@
 
 #include "app_data/constant.h"
 #include "app_data/folder.h"
+#include "app_data/query_param.h"
 
 class Util : public QObject {
     Q_OBJECT
@@ -29,6 +30,7 @@ public:
     static QString beautify(QString body, BodyType bodyType);
     static QString beautify(QString body, QVariantMap headers);
     static QString uuid() noexcept;
+    static QString getHeaderValue(const QString& name, const QList<QueryParam>& headers) noexcept;
     static QString getHeaderValue(const QString& name, const QVariantMap& headers) noexcept;
     static QJsonObject getJsonFromFile(const QString& path) noexcept;
     static void writeJsonToFile(const QString& path, const QJsonObject& json) noexcept;

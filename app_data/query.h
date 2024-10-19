@@ -25,7 +25,7 @@ class Query : public TreeNode {
     Q_PROPERTY(QueryType queryType READ queryType WRITE setQueryType NOTIFY queryTypeChanged)
     Q_PROPERTY(BodyType bodyType READ bodyType WRITE setBodyType NOTIFY bodyTypeChanged)
     Q_PROPERTY(QVariantList params READ params WRITE setParams NOTIFY paramsChanged)
-    Q_PROPERTY(QVariantMap headers READ headers WRITE setHeaders NOTIFY headersChanged)
+    Q_PROPERTY(QVariantList headers READ headers WRITE setHeaders NOTIFY headersChanged)
     Q_PROPERTY(QString body READ body WRITE setBody NOTIFY bodyChanged)
     Q_PROPERTY(HttpAnswer* lastAnswer READ lastAnswer WRITE setLastAnswer NOTIFY lastAnswerChanged)
     Q_PROPERTY(QVariantList formData READ formData WRITE setFormData NOTIFY formDataChanged FINAL)
@@ -47,8 +47,8 @@ public:
     QVariantList params() const;
     void setParams(const QVariantList& newParams);
 
-    QVariantMap headers() const;
-    void setHeaders(const QVariantMap& newHeaders);
+    QVariantList headers() const;
+    void setHeaders(const QVariantList& newHeaders);
 
     QString body() const;
     void setBody(const QString& newBody);
@@ -60,7 +60,7 @@ public:
     QJsonObject toJson() const;
 
     void setAnswer(QSharedPointer<HttpAnswer> ptr);
-    QVariant getHeader(const QString& name) const;
+    // QVariant getHeader(const QString& name) const;
 
     QVariantList formData() const;
     void setFormData(const QVariantList& newFormData);
@@ -70,6 +70,7 @@ public:
 
     // Custom
     QList<QueryParam> paramList() const noexcept;
+    QList<QueryParam> headerList() const noexcept;
     InsomniaResource toInsomniaResource(const QString& parentId) const noexcept;
     PostmanItem toPostmanItem() const noexcept;
 
@@ -79,8 +80,10 @@ public:
     Q_INVOKABLE void addParam(const QString& name, const QString& value);
     Q_INVOKABLE void addFormData(const QString& name, const QString& value);
     Q_INVOKABLE void removeParam(int index);
+    Q_INVOKABLE void removeHeader(int index);
     Q_INVOKABLE void removeFormDateItem(int index);
     Q_INVOKABLE void setParam(int index, const QString& name, const QString& value, bool isEnabled);
+    Q_INVOKABLE void setHeader(int index, const QString& name, const QString& value, bool isEnabled);
     Q_INVOKABLE void setFormDataItem(int index, const QString& name, const QString& value, bool isEnabled);
 
 signals:
@@ -98,7 +101,7 @@ private:
     QString _url;
     QueryType _queryType;
     BodyType _bodyType;
-    QVariantMap _headers;
+    QList<QueryParam> _headers;
     QString _body;
     QSharedPointer<HttpAnswer> _lastAnswer;
     QList<QueryParam> _paramList;

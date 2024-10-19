@@ -337,7 +337,7 @@ void RoutesModel::toggleFolderExpanded(const QModelIndex& idx)
 void RoutesModel::updateQuery(const QModelIndex& index, const QVariant& value, int role)
 {
     TreeNode* node = getItem(index);
-    QString data = value.toString();
+    QString qryData = value.toString();
 
     // if (role == RoleType::NameRole && node->name() != data) {
     //     node->setName(data);
@@ -347,7 +347,7 @@ void RoutesModel::updateQuery(const QModelIndex& index, const QVariant& value, i
     //     return;
     // }
 
-    node->setName(data);
+    node->setName(qryData);
 
     emit treeChanged(_currentWorkspace);
 
@@ -432,7 +432,7 @@ QString RoutesModel::getQueryTypeFromNode(TreeNode* node) const noexcept
 
 bool RoutesModel::getExpandedFromNode(TreeNode* node) const noexcept
 {
-    auto fldr = static_cast<Folder*>(node);
+    const Folder* fldr = static_cast<Folder*>(node);
 
     if (fldr == nullptr) {
         return false;

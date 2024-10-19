@@ -9,11 +9,14 @@ import '../../../common/components'
 
 Rectangle {
 
-    anchors.fill: parent
+    signal changeHeader(int index)
 
     Component.onCompleted: {
         fillData()
     }
+
+    id: winHeader
+    anchors.fill: parent
 
     ListView {
         id: headerList
@@ -29,6 +32,14 @@ Rectangle {
                 spacing: 16
                 anchors.fill: parent
 
+                CheckBox {
+                    id: cbEnabled
+                    checked: model.isEnabled
+                    onClicked: {
+                        headerModel.setProperty(index, "isEnabled", cbEnabled.checkState === Qt.Checked)
+                        changeHeader(index)
+                    }
+                }
                 Column {
                     Layout.fillWidth: true
 
@@ -36,27 +47,15 @@ Rectangle {
                         id: tfHeaderName
                         width: headerList.width / 3
                         height: 20
+                        isEnabled: cbEnabled.checkState === Qt.Checked
                         value: model.name
                         onEditingFinish: txt => {
-                             let idx = 0
+                            let header = headerModel.get(index)
 
-                             for (var i = 0; i < headerModel.count; ++i) {
-                                 let item = headerModel.get(i)
-
-                                 if (item.name === model.name) {
-                                     idx = i
-                                 }
-                             }
-
-                             let headers = App.query.headers
-                             headers[txt] = tfHeaderValue.value
-                             delete headers[model.name]
-
-                             App.query.headers = headers
-                             headerModel.set(idx, {
-                                 "name": txt,
-                                 "value": tfHeaderValue.value
-                             })
+                            App.query.setHeader(index, header.name, header.value, header.isEnabled)
+                        }
+                        onTextChange: txt => {
+                            headerModel.setProperty(index, "name", txt)
                         }
                     }
                     MenuSeparator {
@@ -76,11 +75,15 @@ Rectangle {
                         id: tfHeaderValue
                         width: parent.width
                         height: 20
+                        isEnabled: cbEnabled.checkState === Qt.Checked
                         value: model.value.toString()
                         onEditingFinish: txt => {
-                            let headers = App.query.headers
-                            headers[tfHeaderName.value] = txt
-                            App.query.headers = headers
+                             let header = headerModel.get(index)
+
+                             App.query.setHeader(index, header.name, header.value, header.isEnabled)
+                        }
+                        onTextChange: txt => {
+                            headerModel.setProperty(index, "value", txt)
                         }
                     }
                     MenuSeparator {
@@ -99,16 +102,8 @@ Rectangle {
                     icon.height: 22
                     icon.color: 'black'
                     onClicked: {
+                        App.query.removeHeader(index)
                         headerModel.remove(index)
-
-                        let headers = {}
-
-                        for (var i = 0; i < headerModel.count; ++i) {
-                            const header = headerModel.get(i)
-                            headers[header.name] = header.value
-                        }
-
-                        App.query.headers = headers
                     }
                 }
             }
@@ -132,7 +127,8 @@ Rectangle {
             onClicked: {
                 headerModel.append({
                                        "name": '',
-                                       "value": ''
+                                       "value": '',
+                                       "isEnabled": true
                                    })
                 App.query.addHeader('', '')
             }
@@ -153,12 +149,36 @@ Rectangle {
         }
     }
 
+    Connections {
+        target: winHeader
+
+        function onChangeHeader(idx) {
+            sync(idx)
+        }
+    }
+
+    Timer {
+        id: syncTimer
+        interval: 500;
+        running: true;
+        repeat: false
+    }
+
+    function sync(idx) {
+        syncTimer.triggered.connect(function () {
+            let param = headerModel.get(idx)
+
+            App.query.setHeader(idx, param.name, param.value, param.isEnabled)
+        });
+        syncTimer.start()
+    }
 
     function fillData() {
-        for (let key in App.query.headers) {
+        for (let h of App.query.headers) {
             headerModel.append({
-                                   "name": key,
-                                   "value": App.query.headers[key]
+                                   "name": h.name,
+                                   "value": h.value,
+                                   "isEnabled": h.isEnabled
                                })
         }
     }

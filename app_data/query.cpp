@@ -58,18 +58,27 @@ void Query::setBody(const QString& newBody)
     emit dataChanged();
 }
 
-QVariantMap Query::headers() const
+QVariantList Query::headers() const
 {
-    return _headers;
-}
+    QVariantList list;
+    list.reserve(_headers.count());
 
-void Query::setHeaders(const QVariantMap& newHeaders)
-{
-    if (_headers == newHeaders) {
-        return;
+    for (const QueryParam& item : _headers) {
+        list << QVariant::fromValue(item);
     }
 
-    _headers = newHeaders;
+    return list;
+}
+
+void Query::setHeaders(const QVariantList &newHeaders)
+{
+    _headers.clear();
+
+    for (const QVariant& item : newHeaders) {
+        QVariantMap map = item.toMap();
+
+        _headers << QueryParam(map);
+    }
 
     emit headersChanged();
     emit dataChanged();
@@ -157,7 +166,6 @@ void Query::fromJson(QJsonObject json)
     _url = json.value("url").toString("");
     _queryType = Util::getQueryType(json.value("query_type").toString("GET"));
     _bodyType = Util::getBodyType(json.value("body_type").toString("None"));
-    _headers = json.value("headers").toObject().toVariantMap();
     _body = json.value("body").toString("");
 
     setUuid(json.value("uuid").toString(Util::uuid()));
@@ -216,6 +224,26 @@ void Query::fromJson(QJsonObject json)
             _formDataList << param;
         }
     }
+
+    if (json.value("headers").isObject()) {
+        auto paramsObj = json.value("headers").toObject().toVariantMap();
+
+        QMapIterator iter(paramsObj);
+
+        while (iter.hasNext()) {
+            iter.next();
+
+            QueryParam param(iter.key(), iter.value().toString());
+            _headers << param;
+        }
+    } else if (json.value("headers").isArray()) {
+        auto paramsArr = json.value("headers").toArray();
+
+        for (QJsonValueRef item : paramsArr) {
+            QueryParam param(item.toObject());
+            _headers << param;
+        }
+    }
 }
 
 QJsonObject Query::toJson() const
@@ -225,7 +253,6 @@ QJsonObject Query::toJson() const
     json["query_type"] = Util::getQueryTypeString(_queryType);
     json["body_type"] = Util::getBodyTypeString(_bodyType);
     json["node_type"] = NodeType::QueryNode;
-    json["headers"] = QJsonObject::fromVariantMap(_headers);
     json["body"] = _body;
     json["uuid"] = uuid();
     json["name"] = name();
@@ -250,6 +277,14 @@ QJsonObject Query::toJson() const
 
     json["form_data"] = formArray;
 
+    QJsonArray headerArray;
+
+    for (const QueryParam& param : _headers) {
+        headerArray << param.toJson();
+    }
+
+    json["headers"] = headerArray;
+
     return json;
 }
 
@@ -268,15 +303,6 @@ void Query::setAnswer(QSharedPointer<HttpAnswer> ptr)
     emit dataChanged();
 }
 
-QVariant Query::getHeader(const QString& name) const
-{
-    if (_headers.contains(name)) {
-        return _headers[name];
-    }
-
-    return "";
-}
-
 void Query::beautify() noexcept
 {
     setBody(Util::beautify(_body, _bodyType));
@@ -284,7 +310,9 @@ void Query::beautify() noexcept
 
 void Query::addHeader(const QString& name, const QString& value)
 {
-    _headers[name] = value;
+    QueryParam param(name, value);
+
+    _headers << param;
 
     emit headersChanged();
     emit dataChanged();
@@ -317,6 +345,14 @@ void Query::removeParam(int index)
     emit dataChanged();
 }
 
+void Query::removeHeader(int index)
+{
+    _headers.removeAt(index);
+
+    emit headersChanged();
+    emit dataChanged();
+}
+
 void Query::removeFormDateItem(int index)
 {
     _formDataList.removeAt(index);
@@ -335,6 +371,20 @@ void Query::setParam(int index, const QString& name, const QString& value, bool 
     _paramList[index] = param;
 
     emit paramsChanged();
+    emit dataChanged();
+}
+
+
+void Query::setHeader(int index, const QString& name, const QString& value, bool isEnabled)
+{
+    QueryParam param = _headers[index];
+    param.setName(name);
+    param.setValue(value);
+    param.setIsEnabled(isEnabled);
+
+    _headers[index] = param;
+
+    emit headersChanged();
     emit dataChanged();
 }
 
@@ -493,6 +543,11 @@ QList<QueryParam> Query::paramList() const noexcept
     return _paramList;
 }
 
+QList<QueryParam> Query::headerList() const noexcept
+{
+    return _headers;
+}
+
 InsomniaResource Query::toInsomniaResource(const QString& parentId) const noexcept
 {
     // to ctor
@@ -509,14 +564,11 @@ InsomniaResource Query::toInsomniaResource(const QString& parentId) const noexce
         params << head;
     }
 
-    QMapIterator iter(_headers);
-
-    while (iter.hasNext()) {
-        iter.next();
-
+    for (const QueryParam& param : _headers) {
         InsomniaHeader head;
-        head.name = iter.key();
-        head.value = iter.value().toString();
+        head.name = param.name();
+        head.value = param.value();
+        head.disabled = !param.isEnabled();
 
         headers << head;
     }
@@ -542,14 +594,10 @@ PostmanItem Query::toPostmanItem() const noexcept
     postmanItem.name = name();
     postmanItem.request.method = Util::getQueryTypeString(queryType());
 
-    QMapIterator iter(_headers);
-
-    while (iter.hasNext()) {
-        iter.next();
-
+    for (const QueryParam& param : _headers) {
         PostmanHeader header;
-        header.key = iter.key();
-        header.value = iter.value().toString();
+        header.key = param.name();
+        header.value = param.value();
 
         postmanItem.request.headers << header;
     }

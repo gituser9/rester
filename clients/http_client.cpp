@@ -4,7 +4,7 @@ HttpClient::HttpClient(QObject* parent)
     : QObject { parent }
 {
     _manager = new QNetworkAccessManager(this);
-    _manager->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
+    // _manager->setRedirectPolicy(QNetworkRequest::SameOriginRedirectPolicy);
     _reply = nullptr;
     _isRequestWork = false;
 
@@ -45,12 +45,15 @@ void HttpClient::makeRequest(Query* query)
     }
 
     // set headers
-    QList<QString> headers = query->headers().keys();
+    for (const QueryParam& header : query->headerList()) {
+        if (!header.isEnabled()) {
+            continue;
+        }
 
-    for (const QString& header : headers) {
         request.setRawHeader(
-            header.toUtf8(),
-            query->headers().value(header).toByteArray());
+            header.name().toUtf8(),
+            header.value().toUtf8()
+        );
     }
 
     // set url
@@ -137,7 +140,9 @@ void HttpClient::slotFinished(QNetworkReply* reply)
     answer->setByteCount(body.size());
 
     answer->setHeaders(headers);
-    answer->setBody(Util::beautify(body, headers));
+
+    auto bbody = Util::beautify(body, headers);
+    answer->setBody(bbody);
 
     emit finished(answer);
 }
@@ -163,6 +168,10 @@ void HttpClient::sendMultipartForm(Query* query, QNetworkRequest request)
 
     for (const QVariant& item : formData) {
         QueryParam data(item);
+
+        if (!data.isEnabled()) {
+            continue;
+        }
 
         QString fieldName = data.name();
         QString fieldValue = data.value();

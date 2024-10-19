@@ -225,6 +225,22 @@ QString Util::uuid() noexcept
     return QUuid::createUuid().toString(QUuid::WithoutBraces);
 }
 
+QString Util::getHeaderValue(const QString& name, const QList<QueryParam>& headers) noexcept
+{
+    QString lowerName = name.toLower();
+    QString value = "";
+
+    for (auto header : headers) {
+        QString headerNameLover = header.name().toLower();
+
+        if (lowerName == headerNameLover) {
+            return header.value();
+        }
+    }
+
+    return value;
+}
+
 QString Util::getHeaderValue(const QString& name, const QVariantMap& headers) noexcept
 {
     QString lowerName = name.toLower();
