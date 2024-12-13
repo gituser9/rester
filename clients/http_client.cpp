@@ -4,7 +4,7 @@ HttpClient::HttpClient(QObject* parent)
     : QObject { parent }
 {
     _manager = new QNetworkAccessManager(this);
-    // _manager->setRedirectPolicy(QNetworkRequest::SameOriginRedirectPolicy);
+    _manager->setRedirectPolicy(QNetworkRequest::SameOriginRedirectPolicy);
     _reply = nullptr;
     _isRequestWork = false;
 

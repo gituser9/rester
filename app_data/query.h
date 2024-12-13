@@ -49,6 +49,7 @@ public:
 
     QVariantList headers() const;
     void setHeaders(const QVariantList& newHeaders);
+    void setHeaders(const QList<QueryParam>& newHeaders);
 
     QString body() const;
     void setBody(const QString& newBody);

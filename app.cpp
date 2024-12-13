@@ -156,7 +156,7 @@ void App::setFromCurl(const QString& curl)
 
     _query->setQueryType(qry->queryType());
     _query->setBodyType(qry->bodyType());
-    _query->setHeaders(qry->headers());
+    _query->setHeaders(qry->headerList());
     _query->setUrl(qry->url());
     _query->setBody(qry->body());
     _query->setFormData(qry->formData());

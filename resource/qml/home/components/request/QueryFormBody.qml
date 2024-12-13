@@ -15,6 +15,8 @@ Item {
     property string fileFieldName
     property int fileIndex: -1
 
+    signal changeFormValue(int index)
+
     id: queryFormBody
     anchors.fill: parent
 
@@ -38,6 +40,15 @@ Item {
                 spacing: 16
                 anchors.fill: parent
 
+                CheckBox {
+                    id: cbEnabled
+                    checked: model.isEnabled
+                    onClicked: {
+                        formDataModel.setProperty(index, "isEnabled", cbEnabled.checkState === Qt.Checked)
+                        changeFormValue(index)
+                    }
+                }
+
                 Column {
                     Layout.fillWidth: true
 
@@ -45,6 +56,7 @@ Item {
                         id: tfFormDataName
                         width: itemRow.width / 3
                         height: 20
+                        isEnabled: cbEnabled.checkState === Qt.Checked
                         value: model.name
                         onEditingFinish: txt => {
                             tfFormDataName.value = txt
@@ -70,6 +82,7 @@ Item {
                         visible: model.value.indexOf("file://") === -1
                         width: colVal.width
                         height: 20
+                        isEnabled: cbEnabled.checkState === Qt.Checked
                         value: model.value
                         onEditingFinish: txt => {
                             tfFormDataValue.value = txt
@@ -218,12 +231,38 @@ Item {
         }
     }
 
+    Connections {
+        target: queryFormBody
+
+        function changeFormValue(idx) {
+            sync(idx)
+        }
+    }
+
+
+    Timer {
+        id: syncTimer
+        interval: 500;
+        running: true;
+        repeat: false
+    }
+
+
+    function sync(idx) {
+        syncTimer.triggered.connect(function () {
+            let param = headerModel.get(idx)
+
+            App.query.setFormDataItem(idx, param.name, param.value, param.isEnabled)
+        });
+        syncTimer.start()
+    }
 
     function fillData() {
         formDataModel.clear()
 
         for (let fd of App.query.formData) {
             formDataModel.append({
+                "isEnabled": fd.isEnabled,
                 "name": fd.name,
                 "value": fd.value
             })

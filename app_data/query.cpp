@@ -84,6 +84,14 @@ void Query::setHeaders(const QVariantList &newHeaders)
     emit dataChanged();
 }
 
+void Query::setHeaders(const QList<QueryParam> &newHeaders)
+{
+    _headers = newHeaders;
+
+    emit headersChanged();
+    emit dataChanged();
+}
+
 QVariantList Query::params() const
 {
     QVariantList list;
