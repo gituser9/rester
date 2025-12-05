@@ -5,9 +5,6 @@ import QtQuick.Layouts
 import '../../common/components'
 
 Popup {
-
-    signal ok(string queryName, string queryType)
-
     id: createRequestDialog
     parent: Overlay.overlay
     x: Math.round((parent.width - width) / 2)
@@ -17,6 +14,10 @@ Popup {
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+    // property real halfWifth: createRequestDialog.width / 2
+
+    signal ok(string queryName, string queryType)
 
     ColumnLayout {
         anchors.fill: parent
@@ -52,16 +53,14 @@ Popup {
             Layout.fillWidth: true
 
             id: cbQueryType
-            model: ["GET", "POST", "PUT", "PATCH", "DELETE", "WS"]
+            model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "WS"]
         }
         RowLayout {
             Layout.fillWidth: true
 
-            spacing: 8
-
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 2
+                Layout.preferredWidth: createRequestDialog.width / 2
 
                 flat: true
                 text: qsTr("OK")
@@ -74,7 +73,7 @@ Popup {
             }
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 2
+                Layout.preferredWidth: createRequestDialog.width / 2
 
                 flat: true
                 text: qsTr("Cancel")

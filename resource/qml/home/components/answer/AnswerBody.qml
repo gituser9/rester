@@ -308,6 +308,8 @@ Item {
                 implicitWidth: answerBodyView.btnWidth
                 implicitHeight: answerBodyView.consts.bottomButtonHeight
                 text: qsTr("Clear")
+                icon.source: "/resource/images/close.svg"
+                flat: true
                 onClicked: {
                     // for txt
                     if (!answerBodyView.isBig) {
@@ -338,6 +340,8 @@ Item {
                 implicitWidth: answerBodyView.btnWidth
                 implicitHeight: answerBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
+                icon.source: "/resource/images/copy.svg"
+                flat: true
                 onClicked: {
                     if (answerBodyView.isBig) {
                         // for list

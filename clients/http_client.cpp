@@ -4,7 +4,7 @@ HttpClient::HttpClient(QObject* parent)
     : QObject { parent }
 {
     _manager = new QNetworkAccessManager(this);
-    _manager->setRedirectPolicy(QNetworkRequest::SameOriginRedirectPolicy);
+    // _manager->setRedirectPolicy(QNetworkRequest::SameOriginRedirectPolicy);
     _reply = nullptr;
     _isRequestWork = false;
 
@@ -41,6 +41,7 @@ void HttpClient::makeRequest(Query* query)
         request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
         break;
     default:
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "text/plain");
         break;
     }
 
@@ -104,17 +105,16 @@ void HttpClient::slotFinished(QNetworkReply* reply)
 
     QString errorString = getErrorString(reply);
 
+    reply->deleteLater();
+
     if (!errorString.isEmpty()) {
         emit httpError(errorString);
-
-        reply->deleteLater();
 
         _isRequestWork = false;
 
         return;
     }
 
-    reply->deleteLater();
     QVariant statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     QByteArray body = reply->readAll();
 
@@ -138,7 +138,6 @@ void HttpClient::slotFinished(QNetworkReply* reply)
     answer->setStatus(statusCode.toInt());
     answer->setDuration(ms);
     answer->setByteCount(body.size());
-
     answer->setHeaders(headers);
 
     auto bbody = Util::beautify(body, headers);
@@ -273,6 +272,8 @@ void HttpClient::send(Query* query, QNetworkRequest& request) noexcept
     case QueryType::HEAD:
         _reply = _manager->head(request);
         break;
+    case QueryType::WS:
+        break;
     }
 }
 
@@ -357,8 +358,6 @@ QString HttpClient::getErrorString(QNetworkReply* reply)
     // protocol errors
     case QNetworkReply::NetworkError::ProtocolUnknownError:
         return "Protocol Unknown Error";
-    case QNetworkReply::NetworkError::ProtocolInvalidOperationError:
-        return "Protocol Invalid Operation Error";
     case QNetworkReply::NetworkError::ProtocolFailure:
         return "Protocol Failure";
     default:
@@ -377,7 +376,7 @@ QUrl HttpClient::prepareUrl(Query* query) const noexcept
             QRegularExpressionMatch match = iter.next();
             QString variable = match.captured(1).trimmed();
 
-            for (auto& var : _vars) {
+            for (const QVariant& var : _vars) {
                 QVariantMap varMap = var.toMap();
 
                 if (varMap["name"] == variable) {
@@ -385,6 +384,10 @@ QUrl HttpClient::prepareUrl(Query* query) const noexcept
                 }
             }
         }
+    }
+
+    if (urlString.startsWith("localhost")) {
+        urlString = urlString.replace("localhost", "http://127.0.0.1");
     }
 
     QUrl url = urlString;
@@ -423,6 +426,7 @@ QByteArray HttpClient::uncompressGzip(const QByteArray& compressed) const noexce
 {
     z_stream zs;
     memset(&zs, 0, sizeof(zs));
+
     if (inflateInit2(&zs, 47) != Z_OK) {
         return compressed;
     }
@@ -456,8 +460,8 @@ QByteArray HttpClient::uncompressDeflate(const QByteArray& compressed) const noe
     // set zlib param for unpack deflate
     z_stream zs;
     memset(&zs, 0, sizeof(zs));
-    if (inflateInit(&zs) != Z_OK) {
 
+    if (inflateInit(&zs) != Z_OK) {
         return compressed;
     }
 
@@ -471,6 +475,7 @@ QByteArray HttpClient::uncompressDeflate(const QByteArray& compressed) const noe
     zs.next_out = (Bytef*)(uncompressedData.data());
 
     int status = inflate(&zs, Z_FINISH);
+
     if (status != Z_STREAM_END) {
         inflateEnd(&zs);
 

@@ -52,39 +52,6 @@ Item {
         Item {
             width: 8
         }
-        // Image {
-        //     id: imgEdit
-        //     sourceSize.width: 16
-        //     sourceSize.height: 16
-        //     source: "/resource/images/pencil.svg"
-        //     visible: isHovered
-
-        //     MouseArea {
-        //         id: areaEdit
-        //         anchors.fill: parent
-        //         acceptedButtons: Qt.LeftButton
-        //         onClicked: {
-        //             let folders = RoutesModel.getFolders()
-        //             popUpdate.fillFolders(folders)
-        //             popUpdate.open()
-        //         }
-        //     }
-        // }
-        // Image {
-        //     id: imgDelete
-        //     sourceSize.width: 16
-        //     sourceSize.height: 16
-        //     source: "/resource/images/close.svg"
-        //     visible: isHovered
-
-        //     MouseArea {
-        //         z: 100
-        //         anchors.fill: parent
-        //         onClicked: {
-        //             removeQuery()
-        //         }
-        //     }
-        // }
         Item {
             Layout.fillWidth: true
         }
@@ -125,7 +92,7 @@ Item {
             id: contextMenu
 
             MenuItem {
-                text: qsTr("Edit")
+                text: qsTr("Rename")
                 onTriggered: {
                     let folders = RoutesModel.getFolders()
                     popUpdate.open()
@@ -197,6 +164,8 @@ Item {
             return '#ff0000'
         case 'WS':
             return '#FFA500'
+        case 'HEAD':
+            return '#5100cb'
         default:
             return '#000000'
         }

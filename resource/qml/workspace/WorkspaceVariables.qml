@@ -52,9 +52,9 @@ Item {
 
         ListView {
             Layout.fillWidth: true
+            Layout.preferredHeight: 60
 
             spacing: 8
-            height: 60
             orientation: ListView.Horizontal
             model: modeModel
             delegate: Button {
@@ -79,19 +79,16 @@ Item {
         }
 
         ListView {
-            // Layout.fillWidth: true
-            // Layout.preferredHeight: parent.height - 50
+            Layout.preferredWidth: wsVars.width
+            Layout.preferredHeight: wsVars.height - 50
 
 
             id: varList
-            width: parent.width
-            height: parent.height - 50
             clip: true
             model: varModel
             delegate: Rectangle {
                 height: 60
-                width: parent.width
-                // Layout.fillWidth: true
+                width: wsVars.width
 
                 RowLayout {
                     spacing: 16

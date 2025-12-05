@@ -138,19 +138,11 @@ TreeNode* Workspace::getQueryByUuid(QString uuid) noexcept
     QList<TreeNode*> childs = nodes();
 
     for (TreeNode* child : childs) {
-        // if (child->nodeType() != NodeType::QueryNode) {
-        //     continue;
-        // }
-
         if (child->uuid() == uuid) {
             return child;
         }
 
         if (!child->nodes().isEmpty()) {
-            // if (child->nodeType() != NodeType::FolderNode) {
-            //     continue;
-            // }
-
             TreeNode* node = getQueryByUuid(uuid, child);
 
             if (node != nullptr) {
@@ -434,13 +426,9 @@ void Workspace::reloadVariables() noexcept
 
 QStringList Workspace::getEnvNames() const noexcept
 {
-    QString path = _workspacesPath + getFileName();
-    QJsonObject json = Util::getJsonFromFile(path);
-    auto vars = json["variables"].toObject().toVariantMap();
-
     QStringList names;
-    names.reserve(vars.size() - 1);
-    QStringList keys = vars.keys();
+    names.reserve(_variables.size() - 1);
+    QStringList keys = _variables.keys();
 
     for (const QString& key : keys) {
         if (key == "env") {
@@ -509,6 +497,7 @@ void Workspace::removePin(const QString& pin)
 void Workspace::removePin(int idx)
 {
     _pins.removeAt(idx);
+
     emit pinsChanged();
 }
 

@@ -34,7 +34,7 @@ signals:
     void error(const QString&);
 
 private:
-    QList<std::shared_ptr<Workspace> > fromRester(const QString& folderPath) const noexcept;
+    QList<std::shared_ptr<Workspace>> fromRester(const QString& folderPath) const noexcept;
     QList<std::shared_ptr<Workspace>> fromExternal(const QString& filePath, ImportType type) noexcept;
 
     QSharedPointer<Insomnia> toInsomniaCollection(QSharedPointer<Workspace> ws) const noexcept;

@@ -35,15 +35,6 @@ QueryParam::QueryParam(const QString& name, const QString& value, bool isEnabled
 
 QueryParam::QueryParam(std::initializer_list<QString> list)
 {
-    // for (const QString& i : list) {
-    //     if (_name.isEmpty()) {
-    //         _name = i;
-    //     }
-
-    //     if (_value.isEmpty()) {
-    //         _value = i;
-    //     }
-    // }
     if (list.size() == 3) {
         auto it = list.begin();
         _isEnabled = it[0].toInt();

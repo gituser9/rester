@@ -122,9 +122,10 @@ Item {
             Layout.rightMargin: 8
             Layout.leftMargin: 8
 
+
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 3
+                Layout.preferredWidth: answerView.width / 3
 
                 checkable: true
                 checked: answerView.currentIndex == 0
@@ -144,7 +145,7 @@ Item {
             }
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 3
+                Layout.preferredWidth: answerView.width / 3
 
                 checkable: true
                 checked: answerView.currentIndex == 1
@@ -158,7 +159,7 @@ Item {
             }
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 3
+                Layout.preferredWidth: answerView.width / 3
 
                 checkable: true
                 checked: answerView.currentIndex == 2

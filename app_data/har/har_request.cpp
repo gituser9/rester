@@ -35,7 +35,8 @@ Query* HarRequest::toQuery() noexcept
 
     QVariantList queryHeaders;
     QVariantList queryParams;
-    queryParams.reserve(queryParams.size());
+    queryHeaders.reserve(headers.size());
+    queryParams.reserve(queryString.size());
 
     for (const HarItem& header : headers) {
         QVariantMap map = {
@@ -43,6 +44,7 @@ Query* HarRequest::toQuery() noexcept
             { "name", header.name },
             { "value", header.value },
         };
+        queryHeaders << map;
     }
 
     for (const HarItem& param : queryString) {
@@ -58,8 +60,10 @@ Query* HarRequest::toQuery() noexcept
     qry->setParams(queryParams);
     qry->setQueryType(Util::getQueryType(method));
 
-    bool isDataRaw = postData.mimeType.contains("multipart/form-data");
-    bool isUrlEncoded = postData.mimeType.contains("application/x-www-form-urlencoded");
+    QString mimeType = postData.mimeType.toLower();
+
+    bool isDataRaw = mimeType.contains("multipart/form-data");
+    bool isUrlEncoded = mimeType.contains("application/x-www-form-urlencoded");
 
     if (isDataRaw) {
         auto parsedForm = parseDataRaw(postData.text);
@@ -76,16 +80,16 @@ Query* HarRequest::toQuery() noexcept
         qry->setBodyType(BodyType::URL_ENCODED_FORM);
     }
 
+    if (mimeType.contains("application/json")) {
+        qry->setBodyType(BodyType::JSON);
+    }
+
+    if (mimeType.contains("application/xml")) {
+        qry->setBodyType(BodyType::XML);
+    }
+
     if (!isDataRaw && !isUrlEncoded && !postData.text.isEmpty()) {
         qry->setBody(postData.text);
-
-        if (postData.mimeType.contains("application/json")) {
-            qry->setBodyType(BodyType::JSON);
-        }
-
-        if (postData.mimeType.contains("application/xml")) {
-            qry->setBodyType(BodyType::XML);
-        }
     }
 
     return qry;

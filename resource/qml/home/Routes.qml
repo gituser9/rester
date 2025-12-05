@@ -304,7 +304,7 @@ Item {
         onButtonClicked: function (button, role) {
                  switch (button) {
                  case MessageDialog.Ok:
-                     RoutesModel.removeRows(currentIndex.row, 1, currentIndex.parent);
+                     RoutesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
                      dlgRemoveFolder.close()
                      break;
                  }
@@ -320,7 +320,7 @@ Item {
                  switch (button) {
                  case MessageDialog.Ok:
                      RoutesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
-                    dlgRemoveQuery.close()
+                     dlgRemoveQuery.close()
                      break;
                  }
              }

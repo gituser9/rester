@@ -361,6 +361,25 @@ void Query::removeHeader(int index)
     emit dataChanged();
 }
 
+void Query::removeHeader(const QString &name)
+{
+    QList<QueryParam> newHeaders;
+    newHeaders.reserve(_headers.size());
+
+    for (QueryParam& header : _headers) {
+        if (header.name() == name) {
+            continue;
+        }
+
+        newHeaders << header;
+    }
+
+    _headers = newHeaders;
+
+    emit headersChanged();
+    emit dataChanged();
+}
+
 void Query::removeFormDateItem(int index)
 {
     _formDataList.removeAt(index);
@@ -391,6 +410,29 @@ void Query::setHeader(int index, const QString& name, const QString& value, bool
     param.setIsEnabled(isEnabled);
 
     _headers[index] = param;
+
+    emit headersChanged();
+    emit dataChanged();
+}
+
+void Query::setHeader(const QString &name, const QString &value)
+{
+    bool isExists = false;
+
+    for (QueryParam& header : _headers) {
+        if (header.name() == name) {
+            header.setValue(value);
+
+            isExists = true;
+
+            break;
+        }
+    }
+
+    if (!isExists) {
+        QueryParam param(name, value);
+        _headers << param;
+    }
 
     emit headersChanged();
     emit dataChanged();

@@ -52,5 +52,7 @@
         <file>resource/images/pushpin-fill.svg</file>
         <file>resource/qml/home/WsRequest.qml</file>
         <file>resource/qml/home/modal/CreateRequestDialog.qml</file>
+        <file>resource/images/magic.svg</file>
+        <file>resource/images/send.svg</file>
     </qresource>
 </RCC>

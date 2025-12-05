@@ -86,12 +86,6 @@ Rectangle {
                     fileDialog.open()
                 }
             }
-            // MenuItem {
-            //     text: qsTr("Import from cURL")
-            //     onTriggered: {
-            //         fileDialog.open()
-            //     }
-            // }
             MenuItem {
                 text: qsTr("Edit")
                 onTriggered: {

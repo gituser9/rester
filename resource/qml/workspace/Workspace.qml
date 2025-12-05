@@ -46,8 +46,8 @@ Rectangle {
                 flat: true
                 text: qsTr("Open Folder")
                 icon.source: "/resource/images/folder.svg"
-                icon.width: 24
-                icon.height: 24
+                icon.width: 20
+                icon.height: 20
                 icon.color: 'black'
                 onClicked: {
                     let path = StandardPaths.standardLocations(StandardPaths.ConfigLocation)[0]
@@ -74,8 +74,8 @@ Rectangle {
                 flat: true
                 text: qsTr("Download")
                 icon.source: "/resource/images/download.svg"
-                icon.width: 24
-                icon.height: 24
+                icon.width: 20
+                icon.height: 20
                 icon.color: 'black'
                 onClicked: {
                     ws.folderDialogMode = 'export'
@@ -88,8 +88,8 @@ Rectangle {
                 flat: true
                 text: qsTr("Upload")
                 icon.source: "/resource/images/upload.svg"
-                icon.width: 24
-                icon.height: 24
+                icon.width: 20
+                icon.height: 20
                 icon.color: 'black'
                 onClicked: {
                     dlgImport.open()
@@ -149,6 +149,7 @@ Rectangle {
             visible: !ws.isLoading
             contentHeight: grid.rows * 290
             contentWidth: ws.width
+
 
             GridLayout {
                 readonly property int elementWidth: 230
@@ -277,6 +278,8 @@ Rectangle {
                                 visible: App.workspace.uuid === model.uuid
                             }
                             Button {
+                                Layout.rightMargin: 17
+
                                 visible: App.workspace.uuid !== model.uuid
                                 flat: true
                                 icon.source: "/resource/images/close.svg"

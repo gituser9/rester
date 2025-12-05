@@ -69,6 +69,7 @@ int main(int argc, char* argv[])
         Qt::QueuedConnection);
 
     QQuickStyle::setStyle("Imagine");
+    // QQuickStyle::setStyle("FluentWinUI3");
     // QQuickStyle::setStyle("Material");
 
     engine.load(url);

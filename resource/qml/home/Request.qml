@@ -46,7 +46,7 @@ Item {
                 ComboBox {
                     id: cbQueryType
                     height: requestView.consts.bottomButtonHeight
-                    model: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+                    model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]
                     onActivated: {
                         App.query.queryType = cbQueryType.currentIndex
                     }
@@ -116,7 +116,7 @@ Item {
 
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 3
+                Layout.preferredWidth: requestView.width / 3
 
                 checkable: true
                 checked: requestView.currentIndex == 0
@@ -130,7 +130,7 @@ Item {
             }
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 3
+                Layout.preferredWidth: requestView.width / 3
 
                 checkable: true
                 checked: requestView.currentIndex == 1
@@ -144,7 +144,7 @@ Item {
             }
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: parent.width / 3
+                Layout.preferredWidth: requestView.width / 3
 
                 checkable: true
                 checked: requestView.currentIndex == 2

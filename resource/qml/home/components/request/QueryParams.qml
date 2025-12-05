@@ -104,7 +104,7 @@ Rectangle {
             clip: true
             delegate: Rectangle {
                 height: 50
-                width: parent.width
+                width: winParam.width
 
                 RowLayout {
                     spacing: 8
@@ -194,12 +194,10 @@ Rectangle {
         }
         RowLayout {
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignRight
+            Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+            Layout.bottomMargin: 8
 
             spacing: 8
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 8
-            anchors.right: parent.right
 
             Button {
                 visible: paramModel.count > 0

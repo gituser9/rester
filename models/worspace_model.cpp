@@ -206,7 +206,7 @@ void WorkspaceModel::setVars(const QString& uuid, const QString& name, const QVa
 
     emit varsUpdate(vars);
 
-    Util::writeJsonToFile(filePath, json);
+    // Util::writeJsonToFile(filePath, json);
 }
 
 QVariantMap WorkspaceModel::getVars(const QString& uuid, const QString& name) const noexcept

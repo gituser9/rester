@@ -29,6 +29,10 @@ QueryType Util::getQueryType(QString typeString)
         return QueryType::DELETE;
     }
 
+    if (typeString == "HEAD") {
+        return QueryType::HEAD;
+    }
+
     if (typeString == "WS") {
         return QueryType::WS;
     }
@@ -70,6 +74,8 @@ QString Util::getQueryTypeString(QueryType type)
         return "PUT";
     case QueryType::DELETE:
         return "DELETE";
+    case QueryType::HEAD:
+        return "HEAD";
     case QueryType::WS:
         return "WS";
     default:

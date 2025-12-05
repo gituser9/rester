@@ -302,6 +302,9 @@ void App::updateEnvVars(const QVariantMap& vars)
 
     auto currentVars = vars[_workspace->env()].toList();
     _httpClient->setVars(currentVars);
+
+    emit wsChanged(_workspace);
+    emit workspaceChanged();
 }
 
 bool App::isActiveSocketConnect() const

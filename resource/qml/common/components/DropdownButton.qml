@@ -49,7 +49,6 @@ Rectangle {
                     visible: true
                     onClicked: {
                         if (App.workspace.env !== model.text) {
-                            // App.workspace.env = model.text
                             App.setEnv(model.text)
                         }
 
@@ -84,6 +83,10 @@ Rectangle {
             } else {
                 currentEnv = App.workspace.env
             }
+        }
+
+        function onVariablesChanged() {
+            setEnvs(App.workspace.getEnvNames())
         }
     }
 

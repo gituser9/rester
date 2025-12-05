@@ -54,6 +54,7 @@ Item {
                 Layout.bottomMargin: 8
                 Layout.rightMargin: 8
                 Layout.fillWidth: true
+                Layout.preferredWidth: 80
 
                 id: cbBodyType
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
@@ -72,10 +73,12 @@ Item {
 
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
+                icon.source: "/resource/images/close.svg"
+                flat: true
                 text: qsTr("Clear")
                 onClicked: {
                     queryBodyView.clear()
-                }               
+                }
             }
 
             Button {
@@ -85,9 +88,12 @@ Item {
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
+                icon.source: "/resource/images/copy.svg"
+                flat: true
+                // visible: !queryBodyView.isForm
                 onClicked: {
                     queryBodyView.copy()
-                }                
+                }
             }
 
             Button {
@@ -98,6 +104,8 @@ Item {
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Beautify")
+                icon.source: "/resource/images/sound-module-line.svg"
+                flat: true
                 onClicked: {
                     App.query.beautify()
                 }
@@ -125,8 +133,8 @@ Item {
 
         QueryTextBody {
             Component.onCompleted: {
-                queryBodyView.clear.connect(textBody.tb.clear)
-                queryBodyView.copy.connect(textBody.tb.copy)
+                queryBodyView.clear.connect(tb.clear)
+                queryBodyView.copy.connect(tb.copy)
             }
             Component.onDestruction: {
                 queryBodyView.clear.disconnect(textBody.tb.clear)
@@ -160,28 +168,23 @@ Item {
 
         switch(contentType) {
         case "JSON":
-            headers["Content-Type"] = "application/json; charset=UTF-8"
-            App.query.headers = headers
+            App.query.setHeader("Content-Type", "application/json; charset=UTF-8");
 
             break
         case "XML":
-            headers["Content-Type"] = "application/xml"
-            App.query.headers = headers
+            App.query.setHeader("Content-Type", "application/xml");
 
             break
         case "Multipart Form":
-            headers["Content-Type"] = "multipart/form-data"
-            App.query.headers = headers
+            App.query.setHeader("Content-Type", "multipart/form-data");
 
             break
         case "Form URL Encoded":
-            headers["Content-Type"] = "application/x-www-form-urlencoded"
-            App.query.headers = headers
+            App.query.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
             break
         case "None":
-            delete headers["Content-Type"]
-            App.query.headers = headers
+            App.query.removeHeader("Content-Type")
 
             break
         }

@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
-import core.app 1.0
 import PinModel
 
 
@@ -17,6 +16,7 @@ Item {
         anchors.fill: parent
         clip: true
         model: PinModel
+
         delegate: ItemDelegate {
             height: 40
             width: pinList.width
@@ -37,6 +37,7 @@ Item {
                 Text {
                     Layout.fillWidth: true
                     Layout.leftMargin: 8
+
                     text: model.name
                 }
                 Button {
@@ -53,22 +54,4 @@ Item {
         }
     }
 
-    // ListModel {
-    //     id: pinModel
-    // }
-
-    // function fillModel() {
-    //     // for (let i = 0; i < 3; ++i) {
-    //     for (let i = 0; i < 3; ++i) {
-    //         pinModel.append({"name": "my name " + i})
-    //     }
-    // }
-
-    // Connections {
-    //     target: App.workspace
-
-    //     function onPinsChanged() {
-    //         pinItem.height = PinModel.rowCount() * 40
-    //     }
-    // }
 }

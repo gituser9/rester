@@ -285,8 +285,8 @@ Item {
     function copy() {
         let copyStr = ""
 
-        for (let key in App.query.formData) {
-            copyStr += `${key}=${RoutesModel.query.formData[key]}\n`
+        for (let param of App.query.formData) {
+            copyStr += `${param.name}=${param.value}\n`
         }
 
         teCopy.text = copyStr

@@ -82,9 +82,11 @@ public:
     Q_INVOKABLE void addFormData(const QString& name, const QString& value);
     Q_INVOKABLE void removeParam(int index);
     Q_INVOKABLE void removeHeader(int index);
+    Q_INVOKABLE void removeHeader(const QString& name);
     Q_INVOKABLE void removeFormDateItem(int index);
     Q_INVOKABLE void setParam(int index, const QString& name, const QString& value, bool isEnabled);
     Q_INVOKABLE void setHeader(int index, const QString& name, const QString& value, bool isEnabled);
+    Q_INVOKABLE void setHeader(const QString& name, const QString& value);
     Q_INVOKABLE void setFormDataItem(int index, const QString& name, const QString& value, bool isEnabled);
 
 signals:

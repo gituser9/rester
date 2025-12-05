@@ -135,7 +135,17 @@ QHash<int, QByteArray> RoutesModel::roleNames() const
 bool RoutesModel::removeRows(int row, int count, const QModelIndex& parent)
 {
     TreeNode* parentNode = getItem(parent);
-    auto child = parentNode->nodes().at(row);
+
+    if (parentNode == nullptr) {
+        return false;
+    }
+
+    TreeNode* child = parentNode->nodes().at(row);
+
+    if (child == nullptr) {
+        return false;
+    }
+
     QString uuid = child->uuid();
 
     beginResetModel();

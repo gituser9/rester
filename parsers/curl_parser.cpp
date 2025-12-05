@@ -183,7 +183,7 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
 
     if (isDataRaw) {
         if (query->bodyType() == BodyType::MULTIPART_FORM) {
-            auto formData = parseDataRaw(dataRaw);
+            QList<QueryParam> formData = parseDataRaw(dataRaw);
 
             for (const QueryParam& item : formData) {
                 query->addFormData(item.name(), item.value());
@@ -311,6 +311,7 @@ QString CurlParser::generateCurlBody(Query* query) const noexcept
 
             valuesString += "  --form '" + name + "=" + value + "' \\" + "\n";
         }
+
         return valuesString;
     } else if (bodyType == BodyType::URL_ENCODED_FORM) {
         QString valuesString;
@@ -324,6 +325,7 @@ QString CurlParser::generateCurlBody(Query* query) const noexcept
 
             valuesString += name + "=" + value + "&";
         }
+
         qsizetype pos = valuesString.lastIndexOf("&");
 
         if (pos != -1) {
@@ -407,7 +409,6 @@ QList<QueryParam> CurlParser::parseDataRaw(const QString& dataRaw) const noexcep
     QRegularExpression lineRegExp("rnrn|\r\n\r\n");
 
     for (const QString& item : itemsByDelimeter) {
-        // QStringList itemsByLineBreaker = item.split("rnrn", Qt::SkipEmptyParts);
         QStringList itemsByLineBreaker = item.split(lineRegExp, Qt::SkipEmptyParts);
 
         if (itemsByLineBreaker.size() < 2) {
