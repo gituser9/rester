@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Dialogs
 
+import io.rester
 import core.app 1.0
 import RoutesModel
 
@@ -38,7 +39,6 @@ Rectangle {
         spacing: 8
 
         Image {
-            // Layout.leftMargin: imgPadding
             Layout.preferredWidth: 22
             Layout.preferredHeight: 22
 
@@ -114,7 +114,7 @@ Rectangle {
             }
 
             if (mouse.button === Qt.LeftButton) {
-                toggleExpand()
+                folderNode.toggleExpand()
             }
         }
         onEntered: {
@@ -161,15 +161,6 @@ Rectangle {
     }
 
     // Add Request
-    // InputDialog {
-    //     id: popAddQuery
-    //     name: qsTr("Add Request")
-    //     placeholder: qsTr("Request Name")
-    //     implicitWidth: 200
-    //     onOk: name => {
-    //         createQuery(name)
-    //     }
-    // }
     CreateRequestDialog {
         id: popAddQuery
 

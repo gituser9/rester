@@ -236,7 +236,7 @@ QString Util::getHeaderValue(const QString& name, const QList<QueryParam>& heade
     QString lowerName = name.toLower();
     QString value = "";
 
-    for (auto header : headers) {
+    for (const QueryParam& header : headers) {
         QString headerNameLover = header.name().toLower();
 
         if (lowerName == headerNameLover) {
@@ -363,7 +363,6 @@ QStringList Util::filterBigBody(const QString& body, const QString& searchString
             .filter(searchString);*/
 }
 
-// Рекурсивная функция для поиска подстроки в JSON
 optional<QJsonValue> Util::findSubstring(const QJsonValue& value, const QString& substring, const QString& parentKey) {
     if (value.isObject()) {
         const QJsonObject obj = value.toObject();
@@ -395,7 +394,6 @@ optional<QJsonValue> Util::findSubstring(const QJsonValue& value, const QString&
             }
 
             if (key.contains(substring, Qt::CaseInsensitive) || valStr.contains(substring, Qt::CaseInsensitive)) {
-                // qDebug() << "Found at key:" << key << " value:" << val.toString();
                 return { value };
             }
 
@@ -411,5 +409,5 @@ optional<QJsonValue> Util::findSubstring(const QJsonValue& value, const QString&
         }
     }
 
-    return nullopt;
+    return std::nullopt;
 }

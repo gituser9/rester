@@ -14,10 +14,12 @@
 #include "models/worspace_model.h"
 #include "parsers/curl_parser.h"
 
+
+
 class App : public QObject {
     Q_OBJECT
-    QML_SINGLETON
     QML_ELEMENT
+    QML_SINGLETON
 
     Q_PROPERTY(Workspace* workspace READ workspace NOTIFY workspaceChanged FINAL)
     Q_PROPERTY(Query* query READ query NOTIFY queryChanged FINAL)

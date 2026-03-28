@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
+import io.rester
 import core.app 1.0
 import RoutesModel
 import Util

@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Dialogs
 
+import io.rester
 import core.app 1.0
 
 import '../../../common/components'

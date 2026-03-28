@@ -5,11 +5,13 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <qqml.h>
 
 #include "constant.h"
 
 class TreeNode : public QObject {
     Q_OBJECT
+    QML_ELEMENT
 
     Q_PROPERTY(NodeType nodeType READ nodeType WRITE setNodeType NOTIFY nodeTypeChanged)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)

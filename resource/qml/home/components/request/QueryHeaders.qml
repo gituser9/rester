@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import io.rester
 import core.app 1.0
 
 import '../../../common/components'

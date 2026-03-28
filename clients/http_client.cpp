@@ -62,22 +62,36 @@ void HttpClient::makeRequest(Query* query)
     request.setUrl(url);
 
     // send forms
-    if (query->bodyType() == BodyType::MULTIPART_FORM) {
+    // if (query->bodyType() == BodyType::MULTIPART_FORM) {
+    //     sendMultipartForm(query, request);
+
+    //     return;
+    // }
+
+    // if (query->bodyType() == BodyType::URL_ENCODED_FORM) {
+    //     sendFormUrlEncoded(query, request);
+
+    //     return;
+    // }
+
+
+
+    switch (query->bodyType()) {
+    case BodyType::MULTIPART_FORM:
         sendMultipartForm(query, request);
-
         return;
-    }
-
-    if (query->bodyType() == BodyType::URL_ENCODED_FORM) {
+    case BodyType::URL_ENCODED_FORM:
         sendFormUrlEncoded(query, request);
-
         return;
+    default:
+        _startTime = std::chrono::steady_clock::now();
+        send(query, request);
     }
 
     // send text body
-    _startTime = std::chrono::steady_clock::now();
+    // _startTime = std::chrono::steady_clock::now();
 
-    send(query, request);
+    // send(query, request);
 }
 
 void HttpClient::abortReply()
@@ -127,7 +141,7 @@ void HttpClient::slotFinished(QNetworkReply* reply)
     }
 
     // body
-    auto alg = isCompressed(headers);
+    CompressAlg alg = isCompressed(headers);
 
     if (alg != CompressAlg::None) {
         body = uncompress(body, alg);
@@ -140,13 +154,16 @@ void HttpClient::slotFinished(QNetworkReply* reply)
     answer->setByteCount(body.size());
     answer->setHeaders(headers);
 
-    auto bbody = Util::beautify(body, headers);
+    QString bbody = Util::beautify(body, headers);
     answer->setBody(bbody);
 
     emit finished(answer);
 }
 
-bool HttpClient::isRequestWork() const { return _isRequestWork; }
+bool HttpClient::isRequestWork() const
+{
+    return _isRequestWork;
+}
 
 void HttpClient::setIsRequestWork(bool newIsRequestWork)
 {
@@ -219,11 +236,12 @@ void HttpClient::sendMultipartForm(Query* query, QNetworkRequest request)
 
     // set boundary headers
     QString boundary = QVariant(rand()).toString() + QVariant(rand()).toString() + QVariant(rand()).toString();
-
     multiPart->setBoundary(boundary.toUtf8());
+
     request.setRawHeader(
         QString("Content-Type").toUtf8(),
-        QString("multipart/form-data;boundary=" + boundary).toUtf8());
+        QString("multipart/form-data;boundary=" + boundary).toUtf8()
+    );
 
     _startTime = std::chrono::steady_clock::now();
 

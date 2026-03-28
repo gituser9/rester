@@ -1,9 +1,8 @@
 #include "curl_parser.h"
 
-CurlParser::CurlParser()
+CurlParser::CurlParser() : _urlRegex("^https?:\\/\\/")
 {
-    _urlRegex = std::make_unique<QRegularExpression>();
-    _urlRegex->setPattern("^https?:\\/\\/");
+
 }
 
 std::shared_ptr<Query> CurlParser::parse(QString command)
@@ -15,44 +14,44 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
         return query;
     }
 
-    if (!command.startsWith("curl")) {
+    if (!command.startsWith("curl") || (command.length() > 4 && !command[4].isSpace())) {
         return query;
     }
 
     QStringList args = split(command.toStdString());
-    QString state = "";
+    ParseState state = ParseState::None;
     QString dataRaw = "";
     bool isDataRaw = false;
 
     for (const QString& arg : args) {
-        if (_urlRegex->match(arg).hasMatch()) {
+        if (_urlRegex.match(arg).hasMatch()) {
             query->setUrl(arg);
             continue;
         }
 
         if (arg == "-A" || arg == "--user-agent") {
-            state = "user-agent";
+            state = ParseState::UserAgent;
             continue;
         }
 
         if (arg == "-H" || arg == "--header") {
-            state = "header";
+            state = ParseState::Header;
             continue;
         }
 
         if (arg == "-d" || arg == "--data" || arg == "--data-ascii") {
-            state = "data";
+            state = ParseState::Data;
             continue;
         }
 
         if (arg == "--data-raw" || arg == "--data-binary") {
-            state = "data-raw";
+            state = ParseState::DataRaw;
             isDataRaw = true;
             continue;
         }
 
         if (arg == "-u" || arg == "--user") {
-            state = "user";
+            state = ParseState::User;
             continue;
         }
 
@@ -62,17 +61,17 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
         }
 
         if (arg == "-X" || arg == "--request") {
-            state = "method";
+            state = ParseState::Method;
             continue;
         }
 
         if (arg == "-b" || arg == "--cookie") {
-            state = "cookie";
+            state = ParseState::Cookie;
             continue;
         }
 
         if (arg == "-F" || arg == "--form") {
-            state = "form";
+            state = ParseState::Form;
             continue;
         }
 
@@ -82,42 +81,47 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
         }
 
         // state
-        if (state == "header") {
-            QStringList field = arg.split(":");
-            query->addHeader(field.first().trimmed().remove("'"), field.last().trimmed().remove("'"));
+        if (state == ParseState::Header) {
+            int separatorIndex = arg.indexOf(':');
 
-            state.clear();
+            if (separatorIndex > 0) {
+                QString name = arg.left(separatorIndex).trimmed().remove("'");
+                QString value = arg.mid(separatorIndex + 1).trimmed().remove("'");
+                query->addHeader(name, value);
+            }
+
+            state = ParseState::None;
 
             continue;
         }
 
-        if (state == "user-agent") {
+        if (state == ParseState::UserAgent) {
             query->addHeader("User-Agent", arg);
-            state.clear();
+            state = ParseState::None;
 
             continue;
         }
 
-        if (state == "data") {
+        if (state == ParseState::Data) {
             // check header, may be url-encided
             query->setBody(arg);
-            state.clear();
+            state = ParseState::None;
 
             continue;
         }
 
-        if (state == "data-raw" || state == "data-binary") {
+        if (state == ParseState::DataRaw || state == ParseState::DataBinary) {
             dataRaw = arg;
-            state.clear();
+            state = ParseState::None;
 
             continue;
         }
 
-        if (state == "form") {
+        if (state == ParseState::Form) {
             QStringList data = arg.split('=');
 
             if (data.size() != 2) {
-                state.clear();
+                state = ParseState::None;
 
                 continue;
             }
@@ -127,30 +131,31 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
             }
 
             query->addFormData(data.first(), data.last());
-            state.clear();
+            state = ParseState::None;
 
             continue;
         }
 
-        if (state == "user") {
+        if (state == ParseState::User) {
             query->addHeader("Authorization", "Basic " + arg.toUtf8().toBase64());
-            state.clear();
+            state = ParseState::None;
 
             continue;
         }
 
-        if (state == "method") {
+        if (state == ParseState::Method) {
             QueryType type = Util::getQueryType(arg);
             query->setQueryType(type);
 
-            state.clear();
+            state = ParseState::None;
 
             continue;
         }
 
-        if (state == "cookie") {
-            query->addHeader("Set-Cookie", arg);
-            state.clear();
+        if (state == ParseState::Cookie) {
+            // query->addHeader("Set-Cookie", arg);
+            query->addHeader("Cookie", arg);
+            state = ParseState::None;
         }
     }
 
@@ -294,7 +299,8 @@ QString CurlParser::generateCurlBody(Query* query) const noexcept
     BodyType bodyType = query->bodyType();
 
     if (bodyType == BodyType::JSON) {
-        return "  --data '" + excapeCurlBody(query) + "' \\" + "'\n";
+        // return "  --data '" + excapeCurlBody(query) + "' \\" + "'\n";
+        return "  --data '" + excapeCurlBody(query) + "' \\\n";
     } else if (bodyType == BodyType::MULTIPART_FORM) {
         QVariantList formData = query->formData();
         QString valuesString;
@@ -332,7 +338,7 @@ QString CurlParser::generateCurlBody(Query* query) const noexcept
             valuesString = valuesString.left(pos);
         }
 
-        return "  --data '" + valuesString + "' \\" + "'\n";
+        return "  --data '" + valuesString + "' \\" + "\n";
     }
 
     return "";

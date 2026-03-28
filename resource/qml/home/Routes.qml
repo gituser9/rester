@@ -5,6 +5,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 
+import io.rester
 import core.app
 import RoutesModel
 import PinModel
@@ -190,7 +191,7 @@ Item {
                             let parentIdx = root.treeView.index(root.row, root.column);
                             RoutesModel.addFolder(dirName, parentIdx);
                         }
-                        onCreateQuery: function(name, type) {
+                        onCreateQuery: (name, type) => {
                             let idx = root.treeView.index(root.row, root.column);
                             RoutesModel.addQuery(name, type, idx);
                         }
@@ -207,7 +208,8 @@ Item {
                         }
                         onToggleExpand: {
                             root.treeView.toggleExpanded(root.row);
-                            RoutesModel.toggleFolderExpanded(treeView.index(root.row, root.column));
+
+                            RoutesModel.toggleFolderExpanded(root.treeView.index(root.row, root.column));
                         }
                         onUpdateDir: (newDirName, parentUuid) => {
                             root.nodeName = newDirName;

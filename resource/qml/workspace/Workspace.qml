@@ -4,10 +4,12 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Dialogs
 
+import io.rester
 import WorkspaceModel
 import core.app 1.0
 
 import "../home/modal"
+import '../common/components'
 
 Rectangle {
 
@@ -29,6 +31,7 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent
 
+        // Control Buttons
         RowLayout {
             Layout.fillWidth: true
 
@@ -131,6 +134,30 @@ Rectangle {
             }
         }
 
+        // Search field
+        FlickableEdit {
+            Layout.fillWidth: true
+
+            id: searchField
+            isEnabled: true
+            placeholder: "Search"
+            height: 20
+            value: ""
+            onTextChange: txt => {
+                WorkspaceModel.filter(txt)
+            }
+        }
+        MenuSeparator {
+            Layout.fillWidth: true
+
+            contentItem: Rectangle {
+                implicitWidth: parent.width
+                implicitHeight: 1
+                color: "#1E000000"
+            }
+        }
+
+        // WS
         ScrollView {
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -232,12 +259,12 @@ Rectangle {
                                 }
                             }
                         }
-                        RowLayout {
-                            // Layout.fillWidth: true
-                            Layout.topMargin: 4
-                            Layout.preferredWidth: wsRect.width
 
-                            height: 40
+                        // WS Buttons
+                        RowLayout {
+                            Layout.topMargin: 4
+                            Layout.maximumWidth: grid.elementWidth + 20
+                            Layout.preferredHeight: 30
 
                             Button {
                                 flat: true

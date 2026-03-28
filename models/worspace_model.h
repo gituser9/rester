@@ -20,7 +20,6 @@
 
 class WorkspaceModel : public QAbstractListModel {
     Q_OBJECT
-    QML_SINGLETON
 
 public:
     explicit WorkspaceModel(QObject* parent = nullptr);
@@ -49,6 +48,7 @@ public:
     Q_INVOKABLE void setVars(const QString& uuid, const QString& name, const QVariantMap& vars) noexcept;
     Q_INVOKABLE QVariantMap getVars(const QString& uuid, const QString& name) const noexcept;
     Q_INVOKABLE void setWorkspace(int index);
+    Q_INVOKABLE void filter(const QString& name);
 
 signals:
     void wsSave(std::shared_ptr<Workspace>);
@@ -68,6 +68,7 @@ private:
     };
     QHash<int, QByteArray> _names;
     QList<std::shared_ptr<Workspace>> _workspaces;
+    QList<std::shared_ptr<Workspace>> _allWorkspaces;
     QString _workspacesPath;
 };
 

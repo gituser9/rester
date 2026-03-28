@@ -18,9 +18,6 @@
 
 int main(int argc, char* argv[])
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#endif
     QGuiApplication app(argc, argv);
 
     // app.setWindowIcon()
@@ -53,26 +50,19 @@ int main(int argc, char* argv[])
     qmlRegisterType<SearchEngine>("SearchEngine", 1, 0, "SearchEngine");
 
     QQmlApplicationEngine engine;
-    const QUrl url(QStringLiteral("qrc:/main.qml"));
-
     QObject::connect(
         &engine,
-        &QQmlApplicationEngine::objectCreated,
+        &QQmlApplicationEngine::objectCreationFailed,
         &app,
-        [url](QObject* obj, const QUrl& objUrl) {
-            Q_UNUSED(obj)
-
-            if (!obj && url == objUrl) {
-                QCoreApplication::exit(-1);
-            }
-        },
-        Qt::QueuedConnection);
+        []() { QCoreApplication::exit(-1); },
+        Qt::QueuedConnection
+    );
 
     QQuickStyle::setStyle("Imagine");
     // QQuickStyle::setStyle("FluentWinUI3");
     // QQuickStyle::setStyle("Material");
 
-    engine.load(url);
+    engine.loadFromModule("io.rester", "Main");
 
     return app.exec();
 }

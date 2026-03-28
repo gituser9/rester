@@ -26,7 +26,20 @@ public:
     QString generateCurl(Query* query) const noexcept;
 
 private:
-    std::unique_ptr<QRegularExpression> _urlRegex;
+    QRegularExpression _urlRegex;
+
+    enum class ParseState {
+        None,
+        Header,
+        UserAgent,
+        Data,
+        DataRaw,
+        DataBinary,
+        Form,
+        User,
+        Method,
+        Cookie,
+    };
 
     QStringList split(std::string line = "") const noexcept;
     QString generateCurlHeaders(Query* query) const noexcept;

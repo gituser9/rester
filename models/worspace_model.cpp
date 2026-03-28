@@ -109,6 +109,10 @@ void WorkspaceModel::loadWorkspaces()
 
     _workspaces.clear();
 
+    auto cap = workspacesDir.entryList().size();
+    _workspaces.reserve(cap);
+    _allWorkspaces.reserve(cap);
+
     beginResetModel();
 
     for (const QString& fileName : workspacesDir.entryList()) {
@@ -123,6 +127,7 @@ void WorkspaceModel::loadWorkspaces()
         workspace->fromJsonShort(json);
 
         _workspaces << workspace;
+        _allWorkspaces << workspace;
     }
 
     std::sort(_workspaces.begin(), _workspaces.end(), [&](auto& left, auto& right) {
@@ -145,7 +150,7 @@ void WorkspaceModel::exportCollection(const QString& folderPath, int index, int 
     auto workspace = QSharedPointer<Workspace>(new Workspace);
     workspace->fromJson(json);
 
-    auto importer = QScopedPointer<Importer>(new Importer);
+    auto importer = unique_ptr<Importer>(new Importer);
     auto enumValue = static_cast<ImportType>(type);
 
     importer->exportCollection(workspace, folderPath, enumValue);
@@ -158,6 +163,7 @@ void WorkspaceModel::setup() noexcept
 void WorkspaceModel::clean() noexcept
 {
     _workspaces.clear();
+    _allWorkspaces.clear();
 }
 
 void WorkspaceModel::importFrom(const QString& filePath, ImportType type)
@@ -238,6 +244,33 @@ void WorkspaceModel::setWorkspace(int index)
     ws->fromJson(json);
 
     emit wsSet(ws);
+
+    auto now = QDateTime::currentMSecsSinceEpoch();
+    shared_ptr<Workspace> wsFromAll = _allWorkspaces.at(index);
+    wsFromAll->setLastUsageAt(now);
+    workspace->setLastUsageAt(now);
+}
+
+void WorkspaceModel::filter(const QString &name)
+{
+    _workspaces.clear();
+    _workspaces.resize(_allWorkspaces.size());
+
+    std::copy(_allWorkspaces.begin(), _allWorkspaces.end(), _workspaces.begin());
+
+    beginResetModel();
+
+    if (!name.trimmed().isEmpty()) {
+        _workspaces.removeIf([&name](auto w) {
+            return !w->name().toLower().contains(name.toLower());
+        });
+    }
+
+    std::sort(_workspaces.begin(), _workspaces.end(), [&](auto& left, auto& right) {
+        return left->lastUsageAt() > right->lastUsageAt();
+    });
+
+    endResetModel();
 }
 
 void WorkspaceModel::update(int idx, const QString& newName)
