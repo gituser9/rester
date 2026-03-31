@@ -20,7 +20,6 @@ public:
     QueryParam(const QVariantMap &map);
     QueryParam(const QString &name, const QString &value);
     QueryParam(const QString &name, const QString &value, bool isEnabled);
-    QueryParam(std::initializer_list<QString> list);
     QueryParam(const QVariant &item);
 
     bool isEnabled() const;
@@ -33,9 +32,9 @@ public:
     void setValue(const QString &newValue);
 
     QVariantMap toMap() const noexcept;
-    void fromJson(QJsonObject json) noexcept;
-    void fromVariantMap(QVariantMap json) noexcept;
     QJsonObject toJson() const noexcept;
+    void fromJson(const QJsonObject& json) noexcept;
+    void fromVariantMap(const QVariantMap& json) noexcept;
 
 private:
     bool _isEnabled;

@@ -16,6 +16,8 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QVariantList>
+#include <QMap>
+#include <QByteArray>
 #include <zlib.h>
 
 #include "../app_data/http_answer.h"
@@ -64,9 +66,10 @@ private:
     CompressAlg isCompressed(const QVariantMap& headers) const noexcept;
     QString getErrorString(QNetworkReply* reply);
     QUrl prepareUrl(Query* query) const noexcept;
-    QByteArray uncompress(const QByteArray& compressed, CompressAlg alg) const noexcept;
-    QByteArray uncompressGzip(const QByteArray& compressed) const noexcept;
-    QByteArray uncompressDeflate(const QByteArray& compressed) const noexcept;
+    QMap<QByteArray, QByteArray> prepareHeaders(Query* query) const noexcept;
+    QByteArray decompress(const QByteArray& compressed, CompressAlg alg) const noexcept;
+    QByteArray decompressGzip(const QByteArray& compressed) const noexcept;
+    QByteArray decompressDeflate(const QByteArray& compressed) const noexcept;
 
 private slots:
     void slotFinished(QNetworkReply* reply);

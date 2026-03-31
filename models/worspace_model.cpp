@@ -15,7 +15,6 @@ WorkspaceModel::WorkspaceModel(QObject* parent)
 
 WorkspaceModel::~WorkspaceModel()
 {
-    _workspaces.clear();
 }
 
 int WorkspaceModel::rowCount(const QModelIndex& parent) const
@@ -74,12 +73,14 @@ bool WorkspaceModel::setData(const QModelIndex& index, const QVariant& value, in
     shared_ptr<Workspace> ws = _workspaces.at(index.row());
     QString oldFileName = _workspacesPath + ws->getFileName();
 
+    QString oldName = ws->name();
     ws->setName(value.toString());
     QString newFileName = _workspacesPath + ws->getFileName();
 
     bool isRenamed = QFile::rename(oldFileName, newFileName);
 
     if (!isRenamed) {
+        ws->setName(oldName);
         return false;
     }
 
@@ -109,13 +110,14 @@ void WorkspaceModel::loadWorkspaces()
 
     _workspaces.clear();
 
-    auto cap = workspacesDir.entryList().size();
+    QStringList dirs = workspacesDir.entryList();
+    auto cap = dirs.size();
     _workspaces.reserve(cap);
     _allWorkspaces.reserve(cap);
 
     beginResetModel();
 
-    for (const QString& fileName : workspacesDir.entryList()) {
+    for (const QString& fileName : dirs) {
         QString path = _workspacesPath + fileName;
         QJsonObject json = Util::getJsonFromFile(path);
 
@@ -150,7 +152,7 @@ void WorkspaceModel::exportCollection(const QString& folderPath, int index, int 
     auto workspace = QSharedPointer<Workspace>(new Workspace);
     workspace->fromJson(json);
 
-    auto importer = unique_ptr<Importer>(new Importer);
+    auto importer = unique_ptr<Importer>();
     auto enumValue = static_cast<ImportType>(type);
 
     importer->exportCollection(workspace, folderPath, enumValue);
@@ -168,7 +170,7 @@ void WorkspaceModel::clean() noexcept
 
 void WorkspaceModel::importFrom(const QString& filePath, ImportType type)
 {
-    auto importer = QScopedPointer<Importer>(new Importer);
+    auto importer = unique_ptr<Importer>();
     QList<shared_ptr<Workspace>> workspaces = importer->import(filePath, type);
 
     if (workspaces.empty()) {
@@ -185,6 +187,7 @@ void WorkspaceModel::importFrom(const QString& filePath, ImportType type)
 
     for (const shared_ptr<Workspace>& ws : workspaces) {
         _workspaces << ws;
+        _allWorkspaces << ws;
     }
 
     endResetModel();
@@ -230,9 +233,9 @@ QVariantMap WorkspaceModel::getVars(const QString& uuid, const QString& name) co
     return json["variables"].toObject().toVariantMap();
 }
 
-void WorkspaceModel::setWorkspace(int index)
+void WorkspaceModel::setWorkspace(int row)
 {
-    shared_ptr<Workspace> workspace = _workspaces.at(index);
+    shared_ptr<Workspace> workspace = _workspaces.at(row);
     QString path = _workspacesPath + workspace->getFileName();
     QJsonObject json = Util::getJsonFromFile(path);
 
@@ -246,17 +249,15 @@ void WorkspaceModel::setWorkspace(int index)
     emit wsSet(ws);
 
     auto now = QDateTime::currentMSecsSinceEpoch();
-    shared_ptr<Workspace> wsFromAll = _allWorkspaces.at(index);
-    wsFromAll->setLastUsageAt(now);
     workspace->setLastUsageAt(now);
+
+    QModelIndex idx = index(row, 0);
+    emit dataChanged(idx, idx, { RoleNames::LastUsageRole });
 }
 
 void WorkspaceModel::filter(const QString &name)
 {
-    _workspaces.clear();
-    _workspaces.resize(_allWorkspaces.size());
-
-    std::copy(_allWorkspaces.begin(), _allWorkspaces.end(), _workspaces.begin());
+    _workspaces = _allWorkspaces;
 
     beginResetModel();
 
@@ -281,7 +282,7 @@ void WorkspaceModel::update(int idx, const QString& newName)
 
 void WorkspaceModel::create(const QString& name)
 {
-    auto workspace = make_shared<Workspace>();
+    auto workspace = std::make_shared<Workspace>();
     workspace->setUuid(Util::uuid());
     workspace->setName(name);
     workspace->setLastUsageAt(0);
@@ -290,6 +291,7 @@ void WorkspaceModel::create(const QString& name)
 
     beginInsertRows(QModelIndex(), row, row);
     _workspaces << workspace;
+    _allWorkspaces << workspace;
     endInsertRows();
 
     emit wsSave(workspace);

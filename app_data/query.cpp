@@ -643,6 +643,7 @@ PostmanItem Query::toPostmanItem() const noexcept
     PostmanItem postmanItem;
     postmanItem.name = name();
     postmanItem.request.method = Util::getQueryTypeString(queryType());
+    postmanItem.request.headers.reserve(_headers.count());
 
     for (const QueryParam& param : _headers) {
         PostmanHeader header;
@@ -654,6 +655,16 @@ PostmanItem Query::toPostmanItem() const noexcept
 
     QUrl qurl(_url);
     QString host = qurl.host();
+    QStringList path = qurl.path().split('/');
+
+    if (host.isEmpty()) { // host is may be variable
+        auto parts = _url.split('/');
+
+        if (!parts.isEmpty() && parts[0].startsWith("{{")) {
+            host = parts.first();
+            path.removeFirst(); // remove host variable
+        }
+    }
 
     if (qurl.port() != -1) {
         host += ":" + QString::number(qurl.port());
@@ -662,8 +673,9 @@ PostmanItem Query::toPostmanItem() const noexcept
     PostmanUrl postmanUrl;
     postmanUrl.raw = _url;
     postmanUrl.protocol = qurl.scheme();
-    postmanUrl.host = QStringList { host };
-    postmanUrl.path = qurl.path().split('/');
+    postmanUrl.host = QStringList{host};
+    postmanUrl.path = path;
+    postmanUrl.query.reserve(_paramList.count());
 
     for (const QueryParam& param : _paramList) {
         QVariantMap paramMap;
@@ -688,6 +700,7 @@ PostmanItem Query::toPostmanItem() const noexcept
     if (_bodyType == BodyType::MULTIPART_FORM) {
         PostmanRequestBody body;
         body.mode = "formdata";
+        body.formdata.reserve(_formDataList.count());
 
         for (const QueryParam& data : _formDataList) {
             PostmanFormDataBody item;
@@ -696,6 +709,7 @@ PostmanItem Query::toPostmanItem() const noexcept
 
             body.formdata << item;
         }
+
         postmanItem.request.body = body;
     }
 

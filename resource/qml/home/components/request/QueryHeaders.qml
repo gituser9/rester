@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 import io.rester
 import core.app 1.0
+import VarSyntaxHighlighter
 
 import '../../../common/components'
 
@@ -73,6 +74,10 @@ Rectangle {
                     Layout.leftMargin: 16
 
                     FlickableEdit {
+                        Component.onCompleted: {
+                            varHilighter.setDocument(tfHeaderValue.textDocument)
+                        }
+
                         id: tfHeaderValue
                         width: parent.width
                         height: 20
@@ -111,12 +116,13 @@ Rectangle {
         }
     }
     RowLayout {
+        Layout.fillWidth: true
+        Layout.alignment: Qt.AlignRight
+
         spacing: 8
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 8
         anchors.right: parent.right
-        Layout.fillWidth: true
-        Layout.alignment: Qt.AlignRight
 
         Button {
             text: qsTr("Add")
@@ -164,6 +170,12 @@ Rectangle {
         running: true;
         repeat: false
     }
+
+    VarSyntaxHighlighter {
+        id: varHilighter
+    }
+
+
 
     function sync(idx) {
         syncTimer.triggered.connect(function () {

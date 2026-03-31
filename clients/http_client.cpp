@@ -46,35 +46,15 @@ void HttpClient::makeRequest(Query* query)
     }
 
     // set headers
-    for (const QueryParam& header : query->headerList()) {
-        if (!header.isEnabled()) {
-            continue;
-        }
+    auto preparedHeaders = prepareHeaders(query);
 
-        request.setRawHeader(
-            header.name().toUtf8(),
-            header.value().toUtf8()
-        );
+    for (auto& k : preparedHeaders.keys()) {
+        request.setRawHeader(k, preparedHeaders[k]);
     }
 
     // set url
     QUrl url = prepareUrl(query);
     request.setUrl(url);
-
-    // send forms
-    // if (query->bodyType() == BodyType::MULTIPART_FORM) {
-    //     sendMultipartForm(query, request);
-
-    //     return;
-    // }
-
-    // if (query->bodyType() == BodyType::URL_ENCODED_FORM) {
-    //     sendFormUrlEncoded(query, request);
-
-    //     return;
-    // }
-
-
 
     switch (query->bodyType()) {
     case BodyType::MULTIPART_FORM:
@@ -87,11 +67,6 @@ void HttpClient::makeRequest(Query* query)
         _startTime = std::chrono::steady_clock::now();
         send(query, request);
     }
-
-    // send text body
-    // _startTime = std::chrono::steady_clock::now();
-
-    // send(query, request);
 }
 
 void HttpClient::abortReply()
@@ -144,7 +119,7 @@ void HttpClient::slotFinished(QNetworkReply* reply)
     CompressAlg alg = isCompressed(headers);
 
     if (alg != CompressAlg::None) {
-        body = uncompress(body, alg);
+        body = decompress(body, alg);
     }
 
     // create answer
@@ -153,9 +128,8 @@ void HttpClient::slotFinished(QNetworkReply* reply)
     answer->setDuration(ms);
     answer->setByteCount(body.size());
     answer->setHeaders(headers);
-
-    QString bbody = Util::beautify(body, headers);
-    answer->setBody(bbody);
+    answer->setBody(body);
+    answer->beautify();
 
     emit finished(answer);
 }
@@ -196,7 +170,6 @@ void HttpClient::sendMultipartForm(Query* query, QNetworkRequest request)
             // file part
             QString filePath = fieldValue.replace("file://", "");
 
-            // check exists
             if (!QFile::exists(filePath)) {
                 continue;
             }
@@ -235,7 +208,9 @@ void HttpClient::sendMultipartForm(Query* query, QNetworkRequest request)
     }
 
     // set boundary headers
-    QString boundary = QVariant(rand()).toString() + QVariant(rand()).toString() + QVariant(rand()).toString();
+    QString boundary = QVariant(rand()).toString()
+                       + QVariant(rand()).toString()
+                       + QVariant(rand()).toString();
     multiPart->setBoundary(boundary.toUtf8());
 
     request.setRawHeader(
@@ -424,13 +399,49 @@ QUrl HttpClient::prepareUrl(Query* query) const noexcept
     return url;
 }
 
-QByteArray HttpClient::uncompress(const QByteArray& compressed, CompressAlg alg) const noexcept
+QMap<QByteArray, QByteArray> HttpClient::prepareHeaders(Query *query) const noexcept
+{
+    auto headers = query->headerList();
+    QMap<QByteArray, QByteArray> result;
+
+    for (const QueryParam& header : headers) {
+        if (!header.isEnabled()) {
+            continue;
+        }
+
+        QString val = header.value();
+
+        if (!_vars.isEmpty()) {
+            QRegularExpressionMatchIterator iter = _varRegex.globalMatch(val);
+
+            while (iter.hasNext()) {
+                QRegularExpressionMatch match = iter.next();
+                QString variable = match.captured(1).trimmed();
+
+                for (const QVariant& var : _vars) {
+                    QVariantMap varMap = var.toMap();
+
+                    if (varMap["name"] == variable) {
+                        val = val.replace("{{" + variable + "}}", varMap["value"].toString());
+                    }
+                }
+
+            }
+        }
+
+        result[header.name().toUtf8()] = val.toUtf8();
+    }
+
+    return result;
+}
+
+QByteArray HttpClient::decompress(const QByteArray& compressed, CompressAlg alg) const noexcept
 {
     switch (alg) {
     case CompressAlg::Gzip:
-        return uncompressGzip(compressed);
+        return decompressGzip(compressed);
     case CompressAlg::Deflate:
-        return uncompressDeflate(compressed);
+        return decompressDeflate(compressed);
     case CompressAlg::Brotli:
         return compressed;
     default:
@@ -440,7 +451,7 @@ QByteArray HttpClient::uncompress(const QByteArray& compressed, CompressAlg alg)
     return compressed;
 }
 
-QByteArray HttpClient::uncompressGzip(const QByteArray& compressed) const noexcept
+QByteArray HttpClient::decompressGzip(const QByteArray& compressed) const noexcept
 {
     z_stream zs;
     memset(&zs, 0, sizeof(zs));
@@ -470,10 +481,11 @@ QByteArray HttpClient::uncompressGzip(const QByteArray& compressed) const noexce
     inflateEnd(&zs);
 
     uncompressedData.resize(uncompressedData.size() - zs.avail_out);
+
     return uncompressedData;
 }
 
-QByteArray HttpClient::uncompressDeflate(const QByteArray& compressed) const noexcept
+QByteArray HttpClient::decompressDeflate(const QByteArray& compressed) const noexcept
 {
     // set zlib param for unpack deflate
     z_stream zs;

@@ -61,7 +61,6 @@ public:
     QJsonObject toJson() const;
 
     void setAnswer(QSharedPointer<HttpAnswer> ptr);
-    // QVariant getHeader(const QString& name) const;
 
     QVariantList formData() const;
     void setFormData(const QVariantList& newFormData);

@@ -36,7 +36,6 @@ Item {
             Layout.bottomMargin: 5
             Layout.preferredWidth: parent.width
 
-            // width: parent.width
             spacing: 8
 
             Rectangle {
@@ -56,9 +55,9 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.leftMargin: 20
-
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: requestView.consts.bottomButtonHeight
+
                 border.width: 1
                 border.color: 'lightgrey'
                 radius: 4
@@ -79,7 +78,6 @@ Item {
             }
             Rectangle {
                 Layout.rightMargin: 8
-
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: requestView.consts.bottomButtonHeight
 
@@ -99,6 +97,7 @@ Item {
         }
         MenuSeparator {
             Layout.preferredWidth: parent.width
+
             contentItem: Rectangle {
                 implicitWidth: parent.width
                 implicitHeight: 1

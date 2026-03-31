@@ -35,8 +35,8 @@ protected:
 
 private:
     enum class RoleNames {
-        NameRole = Qt::UserRole,
-        UuidRole = Qt::UserRole + 1,
+        NameRole = Qt::UserRole + 1,
+        UuidRole = Qt::UserRole + 2,
     };
     QHash<int, QByteArray> _names;
     std::shared_ptr<Workspace> _workspace;

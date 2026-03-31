@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "modernize-use-nodiscard"
 #ifndef ROUTESMODEL_H
 #define ROUTESMODEL_H
 
@@ -32,8 +30,8 @@
 
 class RoutesModel : public QAbstractItemModel {
     Q_OBJECT
-//    QML_ELEMENT
-//    QML_SINGLETON
+    QML_ELEMENT
+    QML_SINGLETON
 
 public:
     explicit RoutesModel(QObject* parent = nullptr);
@@ -68,7 +66,6 @@ public:
     Q_INVOKABLE void downloadBigAnswer(QString dirPath, Query const* qry) const noexcept;
     Q_INVOKABLE void importFromHar(const QModelIndex& parentIdx, const QString& filePath) noexcept;
     Q_INVOKABLE QString copyAsCurl(const QModelIndex& idx) const;
-    Q_INVOKABLE QVariantMap getFolders() const;
 
 public slots:
     void loadTree(std::shared_ptr<Workspace> workspace) noexcept;
@@ -83,7 +80,7 @@ signals:
 
 private:
     enum RoleType {
-        NameRole = Qt::UserRole,
+        NameRole = Qt::UserRole + 1,
         NodeTypeRole,
         QueryTypeRole,
         FolderExpandedRole,
@@ -100,4 +97,3 @@ private:
 
 #endif // ROUTESMODEL_H
 
-#pragma clang diagnostic pop

@@ -90,7 +90,7 @@ QList<shared_ptr<Workspace>> Importer::fromRester(const QString& folderPath) con
             continue;
         }
 
-        auto workspace = make_shared<Workspace>();
+        auto workspace = std::make_shared<Workspace>();
         workspace->fromJson(json);
 
         workspaces << workspace;

@@ -33,16 +33,6 @@ QueryParam::QueryParam(const QString& name, const QString& value, bool isEnabled
 {
 }
 
-QueryParam::QueryParam(std::initializer_list<QString> list)
-{
-    if (list.size() == 3) {
-        auto it = list.begin();
-        _isEnabled = it[0].toInt();
-        _name = *(++it);
-        _value = *(++it);
-    }
-}
-
 QueryParam::QueryParam(const QVariant& item)
 {
     if (item.canConvert<QueryParam>()) {
@@ -109,20 +99,6 @@ QVariantMap QueryParam::toMap() const noexcept
     };
 }
 
-void QueryParam::fromJson(QJsonObject json) noexcept
-{
-    _isEnabled = json["is_enabled"].toBool(true);
-    _name = json["name"].toString();
-    _value = json["value"].toString();
-}
-
-void QueryParam::fromVariantMap(QVariantMap json) noexcept
-{
-    _isEnabled = json["is_enabled"].toBool();
-    _name = json["name"].toString();
-    _value = json["value"].toString();
-}
-
 QJsonObject QueryParam::toJson() const noexcept
 {
     return {
@@ -130,4 +106,18 @@ QJsonObject QueryParam::toJson() const noexcept
         { "name", _name },
         { "value", _value },
     };
+}
+
+void QueryParam::fromJson(const QJsonObject& json) noexcept
+{
+    _isEnabled = json["is_enabled"].toBool(true);
+    _name = json["name"].toString();
+    _value = json["value"].toString();
+}
+
+void QueryParam::fromVariantMap(const QVariantMap& json) noexcept
+{
+    _isEnabled = json["is_enabled"].toBool();
+    _name = json["name"].toString();
+    _value = json["value"].toString();
 }

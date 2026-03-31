@@ -99,7 +99,6 @@ Item {
         }
         TreeView {
             id: treeViewItem
-
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.topMargin: 8
@@ -135,7 +134,6 @@ Item {
 
                 DropArea {
                     id: dropArea
-
                     anchors.fill: parent
                     implicitHeight: 45
                     implicitWidth: treeViewItem.width
@@ -155,7 +153,6 @@ Item {
                 }
                 Rectangle {
                     id: dragContainer
-
                     color: 'transparent'
                     implicitHeight: 45
                     implicitWidth: treeViewItem.width
@@ -209,11 +206,14 @@ Item {
                         onToggleExpand: {
                             root.treeView.toggleExpanded(root.row);
 
-                            RoutesModel.toggleFolderExpanded(root.treeView.index(root.row, root.column));
+                            RoutesModel.toggleFolderExpanded(root.treeView.index(root.row, root.column))
                         }
                         onUpdateDir: (newDirName, parentUuid) => {
                             root.nodeName = newDirName;
                             root.parentUuid = parentUuid;
+
+                            let idx = currentIndex = root.treeView.index(root.row, root.column)
+                            RoutesModel.updateFolder(idx, newDirName, 257) // TODO: fix magic number
                         }
                     }
                 }
@@ -239,12 +239,6 @@ Item {
                             teCopy.clear();
                         }
                         onRemoveQuery: {
-                            // currentIndex = treeView.index(row, column);
-                            // dlgRemoveQuery.open();
-                            // let idx = treeView.index(row, column);
-                            // RoutesModel.removeRows(idx.row, 1, idx.parent);
-
-
                             routesItem.currentIndex = root.treeView.index(root.row, root.column);
                             dlgRemoveQuery.open();
                         }
@@ -265,7 +259,6 @@ Item {
                             let idx = root.treeView.index(root.row, root.column)
 
                             RoutesModel.updateQuery(idx, newQueryName, 0)
-                            // App.query.name = newQueryName
                         }
                     }
                 }
@@ -274,12 +267,10 @@ Item {
     }
     TextEdit {
         id: teCopy
-
         visible: false
     }
     InputDialog {
         id: mdlAddFolder
-
         placeholder: qsTr("Folder Name")
         title: qsTr("Add Folder")
 
@@ -291,7 +282,7 @@ Item {
     CreateRequestDialog {
         id: mdlAddQuery
 
-        onOk: function (queryName, queryType) {
+        onOk: (queryName, queryType) => {
             let parentIdx = treeViewItem.index(-1, -1);
             RoutesModel.addQuery(queryName, queryType, parentIdx);
         }
@@ -303,7 +294,8 @@ Item {
         modality: Qt.ApplicationModal
         text: "Remove folder?"
         title: "Accept Remove"
-        onButtonClicked: function (button, role) {
+
+        onButtonClicked: (button, role) => {
                  switch (button) {
                  case MessageDialog.Ok:
                      RoutesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
@@ -318,7 +310,8 @@ Item {
         modality: Qt.ApplicationModal
         text: "Remove Request?"
         title: "Accept Remove"
-        onButtonClicked: function (button, role) {
+
+        onButtonClicked: (button, role) => {
                  switch (button) {
                  case MessageDialog.Ok:
                      RoutesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);

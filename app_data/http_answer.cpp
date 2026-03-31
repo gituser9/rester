@@ -3,9 +3,7 @@
 HttpAnswer::HttpAnswer(QObject* parent)
     : QObject { parent }
 {
-    _body = "";
     _status = 0;
-    _headers = {};
     _byteCount = 0;
     _duration = 0;
 }
@@ -57,7 +55,6 @@ void HttpAnswer::setHeaders(const QVariantMap& newHeaders)
 
     emit headersChanged();
 
-    // cookies
     parseCookie();
 }
 
@@ -129,10 +126,10 @@ void HttpAnswer::parseCookie() noexcept
         return;
     }
 
-    QStringList cookies = cookie.split("\n"); // может быть запятая
+    QStringList cook = cookie.split("\n"); // может быть запятая
     QVariantList cookieList;
 
-    for (const QString& cookieString : cookies) {
+    for (const QString& cookieString : cook) {
         QStringList cookieItems = cookieString.split(";");
         QVariantMap cookieValue;
 

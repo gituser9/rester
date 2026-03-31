@@ -89,8 +89,6 @@ Rectangle {
             MenuItem {
                 text: qsTr("Edit")
                 onTriggered: {
-                    let folders = RoutesModel.getFolders()
-                    popUpdate.fillFolders(folders)
                     popUpdate.open()
                 }
             }

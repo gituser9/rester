@@ -6,7 +6,7 @@ RoutesModel::RoutesModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
     _names = QAbstractItemModel::roleNames();
-    _names.insert(QHash<int, QByteArray> {
+    _names.insert({
         { NameRole, "nodeName" },
         { NodeTypeRole, "nodeType" },
         { QueryTypeRole, "nodeQueryType" },
@@ -462,18 +462,6 @@ QString RoutesModel::copyAsCurl(const QModelIndex& idx) const
     auto curlParser = std::make_unique<CurlParser>();
 
     return curlParser->generateCurl(qry);
-}
-
-QVariantMap RoutesModel::getFolders() const
-{
-    QList<TreeNode*> folders = _currentWorkspace->getAllFolders();
-    QVariantMap object;
-
-    for (TreeNode const* folder : folders) {
-        object.insert(folder->name(), folder->uuid());
-    }
-
-    return object;
 }
 
 void RoutesModel::downloadBigAnswer(QString dirPath, Query const* qry) const noexcept

@@ -47,7 +47,7 @@ public:
     Q_INVOKABLE void exportTo(const QString& exportPath) const noexcept;
     Q_INVOKABLE void setVars(const QString& uuid, const QString& name, const QVariantMap& vars) noexcept;
     Q_INVOKABLE QVariantMap getVars(const QString& uuid, const QString& name) const noexcept;
-    Q_INVOKABLE void setWorkspace(int index);
+    Q_INVOKABLE void setWorkspace(int row);
     Q_INVOKABLE void filter(const QString& name);
 
 signals:
