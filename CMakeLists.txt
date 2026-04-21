@@ -6,14 +6,19 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(NOT DEFINED QT_QML_GENERATE_QMLLS_INI)
+  set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate qml-ls .ini files" FORCE)
+endif()
 
 # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-sanitize-recover")
 
-find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Gui WebSockets)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml QuickControls2 Gui WebSockets Concurrent)
 find_package(ZLIB)
+find_package(gRPC CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
@@ -42,22 +47,30 @@ file(GLOB PROJECT_SOURCES
     qml.qrc
 )
 
-qt_add_executable(rester
+qt_add_executable(
+    rester
     ${PROJECT_SOURCES}
 )
 
-qt_add_qml_module(rester
+qt_add_qml_module(
+    rester
     URI io.rester
+    VERSION 1.0
+    RESOURCE_PREFIX /qt/qml
     QML_FILES
         Main.qml
         resource/qml/Constants.qml
         resource/qml/colors/Colors.qml
         resource/qml/common/components/DropdownButton.qml
         resource/qml/common/components/FlickableEdit.qml
+        resource/qml/common/components/Toast.qml
+        resource/qml/common/components/ToastManager.qml
         resource/qml/home/Answer.qml
+        resource/qml/home/GrpcAnswer.qml
         resource/qml/home/Request.qml
         resource/qml/home/Routes.qml
         resource/qml/home/WsRequest.qml
+        resource/qml/home/GrpcRequest.qml
         resource/qml/home/components/RoutesFolderNode.qml
         resource/qml/home/components/RoutesQueryNode.qml
         resource/qml/home/components/Pins.qml
@@ -68,6 +81,11 @@ qt_add_qml_module(rester
         resource/qml/home/components/answer/AnswerHeaders.qml
         resource/qml/home/components/answer/AnswerPreview.qml
         resource/qml/home/components/answer/AnswerWait.qml
+        resource/qml/home/components/answer/GrpcAnswerBody.qml
+        resource/qml/home/components/request/GrpcEmpty.qml
+        resource/qml/home/components/request/GrpcQueryBody.qml
+        resource/qml/home/components/request/GrpcQueryMeta.qml
+        resource/qml/home/components/request/GrpcQueryTextBody.qml
         resource/qml/home/components/request/QueryBody.qml
         resource/qml/home/components/request/QueryFormBody.qml
         resource/qml/home/components/request/QueryHeaders.qml
@@ -79,19 +97,9 @@ qt_add_qml_module(rester
         resource/qml/settings/Settings.qml
         resource/qml/workspace/Workspace.qml
         resource/qml/workspace/WorkspaceVariables.qml
-    # SOURCES
-    #     app.h
-    #     app.h
-    #     models/pin_model.h
-    #     models/pin_model.cpp
-    #     models/routesmodel.h
-    #     models/routesmodel.cpp
-    #     models/worspace_model.h
-    #     models/worspace_model.cpp
-    #     app_data/workspace.h
-    #     app_data/workspace.cpp
-    #     app_data/query.h
-    #     app_data/query.cpp
+
+    # ENABLE_TYPE_COMPILER
+    IMPORT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resource/qml
 )
 
 
@@ -114,8 +122,10 @@ target_link_libraries(rester
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Gui
     PRIVATE Qt6::WebSockets
-    ${CMAKE_SOURCE_DIR}/libs/import-lib/libimport.a
-    ZLIB::ZLIB
+    PRIVATE Qt6::Concurrent
+    PRIVATE ${CMAKE_SOURCE_DIR}/libs/import-lib/libimport.a
+    PRIVATE ZLIB::ZLIB
+    PRIVATE grpc::grpc
 )
 
 set_target_properties(rester PROPERTIES

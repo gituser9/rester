@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import '../../common/components'
+import "../../common/components"
 
 Popup {
     id: createRequestDialog
@@ -32,10 +32,9 @@ Popup {
             Layout.preferredHeight: 22
 
             FlickableEdit {
+                id: tfName
                 Layout.fillWidth: true
                 Layout.preferredHeight: 20
-
-                id: tfName
                 placeholder: qsTr("Request Name")
                 value: ''
             }
@@ -50,10 +49,9 @@ Popup {
             }
         }
         ComboBox {
-            Layout.fillWidth: true
-
             id: cbQueryType
-            model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "WS"]
+            Layout.fillWidth: true
+            model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "WS", "GRPC"] // TODO: from App
         }
         RowLayout {
             Layout.fillWidth: true
@@ -65,11 +63,10 @@ Popup {
                 flat: true
                 text: qsTr("OK")
                 onClicked: {
-                    createRequestDialog.ok(tfName.value, cbQueryType.currentText)
-                    createRequestDialog.close()
-                    tfName.value = ''
+                    createRequestDialog.ok(tfName.value, cbQueryType.currentText);
+                    createRequestDialog.close();
+                    tfName.value = '';
                 }
-
             }
             Button {
                 Layout.fillWidth: true
@@ -78,10 +75,9 @@ Popup {
                 flat: true
                 text: qsTr("Cancel")
                 onClicked: {
-                    createRequestDialog.close()
-                    tfName.value = ''
+                    createRequestDialog.close();
+                    tfName.value = '';
                 }
-
             }
         }
     }

@@ -1,22 +1,20 @@
 #include "workspace.h"
 #include <QDebug>
 
-Workspace::Workspace(TreeNode* parent)
-    : TreeNode(parent)
+Workspace::Workspace(TreeNode* parent) : TreeNode(parent)
 {
-    QStringList cfgLocation = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
+    QStringList cfgLocation =
+        QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
     _workspacesPath = cfgLocation.first() + "/rester/workspaces/";
 }
 
 QJsonObject Workspace::toJson()
 {
-    QJsonObject json = {
-        { "uuid", uuid() },
-        { "name", name() },
-        { "last_usage_at", _lastUsageAt },
-        { "variables", QJsonObject::fromVariantMap(_variables) },
-        { "pins", QJsonArray::fromStringList(_pins) }
-    };
+    QJsonObject json = {{"uuid", uuid()},
+                        {"name", name()},
+                        {"last_usage_at", _lastUsageAt},
+                        {"variables", QJsonObject::fromVariantMap(_variables)},
+                        {"pins", QJsonArray::fromStringList(_pins)}};
     QJsonArray items;
 
     for (TreeNode* node : nodes()) {
@@ -86,7 +84,8 @@ QList<TreeNode*> Workspace::getAllFolders(TreeNode* node)
 
     if (node == nullptr) {
         childs = this->nodes();
-    } else {
+    }
+    else {
         nodes << node->nodes();
     }
 
@@ -166,6 +165,11 @@ void Workspace::buildTree(const QJsonObject& json, TreeNode* parent)
         qry->fromJson(json);
         parent->addNode(qry);
     } break;
+    case NodeType::GrpcQueryNode: {
+        auto qry = new GrpcQuery(parent);
+        qry->fromJson(json);
+        parent->addNode(qry);
+    } break;
     case NodeType::FolderNode:
         buildFolder(json, parent);
         break;
@@ -185,9 +189,20 @@ void Workspace::buildFolder(const QJsonObject& json, TreeNode* parent)
         QJsonArray queries = json.value("queries").toArray();
 
         for (QJsonValueRef&& item : queries) {
-            auto qry = new Query(folder);
-            qry->fromJson(item.toObject());
-            folder->addNode(qry);
+            auto obj = item.toObject();
+            auto typ = static_cast<NodeType>(obj.value("node_type").toInt(-1));
+
+            if (typ == NodeType::QueryNode) {
+                auto qry = new Query(folder);
+                qry->fromJson(item.toObject());
+                folder->addNode(qry);
+            }
+
+            if (typ == NodeType::GrpcQueryNode) {
+                auto qry = new GrpcQuery(folder);
+                qry->fromJson(item.toObject());
+                folder->addNode(qry);
+            }
         }
     }
 
@@ -221,6 +236,10 @@ QJsonObject Workspace::serializeNode(TreeNode* node) const
         auto query = static_cast<Query*>(node);
         json = serializeQuery(query);
     } break;
+    case NodeType::GrpcQueryNode: {
+        auto query = static_cast<GrpcQuery*>(node);
+        json = serializeGrpcQuery(query);
+    } break;
     default:
         return {};
     }
@@ -235,10 +254,10 @@ QJsonObject Workspace::serializeFolder(Folder* node) const
     }
 
     QJsonObject json = {
-        { "uuid", node->uuid() },
-        { "name", node->name() },
-        { "node_type", node->nodeType() },
-        { "is_expanded", node->isExpanded() },
+        {"uuid", node->uuid()},
+        {"name", node->name()},
+        {"node_type", node->nodeType()},
+        {"is_expanded", node->isExpanded()},
     };
 
     for (TreeNode* child : node->nodes()) {
@@ -266,12 +285,30 @@ QJsonObject Workspace::serializeFolder(Folder* node) const
             arr << childJson;
             json["queries"] = arr;
         }
+
+        if (child->nodeType() == NodeType::GrpcQueryNode) {
+            if (json.contains("queries")) {
+                arr = json["queries"].toArray();
+            }
+
+            arr << childJson;
+            json["queries"] = arr;
+        }
     }
 
     return json;
 }
 
 QJsonObject Workspace::serializeQuery(Query* node) const
+{
+    if (node == nullptr) {
+        return {};
+    }
+
+    return node->toJson();
+}
+
+QJsonObject Workspace::serializeGrpcQuery(GrpcQuery* node) const
 {
     if (node == nullptr) {
         return {};
@@ -487,9 +524,7 @@ void Workspace::addPin(const QString& newPin)
 
 void Workspace::removePin(const QString& pin)
 {
-    _pins.removeIf([&](const QString& str) {
-        return str == pin;
-    });
+    _pins.removeIf([&](const QString& str) { return str == pin; });
 
     emit pinsChanged();
 }

@@ -28,7 +28,8 @@
 #include "../saver.h"
 #include "../settings.h"
 
-class RoutesModel : public QAbstractItemModel {
+class RoutesModel : public QAbstractItemModel
+{
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
@@ -55,9 +56,9 @@ public:
     bool canFetchMore(const QModelIndex& parent) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    // Custom:
+    // Custom QML:
     Q_INVOKABLE void addFolder(QString name, const QModelIndex& parentIdx);
-    Q_INVOKABLE void addQuery(QString name, const QModelIndex& parentIdx);
+    Q_INVOKABLE void addQuery(QString name, const QModelIndex& parentIdx); // TODO: remove
     Q_INVOKABLE void addQuery(QString name, QString type, const QModelIndex& parentIdx);
     Q_INVOKABLE void updateFolder(const QModelIndex& index, const QVariant& value, int role);
     Q_INVOKABLE void toggleFolderExpanded(const QModelIndex& idx);
@@ -76,6 +77,7 @@ signals:
     void moderError(QString);
     void error(const QString&);
     void setQuery(Query*);
+    void setGrpcQuery(GrpcQuery*);
     void queryRemoved(const QString&);
 
 private:
@@ -96,4 +98,3 @@ private:
 };
 
 #endif // ROUTESMODEL_H
-

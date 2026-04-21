@@ -5,16 +5,18 @@
 
 #include <QUrl>
 #include <QWebSocket>
-#include <QRegularExpression>
 
-class WebsocketClient : public QObject {
+#include "../util.h"
+
+class WebsocketClient : public QObject
+{
     Q_OBJECT
 
 public:
     explicit WebsocketClient(QObject* parent = nullptr);
     virtual ~WebsocketClient();
 
-    Q_INVOKABLE void open(const QString &url, QVariantList vars) noexcept;
+    Q_INVOKABLE void open(const QString& url, const QVariantList& vars) noexcept;
     Q_INVOKABLE void send(const QString& msg) noexcept;
     Q_INVOKABLE void close() noexcept;
 
@@ -27,7 +29,6 @@ signals:
 private:
     std::unique_ptr<QWebSocket> _socket;
     bool isConnected = false;
-    QRegularExpression _varRegex;
 
     QString errorString(QAbstractSocket::SocketError err) const noexcept;
 

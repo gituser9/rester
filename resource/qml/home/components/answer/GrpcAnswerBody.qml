@@ -20,10 +20,10 @@ Item {
     property bool isBig: false
 
     Component.onCompleted: {
-        let canSet = App.query !== null && App.query.lastAnswer !== null;
+        let canSet = App.grpcQuery !== null && App.grpcQuery.lastAnswer !== null;
 
         if (canSet) {
-            setJson(App.query.lastAnswer);
+            setJson(App.grpcQuery.lastAnswer);
         }
     }
 
@@ -102,7 +102,7 @@ Item {
 
         // Filter big text row
         RowLayout {
-            visible: App.query?.lastAnswer?.body !== undefined && answerBodyView.isBig
+            visible: App.grpcQuery?.lastAnswer?.body !== undefined && answerBodyView.isBig
             spacing: answerBodyView.consts.defaultSpacing
 
             TextField {
@@ -114,9 +114,9 @@ Item {
 
                 onTextEdited: {
                     if (tfFilter.text.length === 0) {
-                        answerBodyView.stringList = App.query.lastAnswer.body.split("\n");
+                        answerBodyView.stringList = App.grpcQuery.lastAnswer.body.split("\n");
                     } else {
-                        answerBodyView.stringList = Util.filterBigBody(App.query.lastAnswer.body, tfFilter.text);
+                        answerBodyView.stringList = Util.filterBigBody(App.grpcQuery.lastAnswer.body, tfFilter.text);
                     }
                 }
 
@@ -142,7 +142,7 @@ Item {
                 icon.color: 'black'
                 onClicked: {
                     tfFilter.text = '';
-                    answerBodyView.stringList = App.query.lastAnswer.body.split("\n");
+                    answerBodyView.stringList = App.grpcQuery.lastAnswer.body.split("\n");
                 }
 
                 ToolTip.text: qsTr("Clear")
@@ -152,7 +152,7 @@ Item {
 
         // Search row
         RowLayout {
-            visible: App.query?.lastAnswer?.body !== undefined && !answerBodyView.isBig
+            visible: App.grpcQuery?.lastAnswer?.body !== undefined && !answerBodyView.isBig
             spacing: answerBodyView.consts.defaultSpacing
 
             TextField {
@@ -331,8 +331,8 @@ Item {
                     }
 
                     // for all
-                    if (App.query && App.query.lastAnswer) {
-                        App.query.lastAnswer.body = '';
+                    if (App.grpcQuery && App.grpcQuery.lastAnswer) {
+                        App.grpcQuery.lastAnswer.body = '';
                     }
                 }
             }
@@ -348,7 +348,7 @@ Item {
                 onClicked: {
                     if (answerBodyView.isBig) {
                         // for list
-                        teCopy.text = App.query.lastAnswer.body;
+                        teCopy.text = App.grpcQuery.lastAnswer.body;
                         teCopy.selectAll();
                         teCopy.copy();
                         teCopy.clear();
@@ -365,10 +365,6 @@ Item {
     TextEdit {
         id: teCopy
         visible: false
-    }
-
-    HtmlSyntaxHighlighter {
-        id: htmlHilighter
     }
 
     JsonSyntaxHighlighter {
@@ -391,16 +387,16 @@ Item {
     }
 
     Connections {
-        target: App
+        target: App.grpcQuery
 
-        function onQueryChanged() {
-            if (!App.query?.lastAnswer) {
+        function onLastAnswerChanged() {
+            if (!App.grpcQuery?.lastAnswer) {
                 txtAnswerBody.text = '';
 
                 return;
             }
 
-            setJson(App.query.lastAnswer);
+            answerBodyView.setJson(App.grpcQuery.lastAnswer);
         }
     }
 
@@ -410,7 +406,6 @@ Item {
 
         if (isBig) {
             // for big
-            let bodyType = getAnswerBodyType(App.query.lastAnswer);
             answerBodyView.stringList = answer.body.split("\n");
         } else {
             // for small
@@ -419,49 +414,12 @@ Item {
         }
     }
 
-    function getAnswerBodyType(answer) {
-        let ct = '';
-
-        if (answer.headers['Content-Type']) {
-            ct = answer.headers['Content-Type'];
-        }
-
-        if (ct === '' && answer.headers['content-type']) {
-            ct = answer.headers['content-type'];
-        }
-
-        if (!ct) {
-            return '';
-        }
-
-        if (ct.includes('json')) {
-            return 'json';
-        }
-
-        if (ct.includes('html')) {
-            return 'html';
-        }
-
-        if (ct.includes('xml')) {
-            return 'xml';
-        }
-    }
-
     function setSyntaxHighlighter() {
-        if (!App.query?.lastAnswer) {
+        if (!App.grpcQuery?.lastAnswer) {
             return;
         }
 
-        let bodyType = getAnswerBodyType(App.query.lastAnswer);
-
-        switch (bodyType) {
-        case 'json':
-            jsonHilighter.setDocument(txtAnswerBody.textDocument);
-            break;
-        case 'html':
-        case 'xml':
-            htmlHilighter.setDocument(txtAnswerBody.textDocument);
-        }
+        jsonHilighter.setDocument(txtAnswerBody.textDocument);
     }
 
     function highlightNext() {

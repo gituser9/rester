@@ -2,8 +2,7 @@
 
 using namespace std;
 
-App::App(QObject* parent)
-    : QObject { parent }
+App::App(QObject* parent) : QObject{parent}
 {
     // set path to config file
     QStringList cfgLocation = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
@@ -12,6 +11,7 @@ App::App(QObject* parent)
     // setup props
     _isActiveSocketConnect = false;
     _query = nullptr;
+    _grpcQuery = nullptr;
     _workspace = nullptr;
     _settings = nullptr;
 
@@ -19,14 +19,14 @@ App::App(QObject* parent)
     _saverThread = new QThread();
     _saverThread->start();
 
-    _saver = make_shared<Saver>();
+    _saver = std::make_shared<Saver>();
     _saver->moveToThread(_saverThread);
 
     // setup ws
     _wsClientThread = new QThread();
     _wsClientThread->start();
 
-    _webSocketClient = make_shared<WebsocketClient>();
+    _webSocketClient = std::make_shared<WebsocketClient>();
     _webSocketClient->moveToThread(_wsClientThread);
 
     // saver connects
@@ -51,7 +51,6 @@ App::~App()
 
 void App::setup()
 {
-    modelConnections();
     loadSettings();
 }
 
@@ -62,10 +61,16 @@ Workspace* App::workspace() const
 
 void App::setWorkspace(shared_ptr<Workspace> workspace)
 {
-    _workspace = workspace;
-    _workspace->setLastUsageAt(QDateTime::currentMSecsSinceEpoch());
+
+    disconnect(_workspace.get(), &Workspace::pinsChanged, this, &App::queryUpdated);
+    disconnect(_routesModel.get(), &RoutesModel::queryRemoved, _pinModel.get(), &PinModel::remove);
+    disconnectQueries();
 
     _query = nullptr;
+    _grpcQuery = nullptr;
+
+    _workspace = workspace;
+    _workspace->setLastUsageAt(QDateTime::currentMSecsSinceEpoch());
     _settings->setLastWorkspace(workspace->getFileName());
 
     emit wsReload(_workspace);
@@ -79,12 +84,13 @@ void App::setWorkspace(shared_ptr<Workspace> workspace)
 
     auto currentVars = _vars[_workspace->env()].toList();
     _httpClient->setVars(currentVars);
+    _grpcClient->setVars(currentVars);
 
-    connect(_workspace.get(), &Workspace::pinsChanged, this, &App::queryUpdated); // todo: slot
+    connect(_workspace.get(), &Workspace::pinsChanged, this, &App::queryUpdated);
     connect(_routesModel.get(), &RoutesModel::queryRemoved, _pinModel.get(), &PinModel::remove);
 }
 
-void App::getSocketError(const QString &msg)
+void App::getSocketError(const QString& msg)
 {
     emit socketError(msg);
 }
@@ -102,6 +108,13 @@ void App::setHttpClient(const std::shared_ptr<HttpClient>& newHttpClient)
 
     // http client model connects
     connect(_httpClient.get(), &HttpClient::finished, this, &App::setAnswer, Qt::QueuedConnection);
+}
+
+void App::setGrpcClient(const std::shared_ptr<GrpcClient> newGrpcClient)
+{
+    _grpcClient = newGrpcClient;
+
+    connect(_grpcClient.get(), &GrpcClient::requestFinished, this, &App::setGrpcAnswer, Qt::QueuedConnection);
 }
 
 void App::setWorkspaceModel(const std::shared_ptr<WorkspaceModel>& newWorkspaceModel)
@@ -123,6 +136,7 @@ void App::setRoutesModel(const std::shared_ptr<RoutesModel>& newRoutesModel)
     // routes model connects
     connect(_routesModel.get(), &RoutesModel::treeChanged, _saver.get(), &Saver::saveWorkspace, Qt::QueuedConnection);
     connect(_routesModel.get(), &RoutesModel::setQuery, this, &App::setQuery);
+    connect(_routesModel.get(), &RoutesModel::setGrpcQuery, this, &App::setGrpcQuery);
     connect(_routesModel.get(), &RoutesModel::error, this, &App::showError);
 
     connect(this, &App::wsReload, _routesModel.get(), &RoutesModel::loadTree, Qt::QueuedConnection);
@@ -172,11 +186,17 @@ void App::setEnv(const QString& env)
 
     auto currentVars = _workspace->variables()[env].toList();
     _httpClient->setVars(currentVars);
+    _grpcClient->setVars(currentVars);
 }
 
 void App::send()
 {
     _httpClient->makeRequest(_query);
+}
+
+void App::callGrpc()
+{
+    _grpcClient->call(_grpcQuery);
 }
 
 void App::setQueryByUuid(const QString& uuid)
@@ -187,12 +207,27 @@ void App::setQueryByUuid(const QString& uuid)
         return;
     }
 
-    auto qry = static_cast<Query*>(node);
-    _query = qry;
+    disconnectQueries();
 
-    emit queryChanged();
+    if (node->nodeType() == NodeType::QueryNode) {
+        auto qry = static_cast<Query*>(node);
+        _query = qry;
+        _grpcQuery = nullptr;
 
-    connect(_query, &Query::dataChanged, this, &App::queryUpdated);
+        emit queryChanged();
+
+        connect(_query, &Query::dataChanged, this, &App::queryUpdated);
+    }
+
+    if (node->nodeType() == NodeType::GrpcQueryNode) {
+        auto qry = static_cast<GrpcQuery*>(node);
+        _grpcQuery = qry;
+        _query = nullptr;
+
+        emit grpcQueryChanged();
+
+        connect(_grpcQuery, &GrpcQuery::dataChanged, this, &App::queryUpdated);
+    }
 }
 
 void App::connectToSocket()
@@ -209,14 +244,60 @@ void App::disconnectSocket()
     setIsActiveSocketConnect(false);
 }
 
-void App::sendToSocket(const QString &data)
+void App::sendToSocket(const QString& data)
 {
     _webSocketClient->send(data);
+}
+
+void App::loadProto(const QString& filePath)
+{
+    auto protoInfo = _grpcClient->parseProtoFile(filePath);
+
+    QStringList srv;
+    QMap<QString, QStringList> rpc;
+
+    for (auto&& info : protoInfo) {
+        _grpcQuery->setPackage(info.packageName);
+        srv << info.serviceName;
+        rpc[info.serviceName] = {};
+
+        for (auto&& method : info.methods) {
+            rpc[info.serviceName].append(method.name);
+        }
+    }
+
+    _grpcQuery->setAvailableSrv(srv);
+    _grpcQuery->setAvailableRpc(rpc);
+    _grpcQuery->setFilePath(filePath);
+
+    if (srv.count() == 1) {
+        _grpcQuery->setSrv(srv[0]);
+    }
+}
+
+void App::reloadProto()
+{
+    if (!_grpcQuery) {
+        emit showError("Request not exists");
+        return;
+    }
+
+    if (!QFile::exists(_grpcQuery->filePath())) {
+        emit showError("File does not exists");
+        return;
+    }
+
+    loadProto(_grpcQuery->filePath());
 }
 
 Query* App::query() const
 {
     return _query;
+}
+
+GrpcQuery* App::grpcQuery() const
+{
+    return _grpcQuery;
 }
 
 void App::setQuery(Query* query)
@@ -225,17 +306,46 @@ void App::setQuery(Query* query)
         return;
     }
 
+    disconnectQueries();
+
     _query = query;
+    _grpcQuery = nullptr;
 
     emit queryChanged();
 
-    connect(_query, &Query::dataChanged, this, &App::queryUpdated);
+    if (_query) {
+        connect(_query, &Query::dataChanged, this, &App::queryUpdated);
+    }
+}
+
+void App::setGrpcQuery(GrpcQuery* query)
+{
+    if (_grpcQuery == query) {
+        return;
+    }
+
+    disconnectQueries();
+
+    _grpcQuery = query;
+    _query = nullptr;
+
+    emit grpcQueryChanged();
+
+    if (_grpcQuery) {
+        connect(_grpcQuery, &GrpcQuery::dataChanged, this, &App::queryUpdated);
+    }
 }
 
 void App::setAnswer(QSharedPointer<HttpAnswer> answer)
 {
     _query->setAnswer(answer);
     _httpClient->setIsRequestWork(false);
+}
+
+void App::setGrpcAnswer(QSharedPointer<HttpAnswer> answer)
+{
+    _grpcQuery->setAnswer(answer);
+    _grpcClient->setIsRequestWork(false);
 }
 
 void App::wsUpdate(shared_ptr<Workspace> ws)
@@ -260,14 +370,16 @@ void App::loadSettings() noexcept
 
     if (lastWorkspace.isEmpty()) {
         _workspace->createDefault();
-    } else {
+    }
+    else {
         // read file
         QString filePath = _configDirPath + "/workspaces/" + lastWorkspace;
         QJsonObject json = Util::getJsonFromFile(filePath);
 
         if (json.isEmpty()) {
             _workspace->createDefault();
-        } else {
+        }
+        else {
             _workspace->fromJson(json);
         }
 
@@ -275,6 +387,7 @@ void App::loadSettings() noexcept
 
         auto currentVars = _vars[_workspace->env()].toList();
         _httpClient->setVars(currentVars);
+        _grpcClient->setVars(currentVars);
     }
 
     _workspace->setLastUsageAt(QDateTime::currentMSecsSinceEpoch());
@@ -291,8 +404,15 @@ void App::loadSettings() noexcept
     }
 }
 
-void App::modelConnections() noexcept
+void App::disconnectQueries() noexcept
 {
+    if (_query != nullptr) {
+        _query->disconnect();
+    }
+
+    if (_grpcQuery != nullptr) {
+        _grpcQuery->disconnect();
+    }
 }
 
 void App::updateEnvVars(const QVariantMap& vars)
@@ -302,6 +422,7 @@ void App::updateEnvVars(const QVariantMap& vars)
 
     auto currentVars = vars[_workspace->env()].toList();
     _httpClient->setVars(currentVars);
+    _grpcClient->setVars(currentVars);
 
     emit wsChanged(_workspace);
     emit workspaceChanged();

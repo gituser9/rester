@@ -1,7 +1,6 @@
 #include "query.h"
 
-Query::Query(TreeNode* parent)
-    : TreeNode(parent)
+Query::Query(TreeNode* parent) : TreeNode(parent)
 {
     _queryType = QueryType::GET;
     _bodyType = BodyType::NONE;
@@ -70,7 +69,7 @@ QVariantList Query::headers() const
     return list;
 }
 
-void Query::setHeaders(const QVariantList &newHeaders)
+void Query::setHeaders(const QVariantList& newHeaders)
 {
     _headers.clear();
 
@@ -84,7 +83,7 @@ void Query::setHeaders(const QVariantList &newHeaders)
     emit dataChanged();
 }
 
-void Query::setHeaders(const QList<QueryParam> &newHeaders)
+void Query::setHeaders(const QList<QueryParam>& newHeaders)
 {
     _headers = newHeaders;
 
@@ -189,11 +188,12 @@ void Query::fromJson(QJsonObject json)
         _lastAnswer = answer;
 
         connect(_lastAnswer.get(), &HttpAnswer::bodyChanged, this, &Query::dataChanged);
-    } else {
+    }
+    else {
         _lastAnswer = QSharedPointer<HttpAnswer>();
     }
 
-    if (json.value("params").isObject()) {
+    if (json.value("params").isObject()) { // TODO: legacy
         auto paramsObj = json.value("params").toObject().toVariantMap();
 
         QMapIterator iter(paramsObj);
@@ -204,7 +204,8 @@ void Query::fromJson(QJsonObject json)
             QueryParam param(iter.key(), iter.value().toString());
             _paramList << param;
         }
-    } else if (json.value("params").isArray()) {
+    }
+    else if (json.value("params").isArray()) {
         auto paramsArr = json.value("params").toArray();
 
         for (QJsonValueRef item : paramsArr) {
@@ -224,7 +225,8 @@ void Query::fromJson(QJsonObject json)
             QueryParam param(iter.key(), iter.value().toString());
             _formDataList << param;
         }
-    } else if (json.value("form_data").isArray()) {
+    }
+    else if (json.value("form_data").isArray()) {
         auto paramsArr = json.value("form_data").toArray();
 
         for (QJsonValueRef item : paramsArr) {
@@ -244,7 +246,8 @@ void Query::fromJson(QJsonObject json)
             QueryParam param(iter.key(), iter.value().toString());
             _headers << param;
         }
-    } else if (json.value("headers").isArray()) {
+    }
+    else if (json.value("headers").isArray()) {
         auto paramsArr = json.value("headers").toArray();
 
         for (QJsonValueRef item : paramsArr) {
@@ -298,7 +301,9 @@ QJsonObject Query::toJson() const
 
 void Query::setAnswer(QSharedPointer<HttpAnswer> ptr)
 {
-    // disconnect(_lastAnswer.get(), &HttpAnswer::bodyChanged, this, &Query::dataChanged);
+    if (!_lastAnswer.isNull()) {
+        disconnect(_lastAnswer.get(), &HttpAnswer::bodyChanged, this, &Query::dataChanged);
+    }
 
     _lastAnswer.reset();
     _lastAnswer = ptr;
@@ -361,7 +366,7 @@ void Query::removeHeader(int index)
     emit dataChanged();
 }
 
-void Query::removeHeader(const QString &name)
+void Query::removeHeader(const QString& name)
 {
     QList<QueryParam> newHeaders;
     newHeaders.reserve(_headers.size());
@@ -401,7 +406,6 @@ void Query::setParam(int index, const QString& name, const QString& value, bool 
     emit dataChanged();
 }
 
-
 void Query::setHeader(int index, const QString& name, const QString& value, bool isEnabled)
 {
     QueryParam param = _headers[index];
@@ -415,7 +419,7 @@ void Query::setHeader(int index, const QString& name, const QString& value, bool
     emit dataChanged();
 }
 
-void Query::setHeader(const QString &name, const QString &value)
+void Query::setHeader(const QString& name, const QString& value)
 {
     bool isExists = false;
 
@@ -552,9 +556,11 @@ QString Query::fileNameForAnswer() const noexcept
 
     if (contentType.contains("json")) {
         fileExt = "json";
-    } else if (contentType.contains("xml")) {
+    }
+    else if (contentType.contains("xml")) {
         fileExt = "xml";
-    } else if (contentType.contains("html")) {
+    }
+    else if (contentType.contains("html")) {
         fileExt = "html";
     }
 

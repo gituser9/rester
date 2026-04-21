@@ -6,11 +6,12 @@ import QtQuick.Layouts
 import io.rester
 import core.app 1.0
 import RoutesModel
+import Util
 
 import "./resource/qml/home"
-import 'resource/qml/workspace'
-import 'resource/qml/common/components'
-import 'resource/qml/colors'
+import "resource/qml/workspace"
+import "resource/qml/common/components"
+import "resource/qml/colors"
 
 Window {
     id: root
@@ -19,16 +20,17 @@ Window {
     visible: true
     title: "Rester"
 
+    property string currentQueryView: ''
+    property string currentAnswerView: ''
 
     Component.onCompleted: {
         if (App.workspace.env === '') {
-            dbEnvs.currentEnv = 'No Env'
+            dbEnvs.currentEnv = 'No Env';
         } else {
-            dbEnvs.currentEnv = App.workspace.env
-            dbEnvs.setEnvs(App.workspace.getEnvNames())
+            dbEnvs.currentEnv = App.workspace.env;
+            dbEnvs.setEnvs(App.workspace.getEnvNames());
         }
     }
-
 
     ColumnLayout {
         anchors.fill: parent
@@ -43,21 +45,19 @@ Window {
                 spacing: 8
 
                 Text {
+                    id: txtWsName
                     Layout.leftMargin: 8
                     Layout.rightMargin: 8
-
-                    id: txtWsName
                     text: App.workspace.name === '' ? "Workspace name" : App.workspace.name
                     font.weight: Font.Bold
                     font.pointSize: 18
                 }
                 DropdownButton {
+                    id: dbEnvs
                     Layout.rightMargin: 16
                     Layout.alignment: Qt.AlignVCenter
                     Layout.minimumWidth: 60
-                    Layout.maximumWidth:  200
-
-                    id: dbEnvs
+                    Layout.maximumWidth: 200
                     height: 50
                     implicitWidth: 50
                     currentEnv: App.workspace.env
@@ -71,9 +71,9 @@ Window {
                     icon.height: 24
                     icon.color: 'black'
                     onClicked: {
-                        popWorkspaces.open()
+                        popWorkspaces.open();
 
-                        wsLoader.setSource("./resource/qml/workspace/Workspace.qml")
+                        wsLoader.setSource("./resource/qml/workspace/Workspace.qml");
                     }
                 }
                 Item {
@@ -98,9 +98,9 @@ Window {
                     icon.height: 24
                     icon.color: 'black'
                     onClicked: {
-                        popWorkspaces.open()
+                        popWorkspaces.open();
 
-                        wsLoader.sourceComponent = envVars
+                        wsLoader.sourceComponent = envVars;
                     }
                 }
                 // Button {
@@ -138,68 +138,71 @@ Window {
                 implicitWidth: 350
             }
 
-            Loader {
-                visible: App.query
-                sourceComponent: App.query && App.query.queryType !== 6 ? restRequest : wsRequest
+            Rectangle {
+                implicitWidth: root.width / 3
+                visible: App.query || App.grpcQuery
+
+                Loader {
+                    id: ldrQuery
+                    anchors.fill: parent
+                    asynchronous: true
+                }
             }
 
-            // Request {
-            //     id: requestView
-            //     visible: App.query
-            //     implicitWidth: root.width / 3
-            // }
-
             Rectangle {
-                visible: !App.query
+                visible: !App.query && !App.grpcQuery
                 implicitWidth: root.width / 3
             }
 
-            Answer {
-                id: answerView
-                visible: App.query && App.query.queryType !== 6
+            Rectangle {
+                visible: root.isAnswerVisible()
+
+                Loader {
+                    id: ldrAnswer
+                    anchors.fill: parent
+                    asynchronous: true
+                }
             }
         }
     }
 
-
-    Component {
-        id: restRequest
-
-        Request {
-            implicitWidth: root.width / 3
-        }
-    }
-
-    Component {
-        id: wsRequest
-
-        WsRequest {
-            implicitWidth: root.width / 3
-        }
-    }
-
-
     Connections {
-        target: App.workspace
+        target: App
 
-        function onNameChanged() {
-            txtWsName.text = App.workspace.name
+        function onQueryChanged() {
+            if (!App.query) {
+                return;
+            }
+
+            root.setSource(App.query.queryType);
+            root.setAnswerSource(App.query.queryType);
+        }
+
+        function onGrpcQueryChanged() {
+            if (!App.grpcQuery) {
+                return;
+            }
+
+            root.setSource(App.grpcQuery.queryType);
+            root.setAnswerSource(App.grpcQuery.queryType);
+        }
+
+        function onShowError(txt) {
+            toastManager.show(txt);
         }
     }
 
-
-
-
+    // Types
     Component {
         id: envVars
 
         WorkspaceVariables {
-            Component.onDestruction: {
-                // RoutesModel.reloadWorkspaceVariables()
-            }
-
             env: App.workspace.env
         }
+    }
+
+    ToastManager {
+        id: toastManager
     }
 
     Popup {
@@ -208,12 +211,13 @@ Window {
         height: parent.height / 1.5
         width: parent.width / 2
         modal: true
+        popupType: Popup.Item
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         onClosed: {
-            wsLoader.active = false
+            wsLoader.active = false;
         }
         onOpened: {
-            wsLoader.active = true
+            wsLoader.active = true;
         }
 
         Loader {
@@ -244,4 +248,71 @@ Window {
         }
     }
 
+    function setSource(typ) {
+        let path = "./resource/qml/home/";
+        let typStr = Util.getQueryTypeString(typ);
+        let view = '';
+
+        switch (typStr) {
+        case 'WS':
+            view = 'WsRequest.qml';
+            break;
+        case 'GRPC':
+            view = 'GrpcRequest.qml';
+            break;
+        default:
+            view = 'Request.qml';
+        }
+
+        if (view === root.currentQueryView) {
+            return;
+        }
+
+        root.currentQueryView = view;
+
+        ldrQuery.setSource(path + view);
+    }
+
+    function setAnswerSource(typ) {
+        let path = "./resource/qml/home/";
+        let typStr = Util.getQueryTypeString(typ);
+        let view = '';
+
+        switch (typStr) {
+        case 'WS':
+            view = 'Answer.qml';
+            break;
+        case 'GRPC':
+            view = 'GrpcAnswer.qml';
+            break;
+        default:
+            view = 'Answer.qml';
+        }
+
+        if (view === root.currentAnswerView) {
+            return;
+        }
+
+        root.currentAnswerView = view;
+
+        ldrAnswer.setSource(path + view);
+    }
+
+    function isAnswerVisible() {
+        if (!App.query && !App.grpcQuery) {
+            return false;
+        }
+
+        if (App.grpcQuery) {
+            return true;
+        }
+
+        let typStr = '';
+
+        if (App.query) {
+            typStr = Util.getQueryTypeString(App.query.queryType);
+        }
+
+        return typStr !== 'WS';
+    }
 }

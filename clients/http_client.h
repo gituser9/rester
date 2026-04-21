@@ -10,14 +10,13 @@
 #include <QMimeDatabase>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QObject>
-#include <QRegularExpression>
 #include <QSharedPointer>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QVariantList>
 #include <QMap>
 #include <QByteArray>
+
 #include <zlib.h>
 
 #include "../app_data/http_answer.h"
@@ -31,7 +30,8 @@ enum class CompressAlg {
     Unknown
 };
 
-class HttpClient : public QObject {
+class HttpClient : public QObject
+{
     Q_OBJECT
 
     Q_PROPERTY(bool isRequestWork READ isRequestWork WRITE setIsRequestWork NOTIFY isRequestWorkChanged)
@@ -54,7 +54,6 @@ signals:
 private:
     QNetworkAccessManager* _manager;
     QNetworkReply* _reply;
-    QRegularExpression _varRegex;
     QVariantList _vars;
     std::chrono::steady_clock::time_point _startTime;
     bool _isRequestWork;

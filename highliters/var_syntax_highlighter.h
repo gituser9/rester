@@ -10,20 +10,18 @@ class VarSyntaxHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 
+    // QML_ELEMENT
 
 public:
-    explicit VarSyntaxHighlighter(QQuickTextDocument *parent = nullptr);
+    explicit VarSyntaxHighlighter(QQuickTextDocument* parent = nullptr);
 
-    Q_INVOKABLE void setDocument(QQuickTextDocument *pDoc);
-
+    Q_INVOKABLE void setDocument(QQuickTextDocument* pDoc);
 
 protected:
-    void highlightBlock(const QString &text) override;
-
+    void highlightBlock(const QString& text) override;
 
 private:
-    struct HighlightingRule
-    {
+    struct HighlightingRule {
         QRegularExpression pattern;
         QTextCharFormat format;
     };

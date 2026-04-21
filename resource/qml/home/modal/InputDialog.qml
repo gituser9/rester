@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 
-
 Dialog {
+    id: dialog
 
     property string name
     property string placeholder: ''
@@ -10,8 +10,6 @@ Dialog {
 
     signal accept
     signal ok(string folderName)
-
-    id: dialog
     parent: Overlay.overlay
     x: Math.round((parent.width - width) / 2)
     y: Math.round((parent.height - height) / 2)
@@ -21,21 +19,21 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     onAccepted: {
         if (tfInput.text.length !== 0) {
-            ok(tfInput.text)
+            ok(tfInput.text);
         }
 
-        tfInput.clear()
-        dialog.close()
+        tfInput.clear();
+        dialog.close();
     }
     onRejected: {
-        tfInput.clear()
-        dialog.close()
+        tfInput.clear();
+        dialog.close();
     }
 
     TextField {
         id: tfInput
-        text: currentText
+        text: dialog.currentText
         width: parent.width
-        placeholderText: placeholder
+        placeholderText: dialog.placeholder
     }
 }

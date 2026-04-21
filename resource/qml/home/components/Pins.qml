@@ -5,9 +5,7 @@ import QtQuick.Controls
 import io.rester
 import PinModel
 
-
 Item {
-
     id: pinItem
 
     signal setQuery(string uuid)
@@ -22,7 +20,7 @@ Item {
             height: 40
             width: pinList.width
             onClicked: {
-                setQuery(model.uuid)
+                pinItem.setQuery(model.uuid);
             }
 
             RowLayout {
@@ -48,11 +46,10 @@ Item {
                     icon.height: 18
                     icon.color: 'black'
                     onClicked: {
-                        PinModel.removeRows(index, 1)
+                        PinModel.removeRows(index, 1);
                     }
                 }
             }
         }
     }
-
 }

@@ -1,11 +1,7 @@
 #include "websocket_client.h"
 
-WebsocketClient::WebsocketClient(QObject* parent)
-    : QObject { parent }
+WebsocketClient::WebsocketClient(QObject* parent) : QObject{parent}
 {
-    _varRegex = QRegularExpression("{{\\s*(.*?)\\s*}}");
-    _varRegex.optimize();
-
     _socket = std::make_unique<QWebSocket>();
 
     connect(_socket.get(), &QWebSocket::connected, this, &WebsocketClient::connectedSlot);
@@ -19,28 +15,9 @@ WebsocketClient::~WebsocketClient()
     close();
 }
 
-void WebsocketClient::open(const QString& url, QVariantList vars) noexcept
+void WebsocketClient::open(const QString& url, const QVariantList& vars) noexcept
 {
-    QString urlString = url;
-
-    // TODO: duplicate
-    if (!vars.isEmpty()) {
-        QRegularExpressionMatchIterator iter = _varRegex.globalMatch(urlString);
-
-        while (iter.hasNext()) {
-            QRegularExpressionMatch match = iter.next();
-            QString variable = match.captured(1).trimmed();
-
-            for (QVariant& var : vars) {
-                QVariantMap varMap = var.toMap();
-
-                if (varMap["name"] == variable) {
-                    urlString = urlString.replace("{{" + variable + "}}", varMap["value"].toString());
-                }
-            }
-        }
-    }
-
+    QString urlString = Util::fillVars(url, vars);
     QUrl socketUrl = urlString;
 
     _socket->open(socketUrl);

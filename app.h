@@ -9,20 +9,20 @@
 
 #include "clients/http_client.h"
 #include "clients/websocket_client.h"
+#include "clients/grpc_client.h"
 #include "models/pin_model.h"
 #include "models/routesmodel.h"
 #include "models/worspace_model.h"
 #include "parsers/curl_parser.h"
 
-
-
-class App : public QObject {
+class App : public QObject
+{
     Q_OBJECT
     QML_ELEMENT
-    QML_SINGLETON
 
     Q_PROPERTY(Workspace* workspace READ workspace NOTIFY workspaceChanged FINAL)
     Q_PROPERTY(Query* query READ query NOTIFY queryChanged FINAL)
+    Q_PROPERTY(GrpcQuery* grpcQuery READ grpcQuery NOTIFY grpcQueryChanged FINAL)
     Q_PROPERTY(Settings* settings READ settings NOTIFY settingsChanged FINAL)
     Q_PROPERTY(bool isActiveSocketConnect READ isActiveSocketConnect WRITE setIsActiveSocketConnect NOTIFY isActiveSocketConnectChanged FINAL)
 
@@ -36,19 +36,24 @@ public:
     Q_INVOKABLE void setFromCurl(const QString& curl);
     Q_INVOKABLE void setEnv(const QString& env);
     Q_INVOKABLE void send();
+    Q_INVOKABLE void callGrpc();
     Q_INVOKABLE void setQueryByUuid(const QString& uuid);
     Q_INVOKABLE void connectToSocket();
     Q_INVOKABLE void disconnectSocket();
     Q_INVOKABLE void sendToSocket(const QString& data);
+    Q_INVOKABLE void loadProto(const QString& filePath);
+    Q_INVOKABLE void reloadProto();
 
     void setRoutesModel(const std::shared_ptr<RoutesModel>& newRoutesModel);
     void setWorkspaceModel(const std::shared_ptr<WorkspaceModel>& newWorkspaceModel);
     void setHttpClient(const std::shared_ptr<HttpClient>& newHttpClient);
+    void setGrpcClient(const std::shared_ptr<GrpcClient> newHttpClient);
     void setPinModel(const std::shared_ptr<PinModel>& newPinModel);
 
     // PROPERTIES
     Workspace* workspace() const;
     Query* query() const;
+    GrpcQuery* grpcQuery() const;
     Settings* settings() const;
     bool isActiveSocketConnect() const;
     void setIsActiveSocketConnect(bool newIsActiveSocketConnect);
@@ -62,6 +67,7 @@ signals:
 
     // PROPERTIES
     void queryChanged();
+    void grpcQueryChanged();
     void workspaceChanged();
     void settingsChanged(std::shared_ptr<Settings>);
     void isActiveSocketConnectChanged();
@@ -70,17 +76,23 @@ public slots:
     void setWorkspace(std::shared_ptr<Workspace> workspace);
     void getSocketError(const QString& msg);
 
+    // test grpc slot
+    // void grpcRequestFinished(const QString& jsonResponse);
+    // void requestError(const QString& errorMessage);
+
 private:
     std::shared_ptr<RoutesModel> _routesModel;
     std::shared_ptr<WorkspaceModel> _workspaceModel;
     std::shared_ptr<PinModel> _pinModel;
 
     std::shared_ptr<HttpClient> _httpClient;
+    std::shared_ptr<GrpcClient> _grpcClient;
     std::shared_ptr<WebsocketClient> _webSocketClient;
     std::shared_ptr<Saver> _saver;
 
     QThread* _saverThread = nullptr;
     QThread* _httpClientThread = nullptr;
+    QThread* _grpcClientThread = nullptr;
     QThread* _wsClientThread = nullptr;
     QString _configDirPath;
     QString _env;
@@ -88,13 +100,13 @@ private:
 
     // PROPERTIES
     Query* _query = nullptr;
+    GrpcQuery* _grpcQuery = nullptr;
     std::shared_ptr<Workspace> _workspace;
     std::shared_ptr<Settings> _settings;
     bool _isActiveSocketConnect;
 
     void loadSettings() noexcept;
-    void modelConnections() noexcept;
-
+    void disconnectQueries() noexcept;
 
 private slots:
     // workspace model
@@ -102,7 +114,9 @@ private slots:
     void wsUpdate(std::shared_ptr<Workspace> ws);
 
     void setQuery(Query* query);
+    void setGrpcQuery(GrpcQuery* query);
     void setAnswer(QSharedPointer<HttpAnswer> answer);
+    void setGrpcAnswer(QSharedPointer<HttpAnswer> answer);
     void queryUpdated();
     void socketConnected();
 };

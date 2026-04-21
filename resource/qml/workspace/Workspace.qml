@@ -9,16 +9,15 @@ import WorkspaceModel
 import core.app 1.0
 
 import "../home/modal"
-import '../common/components'
+import "../common/components"
 
 Rectangle {
+    id: ws
 
     property string _currentUuid: ''
     property string folderDialogMode: ''
     property int currentIndex: -1
     property bool isLoading: true
-
-    id: ws
     anchors.fill: parent
     color: 'white'
 
@@ -53,9 +52,9 @@ Rectangle {
                 icon.height: 20
                 icon.color: 'black'
                 onClicked: {
-                    let path = StandardPaths.standardLocations(StandardPaths.ConfigLocation)[0]
-                    path += '/rester/workspaces'
-                    Qt.openUrlExternally(path)
+                    let path = StandardPaths.standardLocations(StandardPaths.ConfigLocation)[0];
+                    path += '/rester/workspaces';
+                    Qt.openUrlExternally(path);
                 }
             }
             Button {
@@ -68,7 +67,7 @@ Rectangle {
                 icon.height: 24
                 icon.color: 'black'
                 onClicked: {
-                    mdlAddWorkspace.open()
+                    mdlAddWorkspace.open();
                 }
             }
             Button {
@@ -81,8 +80,8 @@ Rectangle {
                 icon.height: 20
                 icon.color: 'black'
                 onClicked: {
-                    ws.folderDialogMode = 'export'
-                    folderDialog.open()
+                    ws.folderDialogMode = 'export';
+                    folderDialog.open();
                 }
             }
             Button {
@@ -95,7 +94,7 @@ Rectangle {
                 icon.height: 20
                 icon.color: 'black'
                 onClicked: {
-                    dlgImport.open()
+                    dlgImport.open();
                 }
             }
         }
@@ -104,9 +103,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            // visible: ws.isLoading
             visible: ws.isLoading
-            // enabled: ws.isLoading
 
             Image {
                 id: imgLoad
@@ -136,16 +133,17 @@ Rectangle {
 
         // Search field
         FlickableEdit {
-            Layout.fillWidth: true
-
             id: searchField
             isEnabled: true
             placeholder: "Search"
             height: 20
             value: ""
             onTextChange: txt => {
-                WorkspaceModel.filter(txt)
+                WorkspaceModel.filter(txt);
             }
+
+            Layout.fillWidth: true
+            Layout.topMargin: 8
         }
         MenuSeparator {
             Layout.fillWidth: true
@@ -159,34 +157,33 @@ Rectangle {
 
         // WS
         ScrollView {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            Component.onCompleted: {
-                WorkspaceModel.setup()
-                showLoader()
-            }
-
-            Component.onDestruction: {
-                WorkspaceModel.clean()
-            }
-
             id: scroller
-            clip : true
+            clip: true
             visible: !ws.isLoading
             contentHeight: grid.rows * 290
             contentWidth: ws.width
 
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            Component.onCompleted: {
+                WorkspaceModel.setup();
+                showLoader();
+            }
+
+            Component.onDestruction: {
+                WorkspaceModel.clean();
+            }
 
             GridLayout {
-                readonly property int elementWidth: 230
-
                 id: grid
                 anchors.fill: parent
                 columns: Math.max(Math.floor(parent.width / elementWidth), 1)
                 rows: Math.max(Math.ceil(children.length / columns), 1)
                 rowSpacing: 16
                 columnSpacing: 16
+
+                readonly property int elementWidth: 230
 
                 Repeater {
                     id: repeater
@@ -214,15 +211,15 @@ Rectangle {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                onClicked: (mouse) => {
-                                   if (mouse.button === Qt.LeftButton) {
-                                       WorkspaceModel.setWorkspace(index)
-                                   }
+                                onClicked: mouse => {
+                                    if (mouse.button === Qt.LeftButton) {
+                                        WorkspaceModel.setWorkspace(index);
+                                    }
 
-                                   if (mouse.button === Qt.RightButton) {
-                                       currentIndex = index
-                                       contextMenu.popup()
-                                   }
+                                    if (mouse.button === Qt.RightButton) {
+                                        currentIndex = index;
+                                        contextMenu.popup();
+                                    }
                                 }
 
                                 Menu {
@@ -232,28 +229,28 @@ Rectangle {
                                         enabled: App.workspace.uuid !== model.uuid
                                         text: qsTr("Choose")
                                         onTriggered: {
-                                            WorkspaceModel.setWorkspace(index)
+                                            WorkspaceModel.setWorkspace(index);
                                         }
                                     }
                                     MenuItem {
                                         text: qsTr("Export")
                                         onTriggered: {
-                                            dlgExport.open()
+                                            dlgExport.open();
                                         }
                                     }
                                     MenuItem {
                                         text: qsTr("Edit")
                                         onTriggered: {
-                                            currentIndex = index
-                                            mdlUpdWorkspace.open()
+                                            currentIndex = index;
+                                            mdlUpdWorkspace.open();
                                         }
                                     }
                                     MenuItem {
                                         enabled: App.workspace.uuid !== model.uuid
                                         text: qsTr("Delete")
                                         onTriggered: {
-                                            currentIndex = index
-                                            dlgRemoveWs.open()
+                                            currentIndex = index;
+                                            dlgRemoveWs.open();
                                         }
                                     }
                                 }
@@ -273,9 +270,9 @@ Rectangle {
                                 icon.height: 16
                                 icon.color: 'black'
                                 onClicked: {
-                                    currentIndex = index
-                                    mdlUpdWorkspace.currentText = model.name
-                                    mdlUpdWorkspace.open()
+                                    currentIndex = index;
+                                    mdlUpdWorkspace.currentText = model.name;
+                                    mdlUpdWorkspace.open();
                                 }
                             }
                             Item {
@@ -314,8 +311,8 @@ Rectangle {
                                 icon.height: 16
                                 icon.color: 'black'
                                 onClicked: {
-                                    currentIndex = index
-                                    dlgRemoveWs.open()
+                                    currentIndex = index;
+                                    dlgRemoveWs.open();
                                 }
                             }
                         }
@@ -344,10 +341,9 @@ Rectangle {
                 Layout.fillWidth: true
 
                 TextField {
+                    id: tfExportInput
                     Layout.fillWidth: true
                     Layout.rightMargin: 10
-
-                    id: tfExportInput
                     // width: parent.width
                     placeholderText: qsTr("Path to exported folder")
                 }
@@ -358,8 +354,8 @@ Rectangle {
                     icon.height: 22
                     icon.color: 'black'
                     onClicked: {
-                        ws.folderDialogMode = 'export_collection'
-                        folderDialog.open()
+                        ws.folderDialogMode = 'export_collection';
+                        folderDialog.open();
                     }
                 }
             }
@@ -367,9 +363,8 @@ Rectangle {
                 text: qsTr("set path for export's file")
             }
             ComboBox {
-                Layout.fillWidth: true
-
                 id: cbExportType
+                Layout.fillWidth: true
                 model: ["Rester", "Insomnia (v4)", "Postman"]
             }
 
@@ -380,11 +375,11 @@ Rectangle {
                 text: qsTr("Export")
                 onClicked: {
                     if (tfExportInput.text === '') {
-                        return
+                        return;
                     }
 
-                    WorkspaceModel.exportCollection(tfExportInput.text, currentIndex, cbExportType.currentIndex)
-                    dlgExport.close()
+                    WorkspaceModel.exportCollection(tfExportInput.text, currentIndex, cbExportType.currentIndex);
+                    dlgExport.close();
                 }
             }
         }
@@ -410,10 +405,9 @@ Rectangle {
                 Layout.preferredHeight: 30
 
                 TextField {
+                    id: tfInput
                     Layout.fillWidth: true
                     Layout.rightMargin: 10
-
-                    id: tfInput
                     placeholderText: qsTr("Path to exported config")
                 }
                 Button {
@@ -426,11 +420,11 @@ Rectangle {
                         switch (cbImportType.currentIndex) {
                         case 0:
                         case 2:
-                            ws.folderDialogMode = 'import'
-                            folderDialog.open()
+                            ws.folderDialogMode = 'import';
+                            folderDialog.open();
                             break;
                         default:
-                            fileDialog.open()
+                            fileDialog.open();
                         }
                     }
                 }
@@ -439,9 +433,8 @@ Rectangle {
                 text: getInfoStringForImport()
             }
             ComboBox {
-                Layout.fillWidth: true
-
                 id: cbImportType
+                Layout.fillWidth: true
                 model: ["Rester", "Insomnia (v4)", "Postman"]
             }
 
@@ -453,11 +446,11 @@ Rectangle {
                 text: qsTr("Import")
                 onClicked: {
                     if (tfInput.text === '') {
-                        return
+                        return;
                     }
 
-                    WorkspaceModel.importFrom(tfInput.text, cbImportType.currentIndex)
-                    dlgImport.close()
+                    WorkspaceModel.importFrom(tfInput.text, cbImportType.currentIndex);
+                    dlgImport.close();
                 }
             }
         }
@@ -469,7 +462,7 @@ Rectangle {
         title: qsTr("Update Workspace")
         placeholder: qsTr("Workspace Name")
         onOk: wsName => {
-            WorkspaceModel.update(currentIndex, wsName)
+            WorkspaceModel.update(currentIndex, wsName);
         }
     }
 
@@ -479,7 +472,7 @@ Rectangle {
         title: qsTr("Create Workspace")
         placeholder: qsTr("Workspace Name")
         onOk: wsName => {
-            WorkspaceModel.create(wsName)
+            WorkspaceModel.create(wsName);
         }
     }
 
@@ -490,7 +483,7 @@ Rectangle {
         buttons: MessageDialog.Ok | MessageDialog.Cancel
         modality: Qt.ApplicationModal
         onAccepted: {
-            WorkspaceModel.removeRows(currentIndex, 1)
+            WorkspaceModel.removeRows(currentIndex, 1);
         }
     }
 
@@ -499,77 +492,76 @@ Rectangle {
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
         nameFilters: ["JSON files (*.json)"]
         onAccepted: () => {
-                        let path = selectedFile.toString().replace("file://", "")
-                        tfInput.text = path
-                    }
+            let path = selectedFile.toString().replace("file://", "");
+            tfInput.text = path;
+        }
     }
 
     FolderDialog {
         id: folderDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
         onAccepted: {
-            let path = selectedFolder.toString().replace("file://", "")
-            folderDialogAccept(path)
+            let path = selectedFolder.toString().replace("file://", "");
+            folderDialogAccept(path);
         }
     }
 
     Timer {
         id: loaderTimer
-        interval: 1;
-        running: true;
+        interval: 1
+        running: true
         repeat: false
     }
 
     Timer {
         id: loadTimer
-        interval: 100;
-        running: true;
+        interval: 100
+        running: true
         repeat: false
     }
 
-
     function getLastUsageString(msecs) {
-        let date = new Date(msecs)
-        let str = `${date.getDate()}.${date.getMonth()+1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`
+        let date = new Date(msecs);
+        let str = `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 
-        return str
+        return str;
     }
 
     function getInfoStringForImport() {
         switch (cbImportType.currentIndex) {
         case 0:
-            return qsTr(`set path to "workspaces" folder`)
+            return qsTr(`set path to "workspaces" folder`);
         case 1:
-            return qsTr(`set path to Insomnia workspace file`)
+            return qsTr(`set path to Insomnia workspace file`);
         case 2:
-            return qsTr(`set path to Postman collection file`)
+            return qsTr(`set path to Postman collection file`);
         }
     }
 
     function folderDialogAccept(path) {
         if (folderDialogMode === 'import') {
-            tfInput.text = path
+            tfInput.text = path;
         }
 
         if (folderDialogMode === 'export') {
-            WorkspaceModel.exportTo(path)
+            WorkspaceModel.exportTo(path);
         }
 
         if (folderDialogMode === 'export_collection') {
-            tfExportInput.text = path
+            tfExportInput.text = path;
         }
     }
 
     function showLoader() {
         loadTimer.triggered.connect(function () {
-            isLoading = true
+            isLoading = true;
         });
-        loadTimer.start()
+        loadTimer.start();
 
         loaderTimer.triggered.connect(function () {
-            WorkspaceModel.loadWorkspaces()
-            isLoading = false
-            loadTimer.stop()
+            WorkspaceModel.loadWorkspaces();
+            isLoading = false;
+            loadTimer.stop();
         });
         loaderTimer.start();
     }

@@ -7,6 +7,7 @@
 
 #include "app.h"
 #include "clients/http_client.h"
+#include "clients/grpc_client.h"
 #include "highliters/html_syntax_highlighter.h"
 #include "highliters/json_syntax_highlighter.h"
 #include "highliters/var_syntax_highlighter.h"
@@ -30,17 +31,20 @@ int main(int argc, char* argv[])
     auto workspaceModel = std::make_shared<WorkspaceModel>();
     auto pinModel = std::make_shared<PinModel>();
     auto httpClient = std::make_shared<HttpClient>();
+    auto grpcClient = std::make_shared<GrpcClient>();
 
     App* core = new App(&app);
     core->setRoutesModel(routesModel);
     core->setWorkspaceModel(workspaceModel);
     core->setPinModel(pinModel);
     core->setHttpClient(httpClient);
+    core->setGrpcClient(grpcClient);
     core->setup();
 
     qmlRegisterSingletonInstance<App>("core.app", 1, 0, "App", core);
     qmlRegisterSingletonInstance<RoutesModel>("RoutesModel", 1, 0, "RoutesModel", routesModel.get());
     qmlRegisterSingletonInstance<HttpClient>("HttpClient", 1, 0, "HttpClient", httpClient.get());
+    qmlRegisterSingletonInstance<GrpcClient>("GrpcClient", 1, 0, "GrpcClient", grpcClient.get());
     qmlRegisterSingletonInstance<Util>("Util", 1, 0, "Util", util.get());
     qmlRegisterSingletonInstance<WorkspaceModel>("WorkspaceModel", 1, 0, "WorkspaceModel", workspaceModel.get());
     qmlRegisterSingletonInstance<PinModel>("PinModel", 1, 0, "PinModel", pinModel.get());
@@ -55,7 +59,7 @@ int main(int argc, char* argv[])
         &QQmlApplicationEngine::objectCreationFailed,
         &app,
         []() { QCoreApplication::exit(-1); },
-        Qt::QueuedConnection
+        Qt::QueuedConnection //
     );
 
     QQuickStyle::setStyle("Imagine");

@@ -9,9 +9,10 @@ import core.app 1.0
 import RoutesModel
 
 import "../modal"
-import '../../colors'
+import "../../colors"
 
 Rectangle {
+    id: folderNode
 
     required property string name
     required property string parentUuid
@@ -30,8 +31,6 @@ Rectangle {
     signal startDrag
     signal createQuery(string name, string type)
     signal importHar(string path)
-
-    id: folderNode
     color: 'transparent'
 
     RowLayout {
@@ -39,17 +38,16 @@ Rectangle {
         spacing: 8
 
         Image {
+            id: imgFolder
             Layout.preferredWidth: 22
             Layout.preferredHeight: 22
-
-            id: imgFolder
-            x: imgPadding
+            x: folderNode.imgPadding
             source: folderNode.getIcon()
         }
         Text {
             id: label
             clip: true
-            text: name
+            text: folderNode.name
         }
         Item {
             Layout.fillWidth: true
@@ -69,64 +67,58 @@ Rectangle {
             id: contextMenu
 
             MenuItem {
-                text: qsTr("Add Folder")
-                onTriggered: {
-                    popAddFolder.open()
-                }
-            }
-            MenuItem {
                 text: qsTr("Add Request")
                 onTriggered: {
-                    popAddQuery.open()
+                    popAddQuery.open();
                 }
             }
             MenuItem {
                 text: qsTr("Import from HAR")
                 onTriggered: {
-                    fileDialog.open()
+                    fileDialog.open();
                 }
             }
             MenuItem {
                 text: qsTr("Edit")
                 onTriggered: {
-                    popUpdate.open()
+                    popUpdate.open();
                 }
             }
             MenuItem {
                 text: qsTr("Delete")
                 onTriggered: {
-                    removeDir()
+                    folderNode.removeDir();
                 }
             }
         }
     }
     MouseArea {
         id: mouseRegion
-        anchors.fill: parent;
+        anchors.fill: parent
         acceptedButtons: Qt.RightButton | Qt.LeftButton
         hoverEnabled: true
         drag.target: folderNode
-        onClicked: (mouse) => {
+        onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                contextMenu.popup()
+                contextMenu.popup();
             }
 
             if (mouse.button === Qt.LeftButton) {
-                folderNode.toggleExpand()
+                folderNode.toggleExpand();
             }
         }
         onEntered: {
-            isHover = true
+            folderNode.isHover = true;
         }
         onExited: {
-            isHover = false
+            folderNode.isHover = false;
         }
         onReleased: {
-            parent.Drag.drop()
-            folderNode.released()
+            parent.Drag.drop();
+            folderNode.released();
         }
         onPressed: {
-            startDrag()
+            folderNode.startDrag();
         }
     }
 
@@ -135,7 +127,6 @@ Rectangle {
     Drag.hotSpot.x: folderNode.width / 2
     Drag.hotSpot.y: folderNode.height / 2
 
-
     // AddFolder
     InputDialog {
         id: popAddFolder
@@ -143,18 +134,18 @@ Rectangle {
         placeholder: qsTr("Folder Name")
         implicitWidth: 200
         onOk: folderName => {
-            createDir(folderName)
+            folderNode.createDir(folderName);
         }
     }
 
     // move to root (создается на каждый запрос)
     UpdateNodeDialog {
         id: popUpdate
-        itemName: name
-        itemParentUuid: parentUuid
+        itemName: folderNode.name
+        itemParentUuid: folderNode.parentUuid
         onOk: (name, uuid) => {
-            updateDir(name, uuid)
-            popUpdate.close()
+            folderNode.updateDir(name, uuid);
+            popUpdate.close();
         }
     }
 
@@ -172,21 +163,20 @@ Rectangle {
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
         nameFilters: ["HAR files (*.har)"]
         onAccepted: () => {
-            let path = selectedFile.toString().replace("file://", "")
-            importHar(path)
+            let path = selectedFile.toString().replace("file://", "");
+            folderNode.importHar(path);
         }
     }
 
-
     function getIcon() {
         if (!childrenCount) {
-            return "/resource/images/folder-empty.svg"
+            return "/resource/images/folder-empty.svg";
         }
 
         if (isExpanded) {
-            return '/resource/images/folder-open.svg'
+            return '/resource/images/folder-open.svg';
         }
 
-        return '/resource/images/folder.svg'
+        return '/resource/images/folder.svg';
     }
 }

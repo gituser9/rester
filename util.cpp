@@ -2,8 +2,7 @@
 
 using namespace std;
 
-Util::Util(QObject* parent)
-    : QObject { parent }
+Util::Util(QObject* parent) : QObject{parent}
 {
 }
 
@@ -35,6 +34,10 @@ QueryType Util::getQueryType(QString typeString)
 
     if (typeString == "WS") {
         return QueryType::WS;
+    }
+
+    if (typeString == "GRPC") {
+        return QueryType::GRPC;
     }
 
     return QueryType::GET;
@@ -78,6 +81,8 @@ QString Util::getQueryTypeString(QueryType type)
         return "HEAD";
     case QueryType::WS:
         return "WS";
+    case QueryType::GRPC:
+        return "GRPC";
     default:
         return "GET";
     }
@@ -166,7 +171,6 @@ QString Util::beautify(QString body, QVariantMap headers)
 
         // return doc.toHtml();
 
-
         QString result;
         QStack<QString> tagStack;
         int indentLevel = 0;
@@ -201,14 +205,16 @@ QString Util::beautify(QString body, QVariantMap headers)
                     tagStack << tag;
                     ++indentLevel;
                 }
-            } else if (tag[0] == '<' && tag[1] == '!') {
+            }
+            else if (tag[0] == '<' && tag[1] == '!') {
                 // Comment
                 for (int i = 0; i < indentLevel; ++i) {
                     result.append("  ");
                 }
 
                 result.append(tag + '\n');
-            } else {
+            }
+            else {
                 // Non-tag content
                 // Add indentation
                 for (int i = 0; i < indentLevel; ++i) {
@@ -262,6 +268,33 @@ QString Util::getHeaderValue(const QString& name, const QVariantMap& headers) no
     }
 
     return value;
+}
+
+QString Util::fillVars(const QString& str, const QVariantList& vars) noexcept
+{
+    if (vars.isEmpty()) {
+        return str;
+    }
+
+    QString replaced = str;
+
+    auto varRegex = QRegularExpression("{{\\s*(.*?)\\s*}}");
+    QRegularExpressionMatchIterator iter = varRegex.globalMatch(replaced);
+
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString variable = match.captured(1).trimmed();
+
+        for (const QVariant& var : vars) {
+            QVariantMap varMap = var.toMap();
+
+            if (varMap["name"] == variable) {
+                replaced = replaced.replace("{{" + variable + "}}", varMap["value"].toString());
+            }
+        }
+    }
+
+    return replaced;
 }
 
 QJsonObject Util::getJsonFromFile(const QString& path) noexcept
@@ -327,17 +360,26 @@ QVariantMap Util::getAnswerSize(qint64 bytesCount) noexcept
     if (bytesCount < 1024) {
         result["size"] = bytesCount;
         result["label"] = "B";
-    } else if ((bytesCount / 1024) < 1024) {
+    }
+    else if ((bytesCount / 1024) < 1024) {
         double cnt = static_cast<double>(bytesCount / 1024);
         result["size"] = round2digits(cnt);
         result["label"] = "Kb";
-    } else {
+    }
+    else {
         double cnt = static_cast<double>((bytesCount / 1024) / 1024);
         result["size"] = round2digits(cnt);
         result["label"] = "Mb";
     }
 
     return result;
+}
+
+Q_INVOKABLE QString Util::getAnswerSizeString(qint64 bytesCount) noexcept
+{
+    auto size = getAnswerSize(bytesCount);
+
+    return size["size"].toString() + " " + size["label"].toString();
 }
 
 QStringList Util::filterBigBody(const QString& body, const QString& searchString) noexcept
@@ -363,7 +405,8 @@ QStringList Util::filterBigBody(const QString& body, const QString& searchString
             .filter(searchString);*/
 }
 
-optional<QJsonValue> Util::findSubstring(const QJsonValue& value, const QString& substring, const QString& parentKey) {
+optional<QJsonValue> Util::findSubstring(const QJsonValue& value, const QString& substring, const QString& parentKey)
+{
     if (value.isObject()) {
         const QJsonObject obj = value.toObject();
 
@@ -393,19 +436,21 @@ optional<QJsonValue> Util::findSubstring(const QJsonValue& value, const QString&
                 valStr = "undefined";
             }
 
-            if (key.contains(substring, Qt::CaseInsensitive) || valStr.contains(substring, Qt::CaseInsensitive)) {
-                return { value };
+            if (key.contains(substring, Qt::CaseInsensitive) ||
+                valStr.contains(substring, Qt::CaseInsensitive)) {
+                return {value};
             }
 
-            return { findSubstring(val, substring, key) };
+            return {findSubstring(val, substring, key)};
         }
-    } else if (value.isArray()) {
+    }
+    else if (value.isArray()) {
         const QJsonArray arr = value.toArray();
 
         for (int i = 0; i < arr.size(); ++i) {
             const QJsonValue& val = arr[i];
 
-            return { findSubstring(val, substring, parentKey) };
+            return {findSubstring(val, substring, parentKey)};
         }
     }
 

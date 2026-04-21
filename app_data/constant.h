@@ -1,20 +1,21 @@
 #ifndef CONSTANT_H
 #define CONSTANT_H
 
-
-enum NodeType {
+enum NodeType { // TODO: enum class
     FolderNode = 0,
-    QueryNode
+    QueryNode,
+    GrpcQueryNode,
 };
 
 enum class QueryType {
     GET = 0,
-    POST,
-    PUT,
-    PATCH,
-    DELETE,
-    HEAD,
-    WS
+    POST = 1,
+    PUT = 2,
+    PATCH = 3,
+    DELETE = 4,
+    HEAD = 5,
+    WS = 6,
+    GRPC = 7
 };
 
 enum class BodyType {

@@ -14,15 +14,12 @@ import Util
 import "./components"
 import "./modal"
 
-
-
 Item {
     id: routesItem
 
     property var currentIndex
     property int currentRow: -1
     property var moveIndex
-
 
     ColumnLayout {
         anchors.fill: parent
@@ -69,7 +66,6 @@ Item {
             Layout.preferredHeight: 3
         }
         MenuSeparator {
-            // width: parent.width
             Layout.fillWidth: true
 
             contentItem: Rectangle {
@@ -107,6 +103,9 @@ Item {
 
             delegate: ItemDelegate {
                 id: root
+                highlighted: row === routesItem.currentRow
+                implicitHeight: rowHeight
+                implicitWidth: treeViewItem.width
 
                 required property bool current
                 required property int depth
@@ -127,11 +126,6 @@ Item {
 
                 readonly property int rowHeight: 45
 
-                highlighted: row === routesItem.currentRow
-                implicitHeight: rowHeight
-                implicitWidth: treeViewItem.width
-                width: treeViewItem.width
-
                 DropArea {
                     id: dropArea
                     anchors.fill: parent
@@ -143,9 +137,7 @@ Item {
                         RoutesModel.moveRows(moveIndex.parent, moveIndex.row, 1, treeView.index(row, column), row);
                     }
                     onEntered: drag => {
-                        // if (model.nodeType === 0) {
                         dragContainer.color = "lightblue";
-                        // }
                     }
                     onExited: {
                         dragContainer.color = "transparent";
@@ -167,11 +159,9 @@ Item {
 
                     RoutesFolderNode {
                         id: folderNode
-
                         childrenCount: root.hasChildren
                         dragParent: treeViewItem
                         height: root.height
-                        // imgPadding: (root.depth * root.indent) - 10
                         imgPadding: (root.depth * root.indent)
                         isExpanded: root.treeView.isExpanded(root.row)
                         name: root.nodeName
@@ -206,14 +196,14 @@ Item {
                         onToggleExpand: {
                             root.treeView.toggleExpanded(root.row);
 
-                            RoutesModel.toggleFolderExpanded(root.treeView.index(root.row, root.column))
+                            RoutesModel.toggleFolderExpanded(root.treeView.index(root.row, root.column));
                         }
                         onUpdateDir: (newDirName, parentUuid) => {
                             root.nodeName = newDirName;
                             root.parentUuid = parentUuid;
 
-                            let idx = currentIndex = root.treeView.index(root.row, root.column)
-                            RoutesModel.updateFolder(idx, newDirName, 257) // TODO: fix magic number
+                            let idx = currentIndex = root.treeView.index(root.row, root.column);
+                            RoutesModel.updateFolder(idx, newDirName, 257); // TODO: fix magic number
                         }
                     }
                 }
@@ -256,9 +246,9 @@ Item {
                             root.nodeName = newQueryName;
                             parentUuid = parentUuid;
 
-                            let idx = root.treeView.index(root.row, root.column)
+                            let idx = root.treeView.index(root.row, root.column);
 
-                            RoutesModel.updateQuery(idx, newQueryName, 0)
+                            RoutesModel.updateQuery(idx, newQueryName, 0);
                         }
                     }
                 }
@@ -269,6 +259,8 @@ Item {
         id: teCopy
         visible: false
     }
+
+    // Dialogs
     InputDialog {
         id: mdlAddFolder
         placeholder: qsTr("Folder Name")
@@ -279,6 +271,7 @@ Item {
             RoutesModel.addFolder(dirName, parentIdx);
         }
     }
+
     CreateRequestDialog {
         id: mdlAddQuery
 
@@ -296,14 +289,15 @@ Item {
         title: "Accept Remove"
 
         onButtonClicked: (button, role) => {
-                 switch (button) {
-                 case MessageDialog.Ok:
-                     RoutesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
-                     dlgRemoveFolder.close()
-                     break;
-                 }
-             }
+            switch (button) {
+            case MessageDialog.Ok:
+                RoutesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
+                dlgRemoveFolder.close();
+                break;
+            }
+        }
     }
+
     MessageDialog {
         id: dlgRemoveQuery
         buttons: MessageDialog.Ok | MessageDialog.Cancel
@@ -312,12 +306,12 @@ Item {
         title: "Accept Remove"
 
         onButtonClicked: (button, role) => {
-                 switch (button) {
-                 case MessageDialog.Ok:
-                     RoutesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
-                     dlgRemoveQuery.close()
-                     break;
-                 }
-             }
+            switch (button) {
+            case MessageDialog.Ok:
+                RoutesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
+                dlgRemoveQuery.close();
+                break;
+            }
+        }
     }
 }

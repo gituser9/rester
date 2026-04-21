@@ -1,15 +1,11 @@
 #include "http_client.h"
 
-HttpClient::HttpClient(QObject* parent)
-    : QObject { parent }
+HttpClient::HttpClient(QObject* parent) : QObject{parent}
 {
     _manager = new QNetworkAccessManager(this);
     // _manager->setRedirectPolicy(QNetworkRequest::SameOriginRedirectPolicy);
     _reply = nullptr;
     _isRequestWork = false;
-
-    _varRegex = QRegularExpression("{{\\s*(.*?)\\s*}}");
-    _varRegex.optimize();
 
     connect(_manager, &QNetworkAccessManager::finished, this, &HttpClient::slotFinished);
 }
@@ -194,7 +190,8 @@ void HttpClient::sendMultipartForm(Query* query, QNetworkRequest request)
                 imagePart.setBodyDevice(file);
                 multiPart->append(imagePart);
             }
-        } else {
+        }
+        else {
             // text part
             QString header = QString("form-data; name=\"%1\";").arg(fieldName);
 
@@ -208,15 +205,12 @@ void HttpClient::sendMultipartForm(Query* query, QNetworkRequest request)
     }
 
     // set boundary headers
-    QString boundary = QVariant(rand()).toString()
-                       + QVariant(rand()).toString()
-                       + QVariant(rand()).toString();
+    QString boundary = QVariant(rand()).toString() + QVariant(rand()).toString() + QVariant(rand()).toString();
     multiPart->setBoundary(boundary.toUtf8());
 
     request.setRawHeader(
         QString("Content-Type").toUtf8(),
-        QString("multipart/form-data;boundary=" + boundary).toUtf8()
-    );
+        QString("multipart/form-data;boundary=" + boundary).toUtf8());
 
     _startTime = std::chrono::steady_clock::now();
 
@@ -360,24 +354,7 @@ QString HttpClient::getErrorString(QNetworkReply* reply)
 
 QUrl HttpClient::prepareUrl(Query* query) const noexcept
 {
-    QString urlString = query->url();
-
-    if (!_vars.isEmpty()) {
-        QRegularExpressionMatchIterator iter = _varRegex.globalMatch(urlString);
-
-        while (iter.hasNext()) {
-            QRegularExpressionMatch match = iter.next();
-            QString variable = match.captured(1).trimmed();
-
-            for (const QVariant& var : _vars) {
-                QVariantMap varMap = var.toMap();
-
-                if (varMap["name"] == variable) {
-                    urlString = urlString.replace("{{" + variable + "}}", varMap["value"].toString());
-                }
-            }
-        }
-    }
+    QString urlString = Util::fillVars(query->url(), _vars);
 
     if (urlString.startsWith("localhost")) {
         urlString = urlString.replace("localhost", "http://127.0.0.1");
@@ -399,7 +376,7 @@ QUrl HttpClient::prepareUrl(Query* query) const noexcept
     return url;
 }
 
-QMap<QByteArray, QByteArray> HttpClient::prepareHeaders(Query *query) const noexcept
+QMap<QByteArray, QByteArray> HttpClient::prepareHeaders(Query* query) const noexcept
 {
     auto headers = query->headerList();
     QMap<QByteArray, QByteArray> result;
@@ -409,26 +386,7 @@ QMap<QByteArray, QByteArray> HttpClient::prepareHeaders(Query *query) const noex
             continue;
         }
 
-        QString val = header.value();
-
-        if (!_vars.isEmpty()) {
-            QRegularExpressionMatchIterator iter = _varRegex.globalMatch(val);
-
-            while (iter.hasNext()) {
-                QRegularExpressionMatch match = iter.next();
-                QString variable = match.captured(1).trimmed();
-
-                for (const QVariant& var : _vars) {
-                    QVariantMap varMap = var.toMap();
-
-                    if (varMap["name"] == variable) {
-                        val = val.replace("{{" + variable + "}}", varMap["value"].toString());
-                    }
-                }
-
-            }
-        }
-
+        QString val = Util::fillVars(header.value(), _vars);
         result[header.name().toUtf8()] = val.toUtf8();
     }
 
@@ -443,7 +401,7 @@ QByteArray HttpClient::decompress(const QByteArray& compressed, CompressAlg alg)
     case CompressAlg::Deflate:
         return decompressDeflate(compressed);
     case CompressAlg::Brotli:
-        return compressed;
+        return compressed; // TODO: implement
     default:
         return compressed;
     }
@@ -466,9 +424,9 @@ QByteArray HttpClient::decompressGzip(const QByteArray& compressed) const noexce
     uncompressedData.resize(compressed.size() * 60);
 
     zs.avail_in = compressed.size();
-    zs.next_in = (Bytef*)(compressed.data());
+    zs.next_in = (Bytef*) (compressed.data());
     zs.avail_out = uncompressedData.size();
-    zs.next_out = (Bytef*)(uncompressedData.data());
+    zs.next_out = (Bytef*) (uncompressedData.data());
 
     int status = inflate(&zs, Z_FINISH);
 
@@ -500,9 +458,9 @@ QByteArray HttpClient::decompressDeflate(const QByteArray& compressed) const noe
     uncompressedData.resize(16384); // begin size
 
     zs.avail_in = compressed.size();
-    zs.next_in = (Bytef*)(compressed.data());
+    zs.next_in = (Bytef*) (compressed.data());
     zs.avail_out = uncompressedData.size();
-    zs.next_out = (Bytef*)(uncompressedData.data());
+    zs.next_out = (Bytef*) (uncompressedData.data());
 
     int status = inflate(&zs, Z_FINISH);
 

@@ -5,8 +5,8 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 import io.rester
-import core.app 1.0
-import HttpClient
+import core.app
+import GrpcClient
 import RoutesModel
 import Util
 
@@ -40,7 +40,7 @@ Item {
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 100
 
-                color: App.query !== null ? getStatusColor(App.query) : "lightgrey"
+                color: getStatusColor(App.grpcQuery)
                 radius: 4
 
                 Text {
@@ -49,7 +49,7 @@ Item {
                     color: "white"
                     font.pointSize: 12
                     font.weight: 700
-                    text: App.query?.lastAnswer?.status ?? '0'
+                    text: App.grpcQuery?.lastAnswer?.status ?? '0'
                 }
             }
             Rectangle {
@@ -65,7 +65,7 @@ Item {
                     font.pointSize: 12
                     font.weight: 700
                     padding: 8
-                    text: Util.getAnswerSizeString(App.query?.lastAnswer?.byteCount ?? 0)
+                    text: Util.getAnswerSizeString(App.grpcQuery.lastAnswer.byteCount)
                 }
             }
             Rectangle {
@@ -81,7 +81,7 @@ Item {
                     font.pointSize: 12
                     font.weight: 700
                     padding: 8
-                    text: App.query && App.query?.lastAnswer ? getDurationString(App.query.lastAnswer.duration) : "0 ms"
+                    text: getDurationString(App.grpcQuery.lastAnswer.duration)
                 }
             }
             Item {
@@ -122,14 +122,14 @@ Item {
 
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: answerView.width / 3
+                Layout.preferredWidth: answerView.width / 2
 
                 checkable: true
                 checked: answerView.currentIndex == 0
                 flat: true
                 text: qsTr("Body")
                 onClicked: {
-                    let size = Util.getAnswerSize(App.query.lastAnswer.byteCount);
+                    let size = Util.getAnswerSize(App.grpcQuery.lastAnswer.byteCount);
 
                     if (size.label === "Mb" && size.size > 1) {
                         loader.sourceComponent = bigBody;
@@ -142,28 +142,14 @@ Item {
             }
             Button {
                 Layout.fillWidth: true
-                Layout.preferredWidth: answerView.width / 3
+                Layout.preferredWidth: answerView.width / 2
 
                 checkable: true
                 checked: answerView.currentIndex == 1
                 flat: true
-                text: qsTr("Headers")
+                text: qsTr("Meta")
                 onClicked: {
                     answerView.setSource(1);
-                }
-
-                ButtonGroup.group: tabGroup
-            }
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: answerView.width / 3
-
-                checkable: true
-                checked: answerView.currentIndex == 2
-                flat: true
-                text: qsTr("Cookies")
-                onClicked: {
-                    answerView.setSource(2);
                 }
 
                 ButtonGroup.group: tabGroup
@@ -184,10 +170,10 @@ Item {
     }
 
     Connections {
-        target: HttpClient
+        target: GrpcClient
 
         function onIsRequestWorkChanged() {
-            if (HttpClient.isRequestWork) {
+            if (GrpcClient.isRequestWork) {
                 showLoader();
 
                 return;
@@ -197,7 +183,7 @@ Item {
                 loaderTimer.stop();
             }
 
-            let size = Util.getAnswerSize(App.query.lastAnswer.byteCount);
+            let size = Util.getAnswerSize(App.grpcQuery.lastAnswer.byteCount);
 
             if (size.label === "Mb" && size.size > 1) {
                 loader.sourceComponent = bigBody;
@@ -208,7 +194,7 @@ Item {
             }
         }
 
-        function onHttpError(errorString) {
+        function onRequestError(errorString) {
             if (loaderTimer.running) {
                 loaderTimer.stop();
             }
@@ -236,14 +222,14 @@ Item {
 
         AnswerBigBody {
             onShow: {
-                let path = "./components/answer/AnswerBody.qml";
+                let path = "./components/answer/GrpcAnswerBody.qml";
                 loader.setSource(path);
             }
             onDownload: {
                 folderDialog.open();
             }
             onClear: {
-                App.query.lastAnswer.body = '';
+                App.grpcQuery.lastAnswer.body = '';
             }
         }
     }
@@ -253,7 +239,7 @@ Item {
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
         onAccepted: {
             let path = selectedFolder.toString().replace("file://", "");
-            RoutesModel.downloadBigAnswer(path, App.query);
+            RoutesModel.downloadBigAnswer(path, App.grpcQuery);
         }
     }
 
@@ -278,23 +264,19 @@ Item {
 
         let statusCode = query.lastAnswer.status;
 
-        if (statusCode >= 200 && statusCode <= 299) {
+        if (statusCode === 0) {
             return '#73965b';
         }
 
-        if (statusCode >= 300 && statusCode <= 399) {
-            return '#e5da25';
-        }
-
-        if (statusCode >= 400 && statusCode <= 499) {
+        if (statusCode >= 1 && statusCode <= 11 || statusCode === 16) {
             return '#d19a66';
         }
 
-        if (statusCode >= 500 && statusCode <= 599) {
-            return '#d86a6f';
+        if (statusCode === 4) {
+            return '#e5da25';
         }
 
-        return 'lightgrey';
+        return '#d86a6f'; // Server errors
     }
 
     function setSource(idx) {
@@ -303,16 +285,13 @@ Item {
 
         switch (idx) {
         case 0:
-            path += "AnswerBody.qml";
+            path += "GrpcAnswerBody.qml";
             break;
         case 1:
             path += "AnswerHeaders.qml";
             break;
-        case 2:
-            path += "AnswerCookies.qml";
-            break;
         default:
-            path += "AnswerBody.qml";
+            path += "GrpcAnswerBody.qml";
         }
 
         loader.setSource(path);
@@ -320,7 +299,7 @@ Item {
 
     function showLoader() {
         loaderTimer.triggered.connect(() => {
-            if (HttpClient.isRequestWork) {
+            if (GrpcClient.isRequestWork) {
                 let path = "./components/answer/AnswerWait.qml";
                 loader.setSource(path);
             }

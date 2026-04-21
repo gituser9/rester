@@ -11,18 +11,16 @@ import "./../"
 import "../common/components"
 
 Item {
+    id: requestView
 
     property Constants consts: Constants {}
     property int currentIndex: 0
 
-    id: requestView
-
     Component.onCompleted: {
-        setSource(0)
-
+        setSource(requestView.currentIndex);
 
         if (App.query) {
-            cbQueryType.currentIndex = App.query.queryType
+            cbQueryType.currentIndex = App.query.queryType;
         }
     }
 
@@ -48,7 +46,7 @@ Item {
                     height: requestView.consts.bottomButtonHeight
                     model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]
                     onActivated: {
-                        App.query.queryType = cbQueryType.currentIndex
+                        App.query.queryType = cbQueryType.currentIndex;
                     }
                 }
             }
@@ -63,16 +61,15 @@ Item {
                 radius: 4
 
                 FlickableEdit {
+                    id: tfUrl
 
                     Component.onCompleted: {
-                        varHilighter.setDocument(tfUrl.textDocument)
+                        varHilighter.setDocument(tfUrl.textDocument);
                     }
-
-                    id: tfUrl
                     anchors.fill: parent
                     value: App.query ? App.query.url : ''
                     onEditingFinish: txt => {
-                        App.query.url = txt
+                        App.query.url = txt;
                     }
                 }
             }
@@ -87,10 +84,10 @@ Item {
                     text: qsTr("SEND")
                     onClicked: {
                         if (tfUrl.text.indexOf('curl ') !== -1) {
-                            App.setFromCurl(tfUrl.text)
+                            App.setFromCurl(tfUrl.text);
                         }
 
-                        App.send()
+                        App.send();
                     }
                 }
             }
@@ -123,7 +120,7 @@ Item {
                 flat: true
                 text: qsTr("Body")
                 onClicked: {
-                    requestView.setSource(0)
+                    requestView.setSource(0);
                 }
 
                 ButtonGroup.group: tabGroup
@@ -137,7 +134,7 @@ Item {
                 flat: true
                 text: qsTr("Query")
                 onClicked: {
-                    requestView.setSource(1)
+                    requestView.setSource(1);
                 }
 
                 ButtonGroup.group: tabGroup
@@ -151,7 +148,7 @@ Item {
                 flat: true
                 text: qsTr("Headers")
                 onClicked: {
-                    requestView.setSource(2)
+                    requestView.setSource(2);
                 }
 
                 ButtonGroup.group: tabGroup
@@ -172,13 +169,13 @@ Item {
         }
     }
 
-
+    // Connections
     Connections {
         target: App
 
         function onQueryChanged() {
-            cbQueryType.currentIndex = App.query?.queryType ?? 0
-            tfUrl.value = App.query ? App.query.url : ''
+            cbQueryType.currentIndex = App.query?.queryType ?? 0;
+            tfUrl.value = App.query ? App.query.url : '';
         }
     }
 
@@ -186,37 +183,36 @@ Item {
         target: App.query
 
         function onQueryTypeChanged() {
-            cbQueryType.currentIndex = App.query.queryType
+            cbQueryType.currentIndex = App.query.queryType;
         }
     }
 
+    // Types
     VarSyntaxHighlighter {
         id: varHilighter
     }
 
-
-
+    // Funcs
     function setSource(idx) {
-        currentIndex = idx
-        let path = "./components/request/"
+        currentIndex = idx;
+        let path = "./components/request/";
 
         switch (idx) {
         case 0:
-            path += "QueryBody.qml"
-            break
+            path += "QueryBody.qml";
+            break;
         case 1:
-            path += "QueryParams.qml"
-            break
+            path += "QueryParams.qml";
+            break;
         case 2:
-            path += "QueryHeaders.qml"
-            break
+            path += "QueryHeaders.qml";
+            break;
         default:
-            path += "QueryBody.qml"
+            path += "QueryBody.qml";
         }
 
-        loader.setSource(path)
+        loader.setSource(path);
 
-        return path
+        return path;
     }
-
 }

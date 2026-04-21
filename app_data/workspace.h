@@ -17,8 +17,10 @@
 #include "./constant.h"
 #include "folder.h"
 #include "query.h"
+#include "grpc_query.h"
 
-class Workspace : public TreeNode {
+class Workspace : public TreeNode
+{
     Q_OBJECT
     QML_ELEMENT
 
@@ -85,6 +87,7 @@ private:
     QJsonObject serializeNode(TreeNode* node) const;
     QJsonObject serializeFolder(Folder* node) const;
     QJsonObject serializeQuery(Query* node) const;
+    QJsonObject serializeGrpcQuery(GrpcQuery* node) const;
     QJsonObject serializeAnswer(HttpAnswer* node) const;
     TreeNode* getByUuid(QString uuid, TreeNode* node) const noexcept;
     TreeNode* getQueryByUuid(QString uuid, TreeNode* node) const noexcept;

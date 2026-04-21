@@ -2,17 +2,16 @@
 
 using namespace std;
 
-RoutesModel::RoutesModel(QObject* parent)
-    : QAbstractItemModel(parent)
+RoutesModel::RoutesModel(QObject* parent) : QAbstractItemModel(parent)
 {
     _names = QAbstractItemModel::roleNames();
     _names.insert({
-        { NameRole, "nodeName" },
-        { NodeTypeRole, "nodeType" },
-        { QueryTypeRole, "nodeQueryType" },
-        { FolderExpandedRole, "isFolderExpanded" },
-        { UuidRole, "nodeUuid" },
-        { ParentUuidRole, "parentUuid" },
+        {NameRole, "nodeName"},
+        {NodeTypeRole, "nodeType"},
+        {QueryTypeRole, "nodeQueryType"},
+        {FolderExpandedRole, "isFolderExpanded"},
+        {UuidRole, "nodeUuid"},
+        {ParentUuidRole, "parentUuid"},
     });
 }
 
@@ -36,7 +35,8 @@ QModelIndex RoutesModel::index(int row, int column, const QModelIndex& parent) c
 
     if (node != nullptr) {
         return createIndex(row, column, node);
-    } else {
+    }
+    else {
         return QModelIndex();
     }
 }
@@ -166,7 +166,7 @@ bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
         return false;
     }
 
-    TreeNode* sourceParentNode = getItem(sourceParent); // static_cast<TreeNode*>(sourceParent.internalPointer());
+    TreeNode* sourceParentNode = getItem(sourceParent);           // static_cast<TreeNode*>(sourceParent.internalPointer());
     TreeNode* destinationParentNode = getItem(destinationParent); // static_cast<TreeNode*>(destinationParent.internalPointer());
     TreeNode* movingNode = sourceParentNode->nodes().at(sourceRow);
 
@@ -182,14 +182,16 @@ bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
         // beginMoveRows(sourceParent, sourceRow, sourceRow, sourceParent, destinationChild);
         sourceParentNode->moveNode(sourceRow, destinationChild);
         // endMoveRows();
-    } else {
+    }
+    else {
         // beginResetModel();
         // beginMoveRows(sourceParent, sourceRow, sourceRow, destinationParent, destinationChild);
         sourceParentNode->softRemoveNode(sourceRow);
 
         if ((destinationParentNode->nodes().count() - 1) < destinationChild) {
             destinationParentNode->addNode(movingNode);
-        } else {
+        }
+        else {
             destinationParentNode->insertNode(destinationChild, movingNode);
         }
     }
@@ -219,7 +221,7 @@ bool RoutesModel::setData(const QModelIndex& index, const QVariant& value, int r
         return false;
     }
 
-    emit dataChanged(index, index, { role });
+    emit dataChanged(index, index, {role});
 
     return true;
 }
@@ -281,7 +283,7 @@ void RoutesModel::addQuery(QString name, const QModelIndex& parentIdx)
     emit treeChanged(_currentWorkspace);
 }
 
-void RoutesModel::addQuery(QString name, QString type, const QModelIndex &parentIdx)
+void RoutesModel::addQuery(QString name, QString type, const QModelIndex& parentIdx)
 {
     TreeNode* parentNode = getItem(parentIdx);
     int row = parentNode->nodes().count();
@@ -289,14 +291,23 @@ void RoutesModel::addQuery(QString name, QString type, const QModelIndex &parent
 
     beginInsertRows(parentIdx, row, row);
 
-    auto newQuery = new Query(parentNode);
-    newQuery->setNodeType(NodeType::QueryNode);
-    newQuery->setUuid(Util::uuid());
-    newQuery->setName(name);
-    newQuery->setQueryType(QueryType::GET);
-    newQuery->setBodyType(BodyType::NONE);
-    newQuery->setQueryType(queryType);
-    parentNode->addNode(newQuery);
+    if (queryType == QueryType::GRPC) {
+        auto newQuery = new GrpcQuery(parentNode);
+        newQuery->setNodeType(NodeType::GrpcQueryNode);
+        newQuery->setUuid(Util::uuid());
+        newQuery->setName(name);
+        parentNode->addNode(newQuery);
+    }
+    else {
+        auto newQuery = new Query(parentNode);
+        newQuery->setNodeType(NodeType::QueryNode);
+        newQuery->setUuid(Util::uuid());
+        newQuery->setName(name);
+        newQuery->setQueryType(QueryType::GET);
+        newQuery->setBodyType(BodyType::NONE);
+        newQuery->setQueryType(queryType);
+        parentNode->addNode(newQuery);
+    }
 
     endInsertRows();
 
@@ -323,7 +334,8 @@ void RoutesModel::updateFolder(const QModelIndex& index, const QVariant& value, 
 
             if (newParentNode != nullptr) {
                 node->setParent(newParentNode);
-            } else {
+            }
+            else {
                 node->setParent(_currentWorkspace.get());
             }
 
@@ -346,49 +358,16 @@ void RoutesModel::toggleFolderExpanded(const QModelIndex& idx)
 
 void RoutesModel::updateQuery(const QModelIndex& index, const QVariant& value, int role)
 {
-    TreeNode* node = getItem(index);
     QString qryData = value.toString();
+    TreeNode* node = getItem(index);
 
-    // if (role == RoleType::NameRole && node->name() != data) {
-    //     node->setName(data);
-
-    //     emit treeChanged(_currentWorkspace);
-
-    //     return;
-    // }
+    if (!node) {
+        return;
+    }
 
     node->setName(qryData);
 
     emit treeChanged(_currentWorkspace);
-
-    // if (role == RoleType::ParentUuidRole) {
-    //     TreeNode* parent = node->parent();
-
-    //     if (parent->uuid() != data) {
-    //         TreeNode* newParentNode = _currentWorkspace->getByUuid(data);
-
-    //         if (newParentNode != nullptr) {
-    //             node->setParent(newParentNode);
-    //         } else {
-    //             node->setParent(_currentWorkspace.get());
-    //         }
-
-    //         emit treeChanged(_currentWorkspace);
-    //     }
-
-    //     return;
-    // }
-
-    // if (role == RoleType::QueryTypeRole) {
-    //     auto qry = static_cast<Query*>(node);
-    //     auto typ = static_cast<QueryType>(value.toInt());
-
-    //     if (qry->queryType() != typ) {
-    //         qry->setQueryType(typ);
-    //     }
-
-    //     emit treeChanged(_currentWorkspace);
-    // }
 }
 
 void RoutesModel::setCurrentQuery(const QModelIndex& idx)
@@ -399,6 +378,12 @@ void RoutesModel::setCurrentQuery(const QModelIndex& idx)
         auto qry = static_cast<Query*>(node);
 
         emit setQuery(qry);
+    }
+
+    if (node && node->nodeType() == NodeType::GrpcQueryNode) {
+        auto qry = static_cast<GrpcQuery*>(node);
+
+        emit setGrpcQuery(qry);
     }
 }
 
@@ -414,7 +399,6 @@ TreeNode* RoutesModel::getItem(const QModelIndex& idx) const noexcept
         return item;
     }
 
-    // return nullptr;
     return _currentWorkspace.get();
 }
 
@@ -427,17 +411,25 @@ void RoutesModel::loadTree(shared_ptr<Workspace> workspace) noexcept
 
 QString RoutesModel::getQueryTypeFromNode(TreeNode* node) const noexcept
 {
-    if (node->nodeType() != NodeType::QueryNode) {
+    if (node->nodeType() == NodeType::FolderNode) {
         return "";
     }
 
-    Query const* qry = static_cast<Query*>(node);
+    if (node->nodeType() == NodeType::QueryNode) {
+        auto qry = static_cast<Query*>(node);
 
-    if (qry == nullptr) {
-        return Util::getQueryTypeString(QueryType::GET);
+        if (qry == nullptr) {
+            return Util::getQueryTypeString(QueryType::GET);
+        }
+
+        return Util::getQueryTypeString(qry->queryType());
     }
 
-    return Util::getQueryTypeString(qry->queryType());
+    if (node->nodeType() == NodeType::GrpcQueryNode) {
+        return Util::getQueryTypeString(QueryType::GRPC);
+    }
+
+    return Util::getQueryTypeString(QueryType::GET);
 }
 
 bool RoutesModel::getExpandedFromNode(TreeNode* node) const noexcept
@@ -483,20 +475,20 @@ void RoutesModel::downloadBigAnswer(QString dirPath, Query const* qry) const noe
 void RoutesModel::importFromHar(const QModelIndex& parentIdx, const QString& filePath) noexcept
 {
     TreeNode* parentNode = getItem(parentIdx);
-//    int row = parentNode->nodes().count();
+    //    int row = parentNode->nodes().count();
     auto parser = make_unique<HarParser>();
 
     QJsonObject harJson = Util::getJsonFromFile(filePath);
     QList<Query*> queryList = parser->parse(harJson);
 
-//    beginInsertRows(parentIdx, row, row);
+    //    beginInsertRows(parentIdx, row, row);
     beginResetModel();
 
     for (Query* qry : queryList) {
         parentNode->addNode(qry);
     }
 
-//    endInsertRows();
+    //    endInsertRows();
     endResetModel();
 
     emit treeChanged(_currentWorkspace);

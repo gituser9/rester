@@ -1,8 +1,6 @@
 import QtQuick
 
 QtObject {
-
-    property int bottomButtonHeight: 40
-    property int defaultSpacing: 8
-
+    readonly property int bottomButtonHeight: 40
+    readonly property int defaultSpacing: 8
 }
