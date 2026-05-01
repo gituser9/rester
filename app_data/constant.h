@@ -29,8 +29,10 @@ enum class BodyType {
 
 enum class ImportType {
     Rester = 0,
-    Insomnia = 1,
-    Postman = 2,
+    Postman = 1,
+    InsomniaV5 = 2,
+    Swagger = 3,
+    Har = 4
 };
 
 #endif // CONSTANT_H

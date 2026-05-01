@@ -260,6 +260,7 @@ void HttpClient::send(Query* query, QNetworkRequest& request) noexcept
         _reply = _manager->head(request);
         break;
     case QueryType::WS:
+    case QueryType::GRPC:
         break;
     }
 }

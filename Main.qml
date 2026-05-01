@@ -46,25 +46,25 @@ Window {
 
                 Text {
                     id: txtWsName
-                    Layout.leftMargin: 8
-                    Layout.rightMargin: 8
                     text: App.workspace.name === '' ? "Workspace name" : App.workspace.name
                     font.weight: Font.Bold
                     font.pointSize: 18
+
+                    Layout.leftMargin: 8
+                    Layout.rightMargin: 8
                 }
                 DropdownButton {
                     id: dbEnvs
+                    height: 50
+                    // implicitWidth: 50
+                    currentEnv: App.workspace.env
+
                     Layout.rightMargin: 16
                     Layout.alignment: Qt.AlignVCenter
                     Layout.minimumWidth: 60
                     Layout.maximumWidth: 200
-                    height: 50
-                    implicitWidth: 50
-                    currentEnv: App.workspace.env
                 }
                 Button {
-                    Layout.rightMargin: 8
-
                     flat: true
                     icon.source: "/resource/images/repeat-line.svg"
                     icon.width: 24

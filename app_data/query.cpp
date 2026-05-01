@@ -193,25 +193,11 @@ void Query::fromJson(QJsonObject json)
         _lastAnswer = QSharedPointer<HttpAnswer>();
     }
 
-    if (json.value("params").isObject()) { // TODO: legacy
-        auto paramsObj = json.value("params").toObject().toVariantMap();
+    auto paramsArr = json.value("params").toArray();
 
-        QMapIterator iter(paramsObj);
-
-        while (iter.hasNext()) {
-            iter.next();
-
-            QueryParam param(iter.key(), iter.value().toString());
-            _paramList << param;
-        }
-    }
-    else if (json.value("params").isArray()) {
-        auto paramsArr = json.value("params").toArray();
-
-        for (QJsonValueRef item : paramsArr) {
-            QueryParam param(item.toObject());
-            _paramList << param;
-        }
+    for (QJsonValueRef item : paramsArr) {
+        QueryParam param(item.toObject());
+        _paramList << param;
     }
 
     if (json.value("form_data").isObject()) {
@@ -331,9 +317,29 @@ void Query::addHeader(const QString& name, const QString& value)
     emit dataChanged();
 }
 
+void Query::addHeader(const QString& name, const QString& value, bool isEnabled)
+{
+    QueryParam param(name, value, isEnabled);
+
+    _headers << param;
+
+    emit headersChanged();
+    emit dataChanged();
+}
+
 void Query::addParam(const QString& name, const QString& value)
 {
     QueryParam param(name, value);
+
+    _paramList << param;
+
+    emit paramsChanged();
+    emit dataChanged();
+}
+
+void Query::addParam(const QString& name, const QString& value, bool isEnabled)
+{
+    QueryParam param(name, value, isEnabled);
 
     _paramList << param;
 
@@ -455,70 +461,6 @@ void Query::setFormDataItem(int index, const QString& name, const QString& value
     emit dataChanged();
 }
 
-QSharedPointer<InsomniaBody> Query::buildInsomniaBody() const noexcept
-{
-    auto body = QSharedPointer<InsomniaBody>(new InsomniaBody);
-
-    switch (_queryType) {
-    case QueryType::GET:
-    case QueryType::HEAD:
-        return body;
-    default:
-        break;
-    }
-
-    if (_bodyType == BodyType::MULTIPART_FORM) {
-        QList<InsomniaParam> params(_formDataList.size());
-
-        body->mimeType = "multipart/form-data";
-
-        for (const QueryParam& item : _formDataList) {
-            InsomniaParam param;
-            param.name = item.name();
-            param.value = item.value();
-
-            params.append(param);
-        }
-        body->params = params;
-
-        return body;
-    }
-
-    if (_bodyType == BodyType::JSON) {
-        body->mimeType = "application/json";
-        body->text = _body;
-
-        return body;
-    }
-
-    if (_bodyType == BodyType::XML) {
-        body->mimeType = "application/xml";
-        body->text = _body;
-
-        return body;
-    }
-
-    if (_bodyType == BodyType::URL_ENCODED_FORM) {
-        QList<InsomniaParam> params(_formDataList.size());
-
-        body->mimeType = "application/x-www-form-urlencoded";
-
-        for (const QueryParam& item : _formDataList) {
-            InsomniaParam param;
-            param.name = item.name();
-            param.value = item.value();
-
-            params << param;
-        }
-
-        body->params = params;
-
-        return body;
-    }
-
-    return body;
-}
-
 void Query::parseParams() noexcept
 {
     QStringList strs = _url.split("?");
@@ -582,6 +524,11 @@ QVariantList Query::formData() const
     return list;
 }
 
+QList<QueryParam> Query::formDataList() const noexcept
+{
+    return _formDataList;
+}
+
 void Query::setFormData(const QVariantList& newFormData)
 {
     _formDataList.clear();
@@ -602,122 +549,4 @@ QList<QueryParam> Query::paramList() const noexcept
 QList<QueryParam> Query::headerList() const noexcept
 {
     return _headers;
-}
-
-InsomniaResource Query::toInsomniaResource(const QString& parentId) const noexcept
-{
-    // to ctor
-    auto millis = QDateTime::currentMSecsSinceEpoch();
-    QList<InsomniaHeader> headers(_headers.size());
-    QList<InsomniaHeader> params(_paramList.size());
-
-    for (const QueryParam& param : _paramList) {
-        InsomniaHeader head;
-        head.name = param.name();
-        head.value = param.value();
-        head.disabled = !param.isEnabled();
-
-        params << head;
-    }
-
-    for (const QueryParam& param : _headers) {
-        InsomniaHeader head;
-        head.name = param.name();
-        head.value = param.value();
-        head.disabled = !param.isEnabled();
-
-        headers << head;
-    }
-
-    InsomniaResource resource;
-    resource.id = InsomniaQueryPrefix + Util::uuid();
-    resource.parentId = parentId;
-    resource.modified = millis;
-    resource.created = millis;
-    resource.url = _url;
-    resource.name = name();
-    resource.method = Util::getQueryTypeString(_queryType);
-    resource.body = buildInsomniaBody();
-    resource.parameters = params;
-    resource.headers = headers;
-
-    return resource;
-}
-
-PostmanItem Query::toPostmanItem() const noexcept
-{
-    PostmanItem postmanItem;
-    postmanItem.name = name();
-    postmanItem.request.method = Util::getQueryTypeString(queryType());
-    postmanItem.request.headers.reserve(_headers.count());
-
-    for (const QueryParam& param : _headers) {
-        PostmanHeader header;
-        header.key = param.name();
-        header.value = param.value();
-
-        postmanItem.request.headers << header;
-    }
-
-    QUrl qurl(_url);
-    QString host = qurl.host();
-    QStringList path = qurl.path().split('/');
-
-    if (host.isEmpty()) { // host is may be variable
-        auto parts = _url.split('/');
-
-        if (!parts.isEmpty() && parts[0].startsWith("{{")) {
-            host = parts.first();
-            path.removeFirst(); // remove host variable
-        }
-    }
-
-    if (qurl.port() != -1) {
-        host += ":" + QString::number(qurl.port());
-    }
-
-    PostmanUrl postmanUrl;
-    postmanUrl.raw = _url;
-    postmanUrl.protocol = qurl.scheme();
-    postmanUrl.host = QStringList{host};
-    postmanUrl.path = path;
-    postmanUrl.query.reserve(_paramList.count());
-
-    for (const QueryParam& param : _paramList) {
-        QVariantMap paramMap;
-        paramMap["key"] = param.name();
-        paramMap["value"] = param.value();
-
-        postmanUrl.query << paramMap;
-    }
-
-    postmanItem.request.url = postmanUrl;
-
-    // Set body
-    if (_bodyType == BodyType::JSON) {
-        PostmanRequestBody body;
-        body.mode = "raw";
-        body.raw = _body;
-        body.options.language = "json";
-
-        postmanItem.request.body = body;
-    }
-
-    if (_bodyType == BodyType::MULTIPART_FORM) {
-        PostmanRequestBody body;
-        body.mode = "formdata";
-        body.formdata.reserve(_formDataList.count());
-
-        for (const QueryParam& data : _formDataList) {
-            PostmanFormDataBody item;
-            item.key = data.name();
-            item.value = data.value();
-
-            body.formdata << item;
-        }
-
-        postmanItem.request.body = body;
-    }
-
-    return postmanItem;
 }

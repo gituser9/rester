@@ -217,10 +217,6 @@ Item {
             loader.setSource(path, {
                 "errString": errorString
             });
-
-            txtStatus.text = '0';
-            txtTime.text = '0';
-            txtSize.text = '0';
         }
     }
 

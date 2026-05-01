@@ -99,6 +99,7 @@ Rectangle {
             }
         }
 
+        // load widget
         Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -107,7 +108,9 @@ Rectangle {
 
             Image {
                 id: imgLoad
-                anchors.centerIn: parent
+                y: (ws.height / 2) - 25
+                x: (ws.width / 2) - 25
+
                 source: "/resource/images/rotate-loop.svg"
                 sourceSize.width: 50
                 sourceSize.height: 50
@@ -159,7 +162,6 @@ Rectangle {
         ScrollView {
             id: scroller
             clip: true
-            visible: !ws.isLoading
             contentHeight: grid.rows * 290
             contentWidth: ws.width
 
@@ -167,7 +169,6 @@ Rectangle {
             Layout.fillWidth: true
 
             Component.onCompleted: {
-                WorkspaceModel.setup();
                 showLoader();
             }
 
@@ -365,7 +366,7 @@ Rectangle {
             ComboBox {
                 id: cbExportType
                 Layout.fillWidth: true
-                model: ["Rester", "Insomnia (v4)", "Postman"]
+                model: ["Rester", "Postman", "Insomnia (v5)", "HAR"]
             }
 
             Button {
@@ -378,7 +379,8 @@ Rectangle {
                         return;
                     }
 
-                    WorkspaceModel.exportCollection(tfExportInput.text, currentIndex, cbExportType.currentIndex);
+                    let importType = getImportType(cbExportType.currentText);
+                    WorkspaceModel.exportCollection(tfExportInput.text, currentIndex, importType);
                     dlgExport.close();
                 }
             }
@@ -435,7 +437,7 @@ Rectangle {
             ComboBox {
                 id: cbImportType
                 Layout.fillWidth: true
-                model: ["Rester", "Insomnia (v4)", "Postman"]
+                model: ["Rester", "Postman", "Insomnia (v5)", "Swagger | OpenAPI", "HAR"]
             }
 
             Button {
@@ -449,7 +451,8 @@ Rectangle {
                         return;
                     }
 
-                    WorkspaceModel.importFrom(tfInput.text, cbImportType.currentIndex);
+                    let importType = getImportType(cbImportType.currentText);
+                    WorkspaceModel.importFrom(tfInput.text, importType);
                     dlgImport.close();
                 }
             }
@@ -515,7 +518,7 @@ Rectangle {
 
     Timer {
         id: loadTimer
-        interval: 100
+        interval: 150
         running: true
         repeat: false
     }
@@ -554,15 +557,37 @@ Rectangle {
 
     function showLoader() {
         loadTimer.triggered.connect(function () {
-            isLoading = true;
+            ws.isLoading = true;
         });
         loadTimer.start();
 
         loaderTimer.triggered.connect(function () {
             WorkspaceModel.loadWorkspaces();
-            isLoading = false;
+            ws.isLoading = false;
             loadTimer.stop();
         });
         loaderTimer.start();
+    }
+
+    function getImportType(typeStr) {
+        if (typeStr === "Rester") {
+            return 0;
+        }
+
+        if (typeStr === "Postman") {
+            return 1;
+        }
+
+        if (typeStr === "Insomnia (v5)") {
+            return 2;
+        }
+
+        if (typeStr === "Swagger") {
+            return 3;
+        }
+
+        if (typeStr === "HAR") {
+            return 4;
+        }
     }
 }

@@ -24,7 +24,6 @@
 #include "../app_data/workspace.h"
 #include "../importer.h"
 #include "../parsers/curl_parser.h"
-#include "../parsers/har_parser.h"
 #include "../saver.h"
 #include "../settings.h"
 

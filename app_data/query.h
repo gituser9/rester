@@ -17,7 +17,8 @@
 #include "query_param.h"
 #include "tree_node.h"
 
-class Query : public TreeNode {
+class Query : public TreeNode
+{
     Q_OBJECT
     QML_ELEMENT
 
@@ -71,13 +72,14 @@ public:
     // Custom
     QList<QueryParam> paramList() const noexcept;
     QList<QueryParam> headerList() const noexcept;
-    InsomniaResource toInsomniaResource(const QString& parentId) const noexcept;
-    PostmanItem toPostmanItem() const noexcept;
+    QList<QueryParam> formDataList() const noexcept;
 
     // For QML
     Q_INVOKABLE void beautify() noexcept;
     Q_INVOKABLE void addHeader(const QString& name, const QString& value);
+    Q_INVOKABLE void addHeader(const QString& name, const QString& value, bool isEnabled);
     Q_INVOKABLE void addParam(const QString& name, const QString& value);
+    Q_INVOKABLE void addParam(const QString& name, const QString& value, bool isEnabled);
     Q_INVOKABLE void addFormData(const QString& name, const QString& value);
     Q_INVOKABLE void removeParam(int index);
     Q_INVOKABLE void removeHeader(int index);
@@ -108,8 +110,6 @@ private:
     QSharedPointer<HttpAnswer> _lastAnswer;
     QList<QueryParam> _paramList;
     QList<QueryParam> _formDataList;
-
-    QSharedPointer<InsomniaBody> buildInsomniaBody() const noexcept;
 };
 
 #endif // QUERY_H

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Importer::Importer(QObject* parent) : QObject { parent }
+Importer::Importer(QObject* parent) : QObject{parent}
 {
 }
 
@@ -34,17 +34,41 @@ void Importer::exportWorkspaces(const QString& folderPath, const QString& export
 
 void Importer::exportCollection(QSharedPointer<Workspace> workspace, const QString& exportPath, ImportType type)
 {
-    QJsonObject json;
+    QString dateString = QDateTime::currentDateTime().toString("dd_MM_yyyy");
+    QString fileName = workspace->name() + "_" + dateString + "_";
 
     switch (type) {
-    case ImportType::Insomnia:
-        json = toInsomniaCollection(workspace)->toJson();
+    case ImportType::InsomniaV5:
+        fileName += "Insomnia_v5.yaml";
         break;
     case ImportType::Postman:
-        json = toPostmanCollection(workspace)->toJson();
+        fileName += "Postman.json";
         break;
     case ImportType::Rester:
-        json = workspace->toJson();
+        fileName += "Rester.json";
+        break;
+    case ImportType::Har:
+        fileName += "HAR.har";
+        break;
+    default:
+        break;
+    }
+
+    QString json;
+    QString filePath = exportPath + "/" + fileName;
+
+    switch (type) {
+    case ImportType::Postman:
+        json = PostmanExporter::exportWorkspace(workspace);
+        break;
+    case ImportType::Rester:
+        json = QJsonDocument(workspace->toJson()).toJson();
+        break;
+    case ImportType::InsomniaV5:
+        json = InsomniaV5Exporter::exportWorkspace(workspace);
+        break;
+    case ImportType::Har:
+        json = HarExporter::exportWorkspace(workspace);
         break;
     default:
         break;
@@ -54,24 +78,7 @@ void Importer::exportCollection(QSharedPointer<Workspace> workspace, const QStri
         return;
     }
 
-    QString dateString = QDateTime::currentDateTime().toString("dd_MM_yyyy");
-    QString fileName = workspace->name() + "_" + dateString + "_";
-
-    switch (type) {
-    case ImportType::Insomnia:
-        fileName += "Insomnia.json";
-        break;
-    case ImportType::Postman:
-        fileName += "Postman.json";
-        break;
-    case ImportType::Rester:
-        fileName += "Rester.json";
-        break;
-    default:
-        break;
-    }
-
-    Util::writeJsonToFile(exportPath + "/" + fileName, json);
+    Util::writeToFile(exportPath + "/" + fileName, json);
 }
 
 QList<shared_ptr<Workspace>> Importer::fromRester(const QString& folderPath) const noexcept
@@ -101,91 +108,29 @@ QList<shared_ptr<Workspace>> Importer::fromRester(const QString& folderPath) con
 
 QList<shared_ptr<Workspace>> Importer::fromExternal(const QString& filePath, ImportType type) noexcept
 {
-    auto workspaceJson = QString(Import(filePath.toStdString().c_str(), GoInt(type)));
-    QList<shared_ptr<Workspace>> workspaces;
+    if (type == ImportType::InsomniaV5) {
+        auto importer = std::make_unique<InsomniaV5Importer>();
 
-    if (workspaceJson.isEmpty() || workspaceJson == "{}") {
-        return workspaces;
+        return {importer->import(filePath)};
     }
 
-    // parse in json object
-    QJsonParseError jsonError;
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(workspaceJson.toUtf8(), &jsonError);
+    if (type == ImportType::Swagger) {
+        auto importer = std::make_unique<SwaggerImporter>();
 
-    if (jsonError.error != QJsonParseError::NoError) {
-        emit error("Parse file error: " + jsonError.errorString());
-
-        return workspaces;
+        return {importer->import(filePath)};
     }
 
-    QJsonArray items = jsonDocument.array();
-    workspaces.reserve(items.count());
+    if (type == ImportType::Postman) {
+        auto importer = std::make_unique<PostmanImporter>();
 
-    for (QJsonValueRef&& item : items) {
-        auto ws = make_shared<Workspace>();
-        ws->fromJson(item.toObject());
-
-        workspaces << ws;
+        return {importer->import(filePath)};
     }
 
-    return workspaces;
-}
+    if (type == ImportType::Har) {
+        auto importer = std::make_unique<HarImporter>();
 
-QSharedPointer<Insomnia> Importer::toInsomniaCollection(QSharedPointer<Workspace> ws) const noexcept
-{
-    auto insomnia = QSharedPointer<Insomnia>(new Insomnia);
-    insomnia->type = "export";
-    insomnia->exportFormat = 4;
-    insomnia->exportDate = QDateTime::currentDateTime().toString("yyyy-MM-ddTHH:mm:ss.zzzZ");
-    insomnia->exportSource = "rester";
-
-    InsomniaResource wsResource = ws->toInsomniaResource();
-    QList<InsomniaResource> resources = { wsResource };
-
-    for (TreeNode* node : ws->nodes()) {
-        if (node->nodeType() == NodeType::FolderNode) {
-            auto fld = static_cast<Folder*>(node);
-            resources << fld->toInsomniaResource(wsResource.id, nullptr);
-
-            continue;
-        }
-
-        if (node->nodeType() == NodeType::QueryNode) {
-            auto qry = static_cast<Query*>(node);
-            resources << qry->toInsomniaResource(wsResource.id);
-
-            continue;
-        }
+        return {importer->import(filePath)};
     }
 
-    insomnia->resources = resources;
-
-    return insomnia;
-}
-
-QSharedPointer<PostmanCollection> Importer::toPostmanCollection(QSharedPointer<Workspace> ws) const noexcept
-{
-    auto postman = QSharedPointer<PostmanCollection>(new PostmanCollection);
-    postman->info.name = ws->name();
-    postman->info.postId = Util::uuid();
-    postman->info.schema = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json";
-    // postman->info.e = 9895154
-
-    for (TreeNode* node : ws->nodes()) {
-        if (node->nodeType() == NodeType::FolderNode) {
-            auto fld = static_cast<Folder*>(node);
-            postman->items << fld->toPostmanItem(nullptr);
-
-            continue;
-        }
-
-        if (node->nodeType() == NodeType::QueryNode) {
-            auto qry = static_cast<Query*>(node);
-            postman->items << qry->toPostmanItem();
-
-            continue;
-        }
-    }
-
-    return postman;
+    return {};
 }

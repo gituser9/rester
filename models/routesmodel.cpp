@@ -22,13 +22,13 @@ RoutesModel::~RoutesModel()
 QModelIndex RoutesModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!hasIndex(row, column, parent)) {
-        return QModelIndex();
+        return {};
     }
 
     TreeNode* parentNode = getItem(parent);
 
     if (parentNode->nodes().empty()) {
-        return QModelIndex();
+        return {};
     }
 
     TreeNode* node = parentNode->nodes().at(row);
@@ -37,31 +37,31 @@ QModelIndex RoutesModel::index(int row, int column, const QModelIndex& parent) c
         return createIndex(row, column, node);
     }
     else {
-        return QModelIndex();
+        return {};
     }
 }
 
 QModelIndex RoutesModel::parent(const QModelIndex& index) const
 {
     if (!index.isValid()) {
-        return QModelIndex();
+        return {};
     }
 
     TreeNode* node = getItem(index);
     TreeNode* parentNode = node->parent();
 
-    // if (parentNode == nullptr) {
-    //     return QModelIndex();
-    // }
+    if (parentNode == nullptr) {
+        return {};
+    }
 
     if (parentNode == _currentWorkspace.get()) {
-        return QModelIndex();
+        return {};
     }
 
     qsizetype row = parentNode->nodes().indexOf(node);
 
     if (row == -1) {
-        return QModelIndex();
+        return {};
     }
 
     return createIndex(row, 0, parentNode);
@@ -73,11 +73,11 @@ int RoutesModel::rowCount(const QModelIndex& parent) const
         return 0;
     }
 
-    // if (parent.column() > 0) {
-    //     return 0;
-    // }
-
     TreeNode* parentItem = getItem(parent);
+
+    if (!parentItem) {
+        return 0;
+    }
 
     return parentItem->nodes().size();
 }
@@ -100,8 +100,6 @@ QVariant RoutesModel::data(const QModelIndex& index, int role) const
     if (!index.isValid()) {
         return {};
     }
-
-    // std::cout << " - data - " << std::endl;
 
     TreeNode* item = getItem(index);
 
@@ -166,8 +164,8 @@ bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
         return false;
     }
 
-    TreeNode* sourceParentNode = getItem(sourceParent);           // static_cast<TreeNode*>(sourceParent.internalPointer());
-    TreeNode* destinationParentNode = getItem(destinationParent); // static_cast<TreeNode*>(destinationParent.internalPointer());
+    TreeNode* sourceParentNode = getItem(sourceParent);
+    TreeNode* destinationParentNode = getItem(destinationParent);
     TreeNode* movingNode = sourceParentNode->nodes().at(sourceRow);
 
     if (destinationParentNode->nodeType() == NodeType::QueryNode) {
@@ -179,13 +177,9 @@ bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
     beginResetModel();
 
     if (sourceParentNode == destinationParentNode) {
-        // beginMoveRows(sourceParent, sourceRow, sourceRow, sourceParent, destinationChild);
         sourceParentNode->moveNode(sourceRow, destinationChild);
-        // endMoveRows();
     }
     else {
-        // beginResetModel();
-        // beginMoveRows(sourceParent, sourceRow, sourceRow, destinationParent, destinationChild);
         sourceParentNode->softRemoveNode(sourceRow);
 
         if ((destinationParentNode->nodes().count() - 1) < destinationChild) {
@@ -195,9 +189,8 @@ bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
             destinationParentNode->insertNode(destinationChild, movingNode);
         }
     }
-    endResetModel();
 
-    // emit treeChanged(_currentWorkspace);
+    endResetModel();
 
     return true;
 }
@@ -248,7 +241,6 @@ void RoutesModel::addFolder(QString name, const QModelIndex& parentIdx)
     int row = parentNode->nodes().count();
 
     beginInsertRows(parentIdx, row, row);
-    // beginResetModel();
 
     auto newFolder = new Folder(parentNode);
     newFolder->setUuid(Util::uuid());
@@ -258,7 +250,6 @@ void RoutesModel::addFolder(QString name, const QModelIndex& parentIdx)
     parentNode->addNode(newFolder);
 
     endInsertRows();
-    // endResetModel();
 
     emit treeChanged(_currentWorkspace);
 }
@@ -287,7 +278,7 @@ void RoutesModel::addQuery(QString name, QString type, const QModelIndex& parent
 {
     TreeNode* parentNode = getItem(parentIdx);
     int row = parentNode->nodes().count();
-    auto queryType = Util::getQueryType(type);
+    QueryType queryType = Util::getQueryType(type);
 
     beginInsertRows(parentIdx, row, row);
 
@@ -314,7 +305,6 @@ void RoutesModel::addQuery(QString name, QString type, const QModelIndex& parent
     emit treeChanged(_currentWorkspace);
 }
 
-// void RoutesModel::updateFolder(QString newName, QString newUuid, const QModelIndex& idx)
 void RoutesModel::updateFolder(const QModelIndex& index, const QVariant& value, int role)
 {
     TreeNode* node = getItem(index);
@@ -475,16 +465,19 @@ void RoutesModel::downloadBigAnswer(QString dirPath, Query const* qry) const noe
 void RoutesModel::importFromHar(const QModelIndex& parentIdx, const QString& filePath) noexcept
 {
     TreeNode* parentNode = getItem(parentIdx);
-    //    int row = parentNode->nodes().count();
-    auto parser = make_unique<HarParser>();
-
-    QJsonObject harJson = Util::getJsonFromFile(filePath);
-    QList<Query*> queryList = parser->parse(harJson);
+    auto importer = std::make_unique<Importer>();
+    auto ws = importer->import(filePath, ImportType::Har);
 
     //    beginInsertRows(parentIdx, row, row);
+
+    if (ws.isEmpty()) {
+        emit error("Import from HAR error");
+        return;
+    }
+
     beginResetModel();
 
-    for (Query* qry : queryList) {
+    for (TreeNode* qry : ws.first()->nodes()) {
         parentNode->addNode(qry);
     }
 

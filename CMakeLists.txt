@@ -13,37 +13,38 @@ if(NOT DEFINED QT_QML_GENERATE_QMLLS_INI)
   set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "Generate qml-ls .ini files" FORCE)
 endif()
 
-# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
-# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-sanitize-recover")
-
+##################################################################
+# Libs
+##################################################################
 find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml QuickControls2 Gui WebSockets Concurrent)
 find_package(ZLIB)
 find_package(gRPC CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
+##################################################################
+# Sources
+##################################################################
 file(GLOB PROJECT_SOURCES
     *.cpp
     *.h
     models/*.h
     models/*.cpp
-    libs/import-lib/*.h
     app_data/*.h
     app_data/*.cpp
-    app_data/insomnia/*.h
-    app_data/insomnia/*.cpp
-    app_data/postman/*.h
-    app_data/postman/*.cpp
     app_data/settings/*.h
     app_data/settings/*.cpp
-    app_data/har/*.h
-    app_data/har/*.cpp
     highliters/*.h
     highliters/*.cpp
     parsers/*.h
     parsers/*.cpp
     clients/*.h
     clients/*.cpp
+    importers/*.h
+    importers/*.cpp
+    exporters/*.h
+    exporters/*.cpp
     qml.qrc
 )
 
@@ -52,6 +53,9 @@ qt_add_executable(
     ${PROJECT_SOURCES}
 )
 
+##################################################################
+# QML
+##################################################################
 qt_add_qml_module(
     rester
     URI io.rester
@@ -116,6 +120,9 @@ qt_add_qml_module(
 #     ENABLE_TYPE_COMPILER
 # )
 
+##################################################################
+# Target
+##################################################################
 target_link_libraries(rester
     PRIVATE Qt6::Core
     PRIVATE Qt6::Quick
@@ -123,10 +130,66 @@ target_link_libraries(rester
     PRIVATE Qt6::Gui
     PRIVATE Qt6::WebSockets
     PRIVATE Qt6::Concurrent
-    PRIVATE ${CMAKE_SOURCE_DIR}/libs/import-lib/libimport.a
     PRIVATE ZLIB::ZLIB
     PRIVATE grpc::grpc
+    PRIVATE yaml-cpp::yaml-cpp
 )
+
+
+##################################################################
+# Flags
+##################################################################
+set(COMPILER_FLAGS)
+set(LINKER_FLAGS)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+        list(APPEND COMPILER_FLAGS "-msse2")
+        list(APPEND COMPILER_FLAGS "-floop-strip-mine")
+        list(APPEND COMPILER_FLAGS "-ftree-parallelize-loops=4")
+
+        # not for old and weak CPU
+        list(APPEND COMPILER_FLAGS "-march=native")
+        list(APPEND COMPILER_FLAGS "-mavx")
+        list(APPEND COMPILER_FLAGS "-mavx2")
+        list(APPEND COMPILER_FLAGS "-mavx512f")
+        list(APPEND COMPILER_FLAGS "-mavx512dq")
+        list(APPEND COMPILER_FLAGS "-mavx512bw")
+    endif ()
+
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        list(APPEND COMPILER_FLAGS "-mtune=cortex-a53")
+    endif ()
+
+    list(APPEND COMPILER_FLAGS "-O2")
+    list(APPEND COMPILER_FLAGS "-ftree-vectorize")
+    list(APPEND COMPILER_FLAGS "-ftree-slp-vectorize")
+    list(APPEND COMPILER_FLAGS "-fstrict-aliasing")
+    list(APPEND COMPILER_FLAGS "-fomit-frame-pointer")
+    list(APPEND COMPILER_FLAGS "-freorder-blocks")
+    list(APPEND COMPILER_FLAGS "-frename-registers")
+    list(APPEND COMPILER_FLAGS "-funswitch-loops")
+    list(APPEND COMPILER_FLAGS "-fpeel-loops")
+    list(APPEND COMPILER_FLAGS "-funroll-loops")
+    list(APPEND COMPILER_FLAGS "-floop-parallelize-all")
+    list(APPEND COMPILER_FLAGS "-ffast-math")
+    list(APPEND COMPILER_FLAGS "-ffunction-sections")
+    list(APPEND COMPILER_FLAGS "-fdata-sections")
+
+    list(APPEND LINKER_FLAGS "-Wl,--gc-sections")
+    list(APPEND LINKER_FLAGS "-Wl,-s")
+
+    set_target_properties(rester PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE) # LTO
+
+elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    list(APPEND COMPILER_FLAGS "-O0")
+    list(APPEND COMPILER_FLAGS "-g3")
+    list(APPEND COMPILER_FLAGS "-Wall")
+    list(APPEND COMPILER_FLAGS "-Wpedantic")
+endif ()
+
+target_compile_options(rester PRIVATE ${COMPILER_FLAGS})
+target_link_options(rester PRIVATE ${LINKER_FLAGS})
 
 set_target_properties(rester PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER rester.io
@@ -143,7 +206,9 @@ install(TARGETS rester
 )
 
 
+##################################################################
 # CPack
+##################################################################
 set(CPACK_PROJECT_NAME "Rester")
 set(CPACK_PACKAGE_VENDOR "Rester")
 set(CPACK_PACKAGE_DESCRIPTION "Tool for create and testing HTTP applications")

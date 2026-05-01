@@ -95,11 +95,12 @@ Item {
         }
         TreeView {
             id: treeViewItem
+            clip: true
+            model: RoutesModel
+
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.topMargin: 8
-            clip: true
-            model: RoutesModel
 
             delegate: ItemDelegate {
                 id: root

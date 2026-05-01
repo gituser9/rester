@@ -42,7 +42,6 @@ public:
     QList<TreeNode*> getAllFolders(TreeNode* node = nullptr);
     TreeNode* getByUuid(QString uuid) noexcept;
     TreeNode* getQueryByUuid(QString uuid) noexcept;
-    InsomniaResource toInsomniaResource() const noexcept;
     static Workspace* getByQuery(TreeNode* query);
 
     // QML

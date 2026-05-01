@@ -35,6 +35,7 @@ public:
     static QString fillVars(const QString& str, const QVariantList& vars) noexcept;
     static QJsonObject getJsonFromFile(const QString& path) noexcept;
     static void writeJsonToFile(const QString& path, const QJsonObject& json) noexcept;
+    static void writeToFile(const QString& path, const QString& data) noexcept;
 
     Q_INVOKABLE static QString beautify(QString body, BodyType bodyType);
     Q_INVOKABLE static QString getQueryTypeString(QueryType type);

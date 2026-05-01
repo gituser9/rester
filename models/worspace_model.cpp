@@ -2,8 +2,7 @@
 
 using namespace std;
 
-WorkspaceModel::WorkspaceModel(QObject* parent)
-    : QAbstractListModel(parent)
+WorkspaceModel::WorkspaceModel(QObject* parent) : QAbstractListModel(parent)
 {
     _names[NameRole] = "name";
     _names[UuidRole] = "uuid";
@@ -75,8 +74,8 @@ bool WorkspaceModel::setData(const QModelIndex& index, const QVariant& value, in
 
     QString oldName = ws->name();
     ws->setName(value.toString());
-    QString newFileName = _workspacesPath + ws->getFileName();
 
+    QString newFileName = _workspacesPath + ws->getFileName();
     bool isRenamed = QFile::rename(oldFileName, newFileName);
 
     if (!isRenamed) {
@@ -84,7 +83,7 @@ bool WorkspaceModel::setData(const QModelIndex& index, const QVariant& value, in
         return false;
     }
 
-    emit dataChanged(index, index, { RoleNames::NameRole });
+    emit dataChanged(index, index, {RoleNames::NameRole});
     emit wsUpdate(ws);
 
     return true;
@@ -158,10 +157,6 @@ void WorkspaceModel::exportCollection(const QString& folderPath, int index, int 
     importer->exportCollection(workspace, folderPath, enumValue);
 }
 
-void WorkspaceModel::setup() noexcept
-{
-}
-
 void WorkspaceModel::clean() noexcept
 {
     _workspaces.clear();
@@ -214,8 +209,6 @@ void WorkspaceModel::setVars(const QString& uuid, const QString& name, const QVa
     json["variables"] = QJsonObject::fromVariantMap(vars);
 
     emit varsUpdate(vars);
-
-    // Util::writeJsonToFile(filePath, json);
 }
 
 QVariantMap WorkspaceModel::getVars(const QString& uuid, const QString& name) const noexcept
@@ -252,17 +245,17 @@ void WorkspaceModel::setWorkspace(int row)
     workspace->setLastUsageAt(now);
 
     QModelIndex idx = index(row, 0);
-    emit dataChanged(idx, idx, { RoleNames::LastUsageRole });
+    emit dataChanged(idx, idx, {RoleNames::LastUsageRole});
 }
 
-void WorkspaceModel::filter(const QString &name)
+void WorkspaceModel::filter(const QString& name)
 {
     _workspaces = _allWorkspaces;
 
     beginResetModel();
 
     if (!name.trimmed().isEmpty()) {
-        _workspaces.removeIf([&name](auto w) {
+        _workspaces.removeIf([&name](const auto& w) {
             return !w->name().toLower().contains(name.toLower());
         });
     }

@@ -13,14 +13,19 @@
 #include <QString>
 #include <QList>
 
-#include "app_data/constant.h"
-#include "app_data/insomnia/insomnia.h"
-#include "app_data/postman/postman.h"
-#include "app_data/workspace.h"
-#include "libs/import-lib/libimport.h"
 #include "util.h"
+#include "app_data/constant.h"
+#include "app_data/workspace.h"
+#include "importers/swagger_importer.h"
+#include "importers/postman_importer.h"
+#include "importers/insomnia_v5_importer.h"
+#include "importers/har_importer.h"
+#include "exporters/postman_exporter.h"
+#include "exporters/insomnia_v5_exporter.h"
+#include "exporters/har_exporter.h"
 
-class Importer : public QObject {
+class Importer : public QObject
+{
     Q_OBJECT
 
 public:
@@ -36,9 +41,6 @@ signals:
 private:
     QList<std::shared_ptr<Workspace>> fromRester(const QString& folderPath) const noexcept;
     QList<std::shared_ptr<Workspace>> fromExternal(const QString& filePath, ImportType type) noexcept;
-
-    QSharedPointer<Insomnia> toInsomniaCollection(QSharedPointer<Workspace> ws) const noexcept;
-    QSharedPointer<PostmanCollection> toPostmanCollection(QSharedPointer<Workspace> ws) const noexcept;
 };
 
 #endif // IMPORTER_H

@@ -412,18 +412,6 @@ void Workspace::setLastUsageAt(qint64 newLastUsageAt)
     emit lastUsageAtChanged();
 }
 
-InsomniaResource Workspace::toInsomniaResource() const noexcept
-{
-    qint64 millis = QDateTime::currentMSecsSinceEpoch();
-    InsomniaResource resource;
-    resource.id = InsomniaWorkspacePrefix + Util::uuid();
-    resource.modified = millis;
-    resource.created = millis;
-    resource.name = name();
-
-    return resource;
-}
-
 Workspace* Workspace::getByQuery(TreeNode* query)
 {
     auto parent = static_cast<TreeNode*>(query->parent());

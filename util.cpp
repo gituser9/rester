@@ -348,6 +348,21 @@ void Util::writeJsonToFile(const QString& path, const QJsonObject& json) noexcep
     file.close();
 }
 
+void Util::writeToFile(const QString& path, const QString& data) noexcept
+{
+    QFile file(path);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        // signal
+        return;
+    }
+
+    QTextStream outStream(&file);
+    outStream << data;
+
+    file.close();
+}
+
 double Util::round2digits(double num) noexcept
 {
     return round(num * 100.0) / 100.0;

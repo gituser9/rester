@@ -8,24 +8,20 @@ import RoutesModel
 
 // import '../../colors'
 
-
 Rectangle {
+    id: dropDownView
 
     property string currentEnv
 
-
     Component.onCompleted: {
         if (App.workspace.env === '') {
-            currentEnv = 'No Env'
+            currentEnv = 'No Env';
         } else {
-            currentEnv = App.workspace.env
+            currentEnv = App.workspace.env;
         }
 
-        setEnvs(App.workspace.getEnvNames())
+        setEnvs(App.workspace.getEnvNames());
     }
-
-    id: dropDownView
-
 
     RowLayout {
         anchors.fill: parent
@@ -50,28 +46,27 @@ Rectangle {
                     visible: true
                     onClicked: {
                         if (App.workspace.env !== model.text) {
-                            App.setEnv(model.text)
+                            App.setEnv(model.text);
                         }
 
-                        dropdown.visible = false
+                        dropdown.visible = false;
                     }
                 }
             }
         }
     }
 
-
     Connections {
         target: App
 
         function onWorkspaceChanged() {
             if (App.workspace.env === '') {
-                currentEnv = 'No Env'
+                currentEnv = 'No Env';
             } else {
-                currentEnv = App.workspace.env
+                currentEnv = App.workspace.env;
             }
 
-            setEnvs(App.workspace.getEnvNames())
+            setEnvs(App.workspace.getEnvNames());
         }
     }
 
@@ -80,28 +75,28 @@ Rectangle {
 
         function onEnvChanged() {
             if (App.workspace.env === '') {
-                currentEnv = 'No Env'
+                currentEnv = 'No Env';
             } else {
-                currentEnv = App.workspace.env
+                currentEnv = App.workspace.env;
             }
         }
 
         function onVariablesChanged() {
-            setEnvs(App.workspace.getEnvNames())
+            setEnvs(App.workspace.getEnvNames());
         }
     }
-
 
     ListModel {
         id: envModel
     }
 
-
     function setEnvs(envs) {
-        envModel.clear()
+        envModel.clear();
 
         for (let envName of envs) {
-            envModel.append({ text: envName })
+            envModel.append({
+                text: envName
+            });
         }
     }
 }
