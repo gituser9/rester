@@ -95,7 +95,7 @@ Qt::ItemFlags WorkspaceModel::flags(const QModelIndex& index) const
         return Qt::NoItemFlags;
     }
 
-    return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+    return QAbstractListModel::flags(index) | Qt::ItemIsEditable;
 }
 
 QHash<int, QByteArray> WorkspaceModel::roleNames() const
@@ -165,25 +165,21 @@ void WorkspaceModel::clean() noexcept
 
 void WorkspaceModel::importFrom(const QString& filePath, ImportType type)
 {
-    auto importer = unique_ptr<Importer>();
-    QList<shared_ptr<Workspace>> workspaces = importer->import(filePath, type);
+    auto importer = std::make_unique<Importer>();
+    shared_ptr<Workspace> workspace = importer->importWorkspace(filePath, type);
 
-    if (workspaces.empty()) {
+    if (!workspace) {
         emit error("Parse files(s) error");
 
         return;
     }
 
-    for (const shared_ptr<Workspace>& ws : workspaces) {
-        emit wsSave(ws);
-    }
+    emit wsSave(workspace);
 
     beginResetModel();
 
-    for (const shared_ptr<Workspace>& ws : workspaces) {
-        _workspaces << ws;
-        _allWorkspaces << ws;
-    }
+    _workspaces.push_front(workspace);
+    _allWorkspaces.push_front(workspace);
 
     endResetModel();
 }
@@ -280,11 +276,9 @@ void WorkspaceModel::create(const QString& name)
     workspace->setName(name);
     workspace->setLastUsageAt(0);
 
-    int row = _workspaces.size();
-
-    beginInsertRows(QModelIndex(), row, row);
-    _workspaces << workspace;
-    _allWorkspaces << workspace;
+    beginInsertRows(QModelIndex(), 0, 0);
+    _workspaces.push_front(workspace);
+    _allWorkspaces.push_front(workspace);
     endInsertRows();
 
     emit wsSave(workspace);

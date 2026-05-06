@@ -1,6 +1,6 @@
 #include "insomnia_v5_importer.h"
 
-std::shared_ptr<Workspace> InsomniaV5Importer::import(const QString& path)
+std::shared_ptr<Workspace> InsomniaV5Importer::importWorkspace(const QString& path)
 {
     QFile file(path);
 
@@ -53,9 +53,7 @@ void InsomniaV5Importer::processItems(
         return;
     }
 
-    for (size_t i = 0; i < items.size(); ++i) {
-        const YAML::Node& item = items[i];
-
+    for (const auto& item : items) {
         if (!item || !item.IsMap()) {
             continue;
         }
@@ -84,9 +82,11 @@ void InsomniaV5Importer::processFolder(
 
     if (parentFolder) {
         parentFolder->addNode(folder);
+        folder->setParent(parentFolder);
     }
     else {
         workspace->addNode(folder);
+        folder->setParent(workspace);
     }
 
     // nested folder
@@ -135,11 +135,8 @@ void InsomniaV5Importer::processRequest(
         }
         else if (bodyType == BodyType::MULTIPART_FORM) {
             const YAML::Node& paramsNode = body["params"];
-            QList<QueryParam> formData(paramsNode.size());
 
-            for (size_t i = 0; i < paramsNode.size(); ++i) {
-                const YAML::Node& node = paramsNode[i];
-
+            for (const auto& node : paramsNode) {
                 if (!node || !node.IsMap()) {
                     continue;
                 }
@@ -148,8 +145,7 @@ void InsomniaV5Importer::processRequest(
                 auto name = node["name"].as<std::string>("");
                 auto value = node["value"].as<std::string>("");
 
-                query->setFormDataItem(
-                    i,
+                query->addFormData(
                     QString::fromStdString(name),
                     QString::fromStdString(value),
                     !disabled //
@@ -211,9 +207,7 @@ void InsomniaV5Importer::setHeaders(const YAML::Node& headersNode, Query* query)
         return;
     }
 
-    for (size_t i = 0; i < headersNode.size(); ++i) {
-        const YAML::Node& node = headersNode[i];
-
+    for (const auto& node : headersNode) {
         if (!node || !node.IsMap()) {
             continue;
         }
@@ -240,9 +234,7 @@ void InsomniaV5Importer::setParameters(const YAML::Node& parametersNode, Query* 
         return;
     }
 
-    for (size_t i = 0; i < parametersNode.size(); ++i) {
-        const YAML::Node& node = parametersNode[i];
-
+    for (const auto& node : parametersNode) {
         if (!node || !node.IsMap()) {
             continue;
         }

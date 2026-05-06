@@ -1,6 +1,6 @@
 #include "har_importer.h"
 
-std::shared_ptr<Workspace> HarImporter::import(const QString& path)
+std::shared_ptr<Workspace> HarImporter::importWorkspace(const QString& path)
 {
     QByteArray fileData = getJson(path);
 

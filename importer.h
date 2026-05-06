@@ -31,7 +31,7 @@ class Importer : public QObject
 public:
     explicit Importer(QObject* parent = nullptr);
 
-    QList<std::shared_ptr<Workspace>> import(const QString& filePath, ImportType type) noexcept;
+    std::shared_ptr<Workspace> importWorkspace(const QString& filePath, ImportType type) noexcept;
     void exportWorkspaces(const QString& folderPath, const QString& exportPath) const noexcept;
     void exportCollection(QSharedPointer<Workspace> workspace, const QString& exportPath, ImportType type);
 
@@ -39,8 +39,8 @@ signals:
     void error(const QString&);
 
 private:
-    QList<std::shared_ptr<Workspace>> fromRester(const QString& folderPath) const noexcept;
-    QList<std::shared_ptr<Workspace>> fromExternal(const QString& filePath, ImportType type) noexcept;
+    std::shared_ptr<Workspace> fromRester(const QString& folderPath) const noexcept;
+    std::shared_ptr<Workspace> fromExternal(const QString& filePath, ImportType type) noexcept;
 };
 
 #endif // IMPORTER_H

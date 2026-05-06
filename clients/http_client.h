@@ -18,6 +18,7 @@
 #include <QByteArray>
 
 #include <zlib.h>
+#include <brotli/decode.h>
 
 #include "../app_data/http_answer.h"
 #include "../app_data/query.h"
@@ -60,8 +61,8 @@ private:
 
     void sendMultipartForm(Query* query, QNetworkRequest request);
     void sendFormUrlEncoded(Query* query, QNetworkRequest request);
-    void send(Query* query, QNetworkRequest& request) noexcept;
-    void send(Query* query, QNetworkRequest& request, QHttpMultiPart* form) noexcept;
+    void send(Query* query, QNetworkRequest& request);
+    void send(Query* query, QNetworkRequest& request, QHttpMultiPart* form);
     CompressAlg isCompressed(const QVariantMap& headers) const noexcept;
     QString getErrorString(QNetworkReply* reply);
     QUrl prepareUrl(Query* query) const noexcept;
@@ -69,6 +70,7 @@ private:
     QByteArray decompress(const QByteArray& compressed, CompressAlg alg) const noexcept;
     QByteArray decompressGzip(const QByteArray& compressed) const noexcept;
     QByteArray decompressDeflate(const QByteArray& compressed) const noexcept;
+    QByteArray decompressBrotli(const QByteArray& compressed) const noexcept;
 
 private slots:
     void slotFinished(QNetworkReply* reply);

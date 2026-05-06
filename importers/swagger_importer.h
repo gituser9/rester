@@ -26,7 +26,7 @@ struct SecurityScheme {
 class SwaggerImporter
 {
 public:
-    std::shared_ptr<Workspace> import(const QString& path);
+    std::shared_ptr<Workspace> importWorkspace(const QString& path);
 
 private:
     QMap<QString, SecurityScheme> _securitySchemes;

@@ -21,6 +21,7 @@ class Recipe(ConanFile):
     def requirements(self):
         self.requires("grpc/1.67.1")
         self.requires("yaml-cpp/0.9.0")
+        self.requires("brotli/1.2.0")
 
 
     def layout(self):

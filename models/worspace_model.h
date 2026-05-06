@@ -62,9 +62,11 @@ protected:
 
 private:
     enum RoleNames {
-        NameRole = Qt::UserRole,
-        UuidRole = Qt::UserRole + 1,
-        LastUsageRole = Qt::UserRole + 2
+        NameRole = Qt::UserRole + 1,
+        UuidRole,
+        LastUsageRole
+        // requests count
+        // folders count
     };
     QHash<int, QByteArray> _names;
     QList<std::shared_ptr<Workspace>> _workspaces;

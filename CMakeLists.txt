@@ -20,6 +20,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml QuickControls2 Gui WebSocket
 find_package(ZLIB)
 find_package(gRPC CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
+find_package(Brotli CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
@@ -133,6 +134,7 @@ target_link_libraries(rester
     PRIVATE ZLIB::ZLIB
     PRIVATE grpc::grpc
     PRIVATE yaml-cpp::yaml-cpp
+    PRIVATE brotli::brotli
 )
 
 

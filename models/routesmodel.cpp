@@ -466,18 +466,18 @@ void RoutesModel::importFromHar(const QModelIndex& parentIdx, const QString& fil
 {
     TreeNode* parentNode = getItem(parentIdx);
     auto importer = std::make_unique<Importer>();
-    auto ws = importer->import(filePath, ImportType::Har);
+    auto ws = importer->importWorkspace(filePath, ImportType::Har);
 
     //    beginInsertRows(parentIdx, row, row);
 
-    if (ws.isEmpty()) {
+    if (!ws) {
         emit error("Import from HAR error");
         return;
     }
 
     beginResetModel();
 
-    for (TreeNode* qry : ws.first()->nodes()) {
+    for (TreeNode* qry : ws->nodes()) {
         parentNode->addNode(qry);
     }
 

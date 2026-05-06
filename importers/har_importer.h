@@ -22,7 +22,7 @@
 class HarImporter
 {
 public:
-    std::shared_ptr<Workspace> import(const QString& path);
+    std::shared_ptr<Workspace> importWorkspace(const QString& path);
 
 private:
     QByteArray getJson(const QString& path);

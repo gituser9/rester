@@ -16,7 +16,7 @@
 class PostmanImporter
 {
 public:
-    std::shared_ptr<Workspace> import(const QString& path);
+    std::shared_ptr<Workspace> importWorkspace(const QString& path);
 
 private:
     void parseItem(const QJsonObject& itemObj, TreeNode* parent, const QJsonObject& parentAuth);

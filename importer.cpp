@@ -6,7 +6,7 @@ Importer::Importer(QObject* parent) : QObject{parent}
 {
 }
 
-QList<shared_ptr<Workspace>> Importer::import(const QString& filePath, ImportType type) noexcept
+shared_ptr<Workspace> Importer::importWorkspace(const QString& filePath, ImportType type) noexcept
 {
     switch (type) {
     case ImportType::Rester:
@@ -81,55 +81,45 @@ void Importer::exportCollection(QSharedPointer<Workspace> workspace, const QStri
     Util::writeToFile(exportPath + "/" + fileName, json);
 }
 
-QList<shared_ptr<Workspace>> Importer::fromRester(const QString& folderPath) const noexcept
+shared_ptr<Workspace> Importer::fromRester(const QString& filePath) const noexcept
 {
-    QDir wsDir(folderPath);
-    QStringList files = wsDir.entryList();
 
-    QList<shared_ptr<Workspace>> workspaces;
-    workspaces.reserve(files.count());
+    QJsonObject json = Util::getJsonFromFile(filePath);
 
-    for (const QString& fileName : files) {
-        QString path = folderPath + fileName;
-        QJsonObject json = Util::getJsonFromFile(path);
-
-        if (json.isEmpty()) {
-            continue;
-        }
-
-        auto workspace = std::make_shared<Workspace>();
-        workspace->fromJson(json);
-
-        workspaces << workspace;
+    if (json.isEmpty()) {
+        return nullptr;
     }
 
-    return workspaces;
+    auto workspace = std::make_shared<Workspace>();
+    workspace->fromJson(json);
+
+    return workspace;
 }
 
-QList<shared_ptr<Workspace>> Importer::fromExternal(const QString& filePath, ImportType type) noexcept
+shared_ptr<Workspace> Importer::fromExternal(const QString& filePath, ImportType type) noexcept
 {
     if (type == ImportType::InsomniaV5) {
         auto importer = std::make_unique<InsomniaV5Importer>();
 
-        return {importer->import(filePath)};
+        return importer->importWorkspace(filePath);
     }
 
     if (type == ImportType::Swagger) {
         auto importer = std::make_unique<SwaggerImporter>();
 
-        return {importer->import(filePath)};
+        return importer->importWorkspace(filePath);
     }
 
     if (type == ImportType::Postman) {
         auto importer = std::make_unique<PostmanImporter>();
 
-        return {importer->import(filePath)};
+        return importer->importWorkspace(filePath);
     }
 
     if (type == ImportType::Har) {
         auto importer = std::make_unique<HarImporter>();
 
-        return {importer->import(filePath)};
+        return importer->importWorkspace(filePath);
     }
 
     return {};

@@ -356,6 +356,16 @@ void Query::addFormData(const QString& name, const QString& value)
     emit dataChanged();
 }
 
+void Query::addFormData(const QString& name, const QString& value, bool isEnabled)
+{
+    QueryParam param(name, value, isEnabled);
+
+    _formDataList << param;
+
+    emit formDataChanged();
+    emit dataChanged();
+}
+
 void Query::removeParam(int index)
 {
     _paramList.removeAt(index);

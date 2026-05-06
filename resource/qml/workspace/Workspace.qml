@@ -419,15 +419,7 @@ Rectangle {
                     icon.height: 22
                     icon.color: 'black'
                     onClicked: {
-                        switch (cbImportType.currentIndex) {
-                        case 0:
-                        case 2:
-                            ws.folderDialogMode = 'import';
-                            folderDialog.open();
-                            break;
-                        default:
-                            fileDialog.open();
-                        }
+                        fileDialog.open();
                     }
                 }
             }

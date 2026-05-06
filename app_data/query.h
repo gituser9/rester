@@ -81,6 +81,7 @@ public:
     Q_INVOKABLE void addParam(const QString& name, const QString& value);
     Q_INVOKABLE void addParam(const QString& name, const QString& value, bool isEnabled);
     Q_INVOKABLE void addFormData(const QString& name, const QString& value);
+    Q_INVOKABLE void addFormData(const QString& name, const QString& value, bool isEnabled);
     Q_INVOKABLE void removeParam(int index);
     Q_INVOKABLE void removeHeader(int index);
     Q_INVOKABLE void removeHeader(const QString& name);

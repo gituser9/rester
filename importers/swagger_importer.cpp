@@ -1,7 +1,7 @@
 #include "swagger_importer.h"
 #include <QDebug>
 
-std::shared_ptr<Workspace> SwaggerImporter::import(const QString& path)
+std::shared_ptr<Workspace> SwaggerImporter::importWorkspace(const QString& path)
 {
     QByteArray fileData = getJson(path);
 

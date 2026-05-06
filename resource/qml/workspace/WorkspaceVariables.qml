@@ -9,18 +9,16 @@ import core.app 1.0
 import "../home/modal"
 import "../common/components"
 
-
 Item {
+    id: wsVars
 
     property var vars: ({})
     property int envIndex: -1
     property string env: ''
 
     Component.onCompleted: {
-        fillData()
+        fillData();
     }
-
-    id: wsVars
     anchors.fill: parent
 
     ColumnLayout {
@@ -45,11 +43,10 @@ Item {
                 icon.height: 22
                 icon.color: 'black'
                 onClicked: {
-                    mdlAddEnv.open()
+                    mdlAddEnv.open();
                 }
             }
         }
-
 
         ListView {
             Layout.fillWidth: true
@@ -61,7 +58,7 @@ Item {
             delegate: Button {
                 Component.onCompleted: {
                     if (model.name === env) {
-                        envIndex = index
+                        envIndex = index;
                     }
                 }
 
@@ -70,21 +67,19 @@ Item {
                 width: 100
                 down: model.name === env
                 onClicked: {
-                    env = model.name
-                    envIndex = index
+                    env = model.name;
+                    envIndex = index;
 
-                    fillVars(model.name)
-                    WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars)
+                    fillVars(model.name);
+                    WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
                 }
             }
         }
 
         ListView {
+            id: varList
             Layout.preferredWidth: wsVars.width
             Layout.preferredHeight: wsVars.height - 50
-
-
-            id: varList
             clip: true
             model: varModel
             delegate: Rectangle {
@@ -104,11 +99,11 @@ Item {
                             width: varList.width / 2
                             value: model.name
                             onEditingFinish: txt => {
-                                 vars[env][index] = {
-                                     "name": txt,
-                                     "value": tfVarValue.text
-                                 }
-                                 WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars)
+                                vars[env][index] = {
+                                    "name": txt,
+                                    "value": tfVarValue.text
+                                };
+                                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
                             }
                         }
                         MenuSeparator {
@@ -129,11 +124,11 @@ Item {
                             width: varList.width / 2
                             value: model.value
                             onEditingFinish: txt => {
-                                 vars[env][index] = {
-                                     "name": tfVarName.text,
-                                     "value": txt
-                                 }
-                                 WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars)
+                                vars[env][index] = {
+                                    "name": tfVarName.text,
+                                    "value": txt
+                                };
+                                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
                             }
                         }
                         MenuSeparator {
@@ -152,10 +147,10 @@ Item {
                         icon.height: 18
                         icon.color: 'black'
                         onClicked: {
-                            vars[env].splice(index, 1)
-                            varModel.remove(index)
+                            vars[env].splice(index, 1);
+                            varModel.remove(index);
 
-                            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars)
+                            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
                         }
                     }
                 }
@@ -179,14 +174,14 @@ Item {
             icon.height: 22
             icon.color: 'black'
             onClicked: {
-                delete vars[env]
+                delete vars[env];
 
-                modeModel.remove(envIndex)
-                env = ''
-                envIndex = -1
-                varModel.clear()
+                modeModel.remove(envIndex);
+                env = '';
+                envIndex = -1;
+                varModel.clear();
 
-                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars)
+                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
             }
         }
         Item {
@@ -203,11 +198,11 @@ Item {
                 let data = {
                     "name": '',
                     "value": ''
-                }
-                vars[env].push(data)
-                varModel.append(data)
+                };
+                vars[env].push(data);
+                varModel.append(data);
 
-                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars)
+                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
             }
         }
     }
@@ -227,17 +222,18 @@ Item {
         placeholder: qsTr("Environment Name")
         onOk: envName => {
             if (vars["env"] === undefined) {
-                vars = {}
-                vars.env = envName
+                vars = {};
+                vars.env = envName;
             }
 
-            vars[envName] = []
-            modeModel.append({"name": envName})
+            vars[envName] = [];
+            modeModel.append({
+                "name": envName
+            });
 
-            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars)
+            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
         }
     }
-
 
     Connections {
         target: App.workspace
@@ -247,38 +243,38 @@ Item {
         }
     }
 
-
     function fillData() {
-        vars = App.workspace.variables
+        vars = App.workspace.variables;
 
         if (Object.keys(vars).length === 0) {
-            return
+            return;
         }
 
         for (let key in vars) {
             if (key === 'env') {
-                continue
+                continue;
             }
 
-            modeModel.append({"name": key})
+            modeModel.append({
+                "name": key
+            });
         }
 
-        fillVars()
+        fillVars();
     }
 
     function fillVars() {
-        varModel.clear()
+        varModel.clear();
 
         if (env === '') {
-            return
+            return;
         }
 
         for (let item of vars[env]) {
             varModel.append({
                 "name": item.name,
                 "value": item.value
-            })
+            });
         }
     }
-
 }

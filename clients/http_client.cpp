@@ -90,8 +90,6 @@ void HttpClient::slotFinished(QNetworkReply* reply)
 
     QString errorString = getErrorString(reply);
 
-    reply->deleteLater();
-
     if (!errorString.isEmpty()) {
         emit httpError(errorString);
 
@@ -110,6 +108,8 @@ void HttpClient::slotFinished(QNetworkReply* reply)
     for (const QByteArray& header : rawHeaders) {
         headers[header] = QString(reply->rawHeader(header));
     }
+
+    reply->deleteLater();
 
     // body
     CompressAlg alg = isCompressed(headers);
@@ -238,7 +238,7 @@ void HttpClient::sendFormUrlEncoded(Query* query, QNetworkRequest request)
     send(query, request);
 }
 
-void HttpClient::send(Query* query, QNetworkRequest& request) noexcept
+void HttpClient::send(Query* query, QNetworkRequest& request)
 {
     switch (query->queryType()) {
     case QueryType::GET:
@@ -265,7 +265,7 @@ void HttpClient::send(Query* query, QNetworkRequest& request) noexcept
     }
 }
 
-void HttpClient::send(Query* query, QNetworkRequest& request, QHttpMultiPart* form) noexcept
+void HttpClient::send(Query* query, QNetworkRequest& request, QHttpMultiPart* form)
 {
     QString method = Util::getQueryTypeString(query->queryType());
     _reply = _manager->sendCustomRequest(request, method.toUtf8(), form);
