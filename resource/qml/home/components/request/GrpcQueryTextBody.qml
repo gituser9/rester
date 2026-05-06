@@ -4,16 +4,16 @@ import QtQuick.Controls
 
 import io.rester
 import core.app 1.0
-import HtmlSyntaxHighlighter
 import JsonSyntaxHighlighter
+import GrpcClient
 
 import "../../../"
 
 Item {
+    id: root
+    anchors.fill: parent
 
     property bool isQueryExists: false
-
-    anchors.fill: parent
 
     Component.onCompleted: {
         if (App.grpcQuery === null) {
@@ -22,6 +22,22 @@ Item {
 
         jsonHilighter.setDocument(taQueryBody.textDocument);
         taQueryBody.text = App.grpcQuery.body;
+    }
+
+    Button {
+        z: 100
+        visible: taQueryBody.text.length === 0
+        anchors.right: root.right
+        anchors.top: root.top
+        anchors.topMargin: 8
+        anchors.rightMargin: 8
+        text: qsTr("Generate")
+        icon.source: "/resource/images/magic.svg"
+        flat: true
+        onClicked: {
+            let emptyBoby = GrpcClient.generateBody(App.grpcQuery);
+            App.grpcQuery.body = emptyBoby;
+        }
     }
 
     ScrollView {
@@ -42,7 +58,11 @@ Item {
         target: App
 
         function onGrpcQueryChanged() {
-            if (App.grpcQuery === null) {
+            if (!App.grpcQuery) {
+                return;
+            }
+
+            if (!App.grpcQuery.body) {
                 return;
             }
 

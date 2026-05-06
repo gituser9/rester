@@ -24,7 +24,7 @@ static grpc::ByteBuffer SerializeToByteBuffer(const Message* msg)
     msg->SerializeToString(&serializedStr);
     grpc::Slice slice(serializedStr);
 
-    return grpc::ByteBuffer(&slice, 1);
+    return {&slice, 1};
 }
 
 // ByteBuffer -> Message
@@ -65,6 +65,33 @@ void GrpcClient::setIsRequestWork(bool newIsRequestWork)
     emit isRequestWorkChanged();
 }
 
+QString GrpcClient::generateBody(GrpcQuery* query)
+{
+    QString fullMethodName = QStringLiteral("%1.%2.%3")
+                                 .arg(query->package())
+                                 .arg(query->srv())
+                                 .arg(query->rpc());
+    const MethodDescriptor* methodDesc = descriptor(query, fullMethodName);
+
+    if (!methodDesc) {
+        return "{}";
+    }
+
+    std::unique_ptr<Message> requestMsg(_factory->GetPrototype(methodDesc->input_type())->New());
+
+    std::string jsonResponseStr;
+    util::JsonPrintOptions printOptions;
+    printOptions.always_print_fields_with_no_presence = true;
+
+    auto printStatus = util::MessageToJsonString(*requestMsg, &jsonResponseStr, printOptions);
+
+    if (!printStatus.ok()) {
+        return "{}";
+    }
+
+    return Util::beautify(QString::fromStdString(jsonResponseStr), BodyType::JSON);
+}
+
 void GrpcClient::call(GrpcQuery* query)
 {
     if (_watcher.isRunning()) {
@@ -80,7 +107,7 @@ void GrpcClient::call(GrpcQuery* query)
     _watcher.setFuture(future);
 }
 
-GrpcClient::CallResult GrpcClient::performCall(GrpcQuery* query)
+CallResult GrpcClient::performCall(GrpcQuery* query)
 {
     CallResult result{
         .status = 0,
@@ -88,34 +115,13 @@ GrpcClient::CallResult GrpcClient::performCall(GrpcQuery* query)
         .data = "",
         .meta = {} //
     };
-    QFileInfo fileInfo(query->filePath());
 
-    if (!fileInfo.exists()) {
-        result.data = "Proto file is not found. Please reload";
-        return result;
-    }
-
-    // parse proto
-    compiler::DiskSourceTree sourceTree;
-    sourceTree.MapPath("", fileInfo.absolutePath().toStdString());
-
-    ProtoErrorCollector errorCollector;
-    compiler::Importer importer(&sourceTree, &errorCollector);
-
-    const FileDescriptor* fileDesc = importer.Import(fileInfo.fileName().toStdString());
-
-    if (!fileDesc) {
-        result.data = "Proto parse error:\n" + errorCollector.errors;
-        return result;
-    }
-
-    // find method
+    // handle proto
     QString fullMethodName = QStringLiteral("%1.%2.%3")
                                  .arg(query->package())
                                  .arg(query->srv())
                                  .arg(query->rpc());
-    const DescriptorPool* pool = importer.pool(); // TODO: cache
-    const MethodDescriptor* methodDesc = pool->FindMethodByName(fullMethodName.toStdString());
+    const MethodDescriptor* methodDesc = descriptor(query, fullMethodName);
 
     if (!methodDesc) {
         result.data = "Method " + fullMethodName + " not found.";
@@ -123,9 +129,8 @@ GrpcClient::CallResult GrpcClient::performCall(GrpcQuery* query)
     }
 
     // message
-    DynamicMessageFactory factory(pool); // TODO: cache
-    std::unique_ptr<Message> requestMsg(factory.GetPrototype(methodDesc->input_type())->New());
-    std::unique_ptr<Message> responseMsg(factory.GetPrototype(methodDesc->output_type())->New());
+    std::unique_ptr<Message> requestMsg(_factory->GetPrototype(methodDesc->input_type())->New());
+    std::unique_ptr<Message> responseMsg(_factory->GetPrototype(methodDesc->output_type())->New());
 
     // JSON payload to Protobuf Message
     std::string jsonBody = query->body().toStdString();
@@ -153,6 +158,7 @@ GrpcClient::CallResult GrpcClient::performCall(GrpcQuery* query)
     // timeout
     context.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(10));
 
+    // request meta
     QMap<QString, QString> meta;
 
     for (const auto& item : query->metaList()) {
@@ -167,7 +173,6 @@ GrpcClient::CallResult GrpcClient::performCall(GrpcQuery* query)
         meta[item.name()] = item.value();
     }
 
-    // request meta
     for (auto it = meta.cbegin(); it != meta.cend(); ++it) {
         QString val = Util::fillVars(it.value(), _vars);
 
@@ -177,11 +182,11 @@ GrpcClient::CallResult GrpcClient::performCall(GrpcQuery* query)
         );
     }
 
+    // call
     grpc::ByteBuffer responseBuffer;
     grpc::ByteBuffer requestBuffer = SerializeToByteBuffer(requestMsg.get());
     std::string grpcMethodUrl = "/" + methodDesc->service()->full_name() + "/" + methodDesc->name();
 
-    // call
     grpc::CompletionQueue cq;
     grpc::Status status;
 
@@ -196,7 +201,7 @@ GrpcClient::CallResult GrpcClient::performCall(GrpcQuery* query)
     void* gotTag = nullptr;
     bool ok = false;
 
-    // block (timeout in context.set_deadline выше)
+    // block (timeout in context.set_deadline)
     cq.Next(&gotTag, &ok);
 
     if (!status.ok()) {
@@ -213,7 +218,7 @@ GrpcClient::CallResult GrpcClient::performCall(GrpcQuery* query)
         result.meta[QString::fromStdString(key.data())] = QString::fromStdString(value.data());
     }
 
-    // Message to JSON
+    // message to JSON
     if (!ParseFromByteBuffer(&responseBuffer, responseMsg.get())) {
         result.data = "Deserialize error.";
         return result;
@@ -296,7 +301,7 @@ QList<ProtoServiceInfo> GrpcClient::parseProtoFile(const QString& protoFilePath)
 
 void GrpcClient::onCallFinished()
 {
-    long long ms = QDateTime::currentMSecsSinceEpoch() - _startTime;
+    qint64 ms = QDateTime::currentMSecsSinceEpoch() - _startTime;
     CallResult result = _watcher.result();
 
     if (result.success) {
@@ -312,4 +317,39 @@ void GrpcClient::onCallFinished()
     else {
         emit requestError(result.data);
     }
+}
+
+const MethodDescriptor* GrpcClient::descriptor(GrpcQuery* query, const QString& fullMethodName)
+{
+    if (_pool && _factory) {
+        const MethodDescriptor* methodDesc = _pool->FindMethodByName(fullMethodName.toStdString());
+
+        if (methodDesc) {
+            return methodDesc;
+        }
+    }
+
+    QFileInfo fileInfo(query->filePath());
+
+    if (!fileInfo.exists()) {
+        return nullptr;
+    }
+
+    // parse proto
+    compiler::DiskSourceTree sourceTree;
+    sourceTree.MapPath("", fileInfo.absolutePath().toStdString());
+
+    ProtoErrorCollector errorCollector;
+    _importer = std::make_unique<compiler::Importer>(&sourceTree, &errorCollector);
+
+    const FileDescriptor* fileDesc = _importer->Import(fileInfo.fileName().toStdString());
+
+    if (!fileDesc) {
+        return nullptr;
+    }
+
+    _pool = std::make_unique<DescriptorPool>(_importer->pool());
+    _factory = std::make_unique<DynamicMessageFactory>(_importer->pool());
+
+    return _pool->FindMethodByName(fullMethodName.toStdString());
 }

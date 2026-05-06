@@ -1,6 +1,7 @@
 #ifndef GRPC_CLIENT_H
 #define GRPC_CLIENT_H
 
+#include <memory>
 #include <chrono>
 
 #include <QDir>
@@ -23,23 +24,28 @@
 #include "../app_data/grpc_query.h"
 #include "../util.h"
 
-// Описание одного RPC-метода
 struct RpcMethodInfo {
-    QString name;         // "SayHello"
-    QString inputType;    // "HelloRequest"
-    QString outputType;   // "HelloReply"
-    bool clientStreaming; // stream на стороне клиента
-    bool serverStreaming; // stream на стороне сервера
+    QString name;
+    QString inputType;
+    QString outputType;
+    bool clientStreaming;
+    bool serverStreaming;
 };
 
-// Описание одного сервиса из .proto файла
 struct ProtoServiceInfo {
-    QString packageName; // "helloworld"
-    QString serviceName; // "Greeter"
+    QString packageName;
+    QString serviceName;
     QList<RpcMethodInfo> methods;
 };
 
-class GrpcClient : public QObject
+struct CallResult {
+    int status;
+    bool success;
+    QString data;
+    QVariantMap meta;
+};
+
+class GrpcClient final : public QObject
 {
     Q_OBJECT
 
@@ -52,6 +58,9 @@ public:
     // Properties
     bool isRequestWork() const;
     void setIsRequestWork(bool newIsRequestWork);
+
+    // QML
+    Q_INVOKABLE QString generateBody(GrpcQuery* query);
 
     // Custom
     void call(GrpcQuery* query);
@@ -67,20 +76,16 @@ private slots:
     void onCallFinished();
 
 private:
-    bool _isRequestWork;
-    long long _startTime;
-    QVariantList _vars;
-
-    struct CallResult {
-        int status;
-        bool success;
-        QString data;
-        QVariantMap meta;
-    };
+    bool _isRequestWork = false;
+    qint64 _startTime = 0;
+    std::unique_ptr<google::protobuf::DescriptorPool> _pool = nullptr;
+    std::unique_ptr<google::protobuf::DynamicMessageFactory> _factory = nullptr;
+    std::unique_ptr<google::protobuf::compiler::Importer> _importer = nullptr;
+    QVariantList _vars = {};
+    QFutureWatcher<CallResult> _watcher;
 
     CallResult performCall(GrpcQuery* query);
-
-    QFutureWatcher<CallResult> _watcher;
+    const google::protobuf::MethodDescriptor* descriptor(GrpcQuery* query, const QString& fullMethodName);
 };
 
 #endif // GRPC_CLIENT_H
