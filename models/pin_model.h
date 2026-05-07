@@ -7,7 +7,8 @@
 
 #include "../app_data/workspace.h"
 
-class PinModel : public QAbstractListModel {
+class PinModel : public QAbstractListModel
+{
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON

@@ -2,10 +2,9 @@
 #define SEARCHSYNTAXHIGHLIGHTER_H
 
 #include <QSyntaxHighlighter>
-#include <QRegularExpression>
 #include <QTextCharFormat>
-#include <QTextDocument>
 
+#include "../app_data/highlighting_rule.h"
 
 class SearchSyntaxHighlighter : public QSyntaxHighlighter
 {
@@ -13,8 +12,9 @@ class SearchSyntaxHighlighter : public QSyntaxHighlighter
 
 public:
     SearchSyntaxHighlighter(QTextDocument* parent = nullptr);
+
     void setWordPattern(const QString& word);
-    void highlightBlock(const QString &text);
+    void highlightBlock(const QString& text);
     void setNextMatchStateActive();
     void setPrevMatchStateActive();
     void setActiveMatchIndex(int activeMatchIndex);
@@ -24,13 +24,7 @@ public:
     int currentCursorMatch() const;
     int currentLineMatch() const;
 
-
 private:
-    struct HighlightingRule{
-        QRegularExpression pattern;
-        QTextCharFormat format;
-    };
-
     QString _findString;
     QRegularExpressionMatchIterator _matches;
     QList<QRegularExpressionMatch> _matchList;

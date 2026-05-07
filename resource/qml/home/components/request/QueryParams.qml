@@ -4,21 +4,20 @@ import QtQuick.Layouts
 
 import io.rester
 import core.app 1.0
+import UrlHighlighter
 
-import '../../modal'
-import '../../../common/components'
-
+import "../../modal"
+import "../../../common/components"
 
 Rectangle {
+    id: winParam
     property string fullUrl: ""
 
     signal changeParam(int index)
 
     Component.onCompleted: {
-        fillData()
+        fillData();
     }
-
-    id: winParam
 
     ColumnLayout {
         anchors.fill: parent
@@ -27,7 +26,6 @@ Rectangle {
             Layout.fillWidth: true
             Layout.topMargin: 16
             Layout.bottomMargin: 8
-
 
             Text {
                 width: parent.width
@@ -43,7 +41,7 @@ Rectangle {
                 icon.width: 18
                 icon.height: 18
                 onClicked: {
-                    mdlImportQuery.open()
+                    mdlImportQuery.open();
                 }
             }
         }
@@ -51,24 +49,44 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
 
-            TextField {
-                Layout.fillWidth: true
-
+            TextEdit {
                 id: tfFullUrl
                 width: parent.width
-                readOnly: true
                 text: fullUrl
+                readOnly: true
                 font.family: "Monospace"
+                wrapMode: Text.Wrap
+
+                Layout.fillWidth: true
+
+                Component.onCompleted: {
+                    urlHilighter.setDocument(tfFullUrl.textDocument);
+                }
             }
             Button {
+                id: copybtn
                 flat: true
                 icon.source: "/resource/images/copy.svg"
                 icon.width: 22
                 icon.height: 22
                 icon.color: 'black'
                 onClicked: {
-                    tfFullUrl.selectAll()
-                    tfFullUrl.copy()
+                    teCopy.text = tfFullUrl.text;
+                    teCopy.selectAll();
+                    teCopy.copy();
+                    teCopy.clear();
+
+                    copybtn.tooltipText = qsTr("Copied");
+                }
+
+                property string tooltipText: qsTr("Copy value")
+
+                ToolTip.text: tooltipText
+                ToolTip.visible: hovered
+                ToolTip.toolTip.onVisibleChanged: {
+                    if (!hovered) {
+                        tooltipText = qsTr("Copy value");
+                    }
                 }
             }
         }
@@ -91,16 +109,15 @@ Rectangle {
                 icon.width: 18
                 icon.height: 18
                 onClicked: {
-                    fromUrl()
+                    fromUrl();
                 }
             }
         }
 
         ListView {
+            id: paramList
             Layout.fillWidth: true
             Layout.fillHeight: true
-
-            id: paramList
             model: paramModel
             clip: true
             delegate: Rectangle {
@@ -115,9 +132,9 @@ Rectangle {
                         id: cbEnabled
                         checked: model.isEnabled
                         onClicked: {
-                            paramModel.setProperty(index, "isEnabled", cbEnabled.checkState === Qt.Checked)
-                            fillUrl()
-                            changeParam(index)
+                            paramModel.setProperty(index, "isEnabled", cbEnabled.checkState === Qt.Checked);
+                            fillUrl();
+                            changeParam(index);
                         }
                     }
                     Column {
@@ -130,13 +147,13 @@ Rectangle {
                             height: 20
                             value: model.name
                             onEditingFinish: txt => {
-                                let param = paramModel.get(index)
+                                let param = paramModel.get(index);
 
-                                App.query.setParam(index, param.name, param.value, param.isEnabled)
+                                App.query.setParam(index, param.name, param.value, param.isEnabled);
                             }
                             onTextChange: txt => {
-                                paramModel.setProperty(index, "name", txt)
-                                fillUrl()
+                                paramModel.setProperty(index, "name", txt);
+                                fillUrl();
                             }
                         }
                         MenuSeparator {
@@ -159,13 +176,13 @@ Rectangle {
                             height: 20
                             value: model.value
                             onEditingFinish: txt => {
-                                 let param = paramModel.get(index)
+                                let param = paramModel.get(index);
 
-                                 App.query.setParam(index, param.name, param.value, param.isEnabled)
+                                App.query.setParam(index, param.name, param.value, param.isEnabled);
                             }
                             onTextChange: txt => {
-                                paramModel.setProperty(index, "value", txt)
-                                fillUrl()
+                                paramModel.setProperty(index, "value", txt);
+                                fillUrl();
                             }
                         }
                         MenuSeparator {
@@ -184,10 +201,10 @@ Rectangle {
                         icon.height: 18
                         icon.color: 'black'
                         onClicked: {
-                            App.query.removeParam(index)
-                            paramModel.remove(index)
+                            App.query.removeParam(index);
+                            paramModel.remove(index);
 
-                            fillUrl()
+                            fillUrl();
                         }
                     }
                 }
@@ -209,8 +226,8 @@ Rectangle {
                 icon.height: 22
                 icon.color: 'black'
                 onClicked: {
-                    paramModel.clear()
-                    App.query.params = []
+                    paramModel.clear();
+                    App.query.params = [];
                 }
             }
             Item {
@@ -225,11 +242,11 @@ Rectangle {
                 icon.color: 'black'
                 onClicked: {
                     paramModel.append({
-                                          "name": '',
-                                          "value": '',
-                                          "isEnabled": true
-                                      })
-                    App.query.addParam('', '')
+                        "name": '',
+                        "value": '',
+                        "isEnabled": true
+                    });
+                    App.query.addParam('', '');
                 }
             }
         }
@@ -239,23 +256,31 @@ Rectangle {
         }
     }
 
+    // Types
+    UrlHighlighter {
+        id: urlHilighter
+    }
+
+    TextEdit {
+        id: teCopy
+        visible: false
+    }
 
     Timer {
         id: syncTimer
-        interval: 500;
-        running: true;
+        interval: 500
+        running: true
         repeat: false
     }
-
 
     Connections {
         target: App
 
         function onQueryChanged() {
-            paramModel.clear()
-            fullUrl = ""
+            paramModel.clear();
+            fullUrl = "";
 
-            fillData()
+            fillData();
         }
     }
 
@@ -263,7 +288,7 @@ Rectangle {
         target: winParam
 
         function onChangeParam(idx) {
-            sync(idx)
+            sync(idx);
         }
     }
 
@@ -271,7 +296,7 @@ Rectangle {
         target: App.query
 
         function onUrlChanged() {
-            rebuildUrl()
+            rebuildUrl();
         }
     }
 
@@ -279,10 +304,9 @@ Rectangle {
         target: App.workspace
 
         function onEnvChanged() {
-            rebuildUrl()
+            rebuildUrl();
         }
     }
-
 
     InputDialog {
         id: mdlImportQuery
@@ -290,169 +314,166 @@ Rectangle {
         title: qsTr("Import Request")
         placeholder: qsTr("cUrl string")
         onOk: cUrlString => {
-                  if (!cUrlString) {
-                      return
-                  }
+            if (!cUrlString) {
+                return;
+            }
 
-                  App.setFromCurl(cUrlString)
-              }
+            App.setFromCurl(cUrlString);
+        }
     }
-
 
     function sync(idx) {
         syncTimer.triggered.connect(function () {
-            let param = paramModel.get(idx)
+            let param = paramModel.get(idx);
 
-            App.query.setParam(idx, param.name, param.value, param.isEnabled)
+            App.query.setParam(idx, param.name, param.value, param.isEnabled);
         });
-        syncTimer.start()
+        syncTimer.start();
     }
 
     function fillData() {
         // url
-        let newUrl = App.query.url
-        let vars = App.workspace.variables[App.workspace.env]
+        let newUrl = App.query.url;
+        let vars = App.workspace.variables[App.workspace.env];
 
         if (vars) {
             for (let varr of vars) {
-                newUrl = replaceVariables(newUrl, varr)
+                newUrl = replaceVariables(newUrl, varr);
             }
         }
 
-
         if (Object.keys(App.query.params).length != 0) {
-            newUrl += "?"
+            newUrl += "?";
         }
 
         // params
-        paramModel.clear()
+        paramModel.clear();
 
         for (let p of App.query.params) {
             paramModel.append({
-                                  "name": p.name,
-                                  "value": p.value,
-                                  "isEnabled": p.isEnabled
-                              })
-            newUrl += p.name + '=' + p.value + '&'
+                "name": p.name,
+                "value": p.value,
+                "isEnabled": p.isEnabled
+            });
+            newUrl += p.name + '=' + p.value + '&';
         }
 
         // set full url
         if (newUrl.slice(-1) === '&') {
-            fullUrl = newUrl.substring(0, newUrl.length - 1)
+            fullUrl = newUrl.substring(0, newUrl.length - 1);
         } else {
-            fullUrl = newUrl
+            fullUrl = newUrl;
         }
     }
 
     function fillUrl() {
-        let url = fullUrl
-        let urlArr = url.split("?")
+        let url = fullUrl;
+        let urlArr = url.split("?");
 
         if (App.workspace.env !== '') {
-            let vars = App.workspace.variables[App.workspace.env]
+            let vars = App.workspace.variables[App.workspace.env];
 
             for (let varr of vars) {
-                urlArr[0] = replaceVariables(urlArr[0], varr)
+                urlArr[0] = replaceVariables(urlArr[0], varr);
             }
         }
 
-
-        url = urlArr[0] + '?'
+        url = urlArr[0] + '?';
 
         for (let i = 0; i < paramModel.count; ++i) {
-            const param = paramModel.get(i)
+            const param = paramModel.get(i);
 
             if (!param.isEnabled) {
-                continue
+                continue;
             }
 
-            url += param.name + '=' + param.value + '&'
+            url += param.name + '=' + param.value + '&';
         }
 
         if (url.slice(-1) === '&') {
-            fullUrl = url.substring(0, url.length - 1)
+            fullUrl = url.substring(0, url.length - 1);
         } else {
-            fullUrl = url
+            fullUrl = url;
         }
     }
 
     function fromUrl() {
         if (App.query.url === '') {
-            return
+            return;
         }
 
         // get all params
-        let url = App.query.url
-        const paramArr = url.slice(url.indexOf('?') + 1).split('&')
-        const params = {}
+        let url = App.query.url;
+        const paramArr = url.slice(url.indexOf('?') + 1).split('&');
+        const params = {};
         paramArr.map(param => {
-                         const arr = param.split('=')
-                         params[arr[0]] = decodeURIComponent(arr[1])
-                     })
+            const arr = param.split('=');
+            params[arr[0]] = decodeURIComponent(arr[1]);
+        });
 
         if (params.length <= 1) {
-            return
+            return;
         }
 
         // get url without params
-        let urlArr = App.query.url.split('?')
-        let route = urlArr[0]
+        let urlArr = App.query.url.split('?');
+        let route = urlArr[0];
 
         // fill model from params
-        paramModel.clear()
+        paramModel.clear();
 
         for (let key in params) {
             paramModel.append({
                 "name": key,
                 "value": params[key],
                 "isEnabled": true
-            })
-            App.query.addParam(key, params[key])
+            });
+            App.query.addParam(key, params[key]);
         }
 
         // set new data in query objecrt
-        App.query.url = route
+        App.query.url = route;
 
         // set full url preview
-        fillUrl()
+        fillUrl();
     }
 
     function replaceVariables(inputString, varr) {
         let regex = new RegExp(`{{\s*(${varr.name})\s*}}`);
-        let replacedString = inputString.replace(regex, varr.value)
+        let replacedString = inputString.replace(regex, varr.value);
 
         return replacedString;
     }
 
     function rebuildUrl() {
         // url
-        let newUrl = App.query.url
-        let vars = App.workspace.variables[App.workspace.env]
+        let newUrl = App.query.url;
+        let vars = App.workspace.variables[App.workspace.env];
 
         if (vars) {
             for (let varr of vars) {
-                newUrl = replaceVariables(newUrl, varr)
+                newUrl = replaceVariables(newUrl, varr);
             }
         }
 
         if (Object.keys(App.query.params).length != 0) {
-            newUrl += "?"
+            newUrl += "?";
         }
 
         // params
         for (let p of App.query.params) {
             if (!p.isEnabled) {
-                continue
+                continue;
             }
 
-            newUrl += p.name + '=' + p.value + '&'
+            newUrl += p.name + '=' + p.value + '&';
         }
 
         // set full url
         if (newUrl.slice(-1) === '&') {
-            fullUrl = newUrl.substring(0, newUrl.length - 1)
+            fullUrl = newUrl.substring(0, newUrl.length - 1);
         } else {
-            fullUrl = newUrl
+            fullUrl = newUrl;
         }
     }
 }

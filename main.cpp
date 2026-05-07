@@ -11,6 +11,7 @@
 #include "highliters/html_syntax_highlighter.h"
 #include "highliters/json_syntax_highlighter.h"
 #include "highliters/var_syntax_highlighter.h"
+#include "highliters/url_highlighter.h"
 #include "models/pin_model.h"
 #include "models/routesmodel.h"
 #include "models/worspace_model.h"
@@ -51,6 +52,7 @@ int main(int argc, char* argv[])
     qmlRegisterType<HtmlSyntaxHighlighter>("HtmlSyntaxHighlighter", 1, 0, "HtmlSyntaxHighlighter");
     qmlRegisterType<JsonSyntaxHighlighter>("JsonSyntaxHighlighter", 1, 0, "JsonSyntaxHighlighter");
     qmlRegisterType<VarSyntaxHighlighter>("VarSyntaxHighlighter", 1, 0, "VarSyntaxHighlighter");
+    qmlRegisterType<UrlHighlighter>("UrlHighlighter", 1, 0, "UrlHighlighter");
     qmlRegisterType<SearchEngine>("SearchEngine", 1, 0, "SearchEngine");
 
     QQmlApplicationEngine engine;

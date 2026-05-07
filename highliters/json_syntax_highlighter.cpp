@@ -23,7 +23,7 @@ JsonSyntaxHighlighter::JsonSyntaxHighlighter(QQuickTextDocument *parent) : QSynt
     HighlightingRule stringFieldRule;
     fieldNameFormat.setForeground(Qt::darkMagenta);
     fieldNameFormat.setFontWeight(550);
-    stringFieldRule.pattern = QRegularExpression("\"\\w+\":");
+    stringFieldRule.pattern = QRegularExpression(R"("\w+":)");
     stringFieldRule.pattern.optimize();
     stringFieldRule.format = fieldNameFormat;
     highlightingRules.append(stringFieldRule);
@@ -31,7 +31,7 @@ JsonSyntaxHighlighter::JsonSyntaxHighlighter(QQuickTextDocument *parent) : QSynt
     // Numbers
     HighlightingRule numRule;
     numberFormat.setForeground(Qt::darkRed);
-    numRule.pattern = QRegularExpression("\\b\\d+(\\.\\d+)?\\b");
+    numRule.pattern = QRegularExpression(R"(\b\d+(\.\d+)?\b)");
     numRule.pattern.optimize();
     numRule.format = numberFormat;
     highlightingRules.append(numRule);

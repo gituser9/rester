@@ -424,7 +424,7 @@ Rectangle {
                 }
             }
             Text {
-                text: getInfoStringForImport()
+                text: qsTr(`set path to file`)
             }
             ComboBox {
                 id: cbImportType
@@ -520,17 +520,6 @@ Rectangle {
         let str = `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 
         return str;
-    }
-
-    function getInfoStringForImport() {
-        switch (cbImportType.currentIndex) {
-        case 0:
-            return qsTr(`set path to "workspaces" folder`);
-        case 1:
-            return qsTr(`set path to Insomnia workspace file`);
-        case 2:
-            return qsTr(`set path to Postman collection file`);
-        }
     }
 
     function folderDialogAccept(path) {

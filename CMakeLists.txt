@@ -103,6 +103,7 @@ qt_add_qml_module(
         resource/qml/workspace/Workspace.qml
         resource/qml/workspace/WorkspaceVariables.qml
 
+    DEPENDENCIES QtQuick
     # ENABLE_TYPE_COMPILER
     IMPORT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resource/qml
 )
