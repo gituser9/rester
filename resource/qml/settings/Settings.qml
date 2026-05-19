@@ -1,8 +1,12 @@
+pragma ComponentBehavior: Bound
+pragma ValueTypeBehavior: Addressable
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
 Item {
+    id: settingsView
     ColumnLayout {
         Layout.alignment: Qt.AlignTop
 
@@ -23,7 +27,7 @@ Item {
                 //
             }
             ComboBox {
-                model: getSizes()
+                model: settingsView.getSizes()
                 // Set the initial currentIndex to the value stored in the backend.
                 Component.onCompleted: currentIndex = indexOfValue(12)
             }
@@ -38,7 +42,7 @@ Item {
                 //
             }
             ComboBox {
-                model: getSizes()
+                model: settingsView.getSizes()
                 // Set the initial currentIndex to the value stored in the backend.
                 Component.onCompleted: currentIndex = indexOfValue(12)
             }
@@ -182,14 +186,13 @@ Item {
         }
     }
 
-
     function getSizes() {
         let sizes = [];
 
         for (let i = 2; i < 100; i += 2) {
-            sizes.push(i)
+            sizes.push(i);
         }
 
-        return sizes
+        return sizes;
     }
 }
