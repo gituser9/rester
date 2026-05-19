@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtCore
 import QtQuick
 import QtQuick.Layouts
@@ -6,7 +8,6 @@ import QtQuick.Dialogs
 
 import io.rester
 import core.app 1.0
-import RoutesModel
 
 import "../modal"
 import "../../colors"
@@ -170,13 +171,13 @@ Rectangle {
 
     function getIcon() {
         if (!childrenCount) {
-            return "/resource/images/folder-empty.svg";
+            return "qrc:/resource/images/folder-empty.svg";
         }
 
         if (isExpanded) {
-            return '/resource/images/folder-open.svg';
+            return 'qrc:/resource/images/folder-open.svg';
         }
 
-        return '/resource/images/folder.svg';
+        return 'qrc:/resource/images/folder.svg';
     }
 }

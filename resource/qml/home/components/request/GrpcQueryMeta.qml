@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -14,7 +16,7 @@ Rectangle {
     signal changeHeader(int index)
 
     Component.onCompleted: {
-        fillData();
+        winHeader.fillData();
     }
     anchors.fill: parent
 
@@ -25,8 +27,14 @@ Rectangle {
         clip: true
         model: headerModel
         delegate: Rectangle {
+            id: metaDelegate
             height: 60
             width: winHeader.width
+
+            required property bool isEnabled
+            required property int index
+            required property string name
+            required property string value
 
             RowLayout {
                 spacing: 16
@@ -34,10 +42,10 @@ Rectangle {
 
                 CheckBox {
                     id: cbEnabled
-                    checked: model.isEnabled
+                    checked: metaDelegate.isEnabled
                     onClicked: {
-                        headerModel.setProperty(index, "isEnabled", cbEnabled.checkState === Qt.Checked);
-                        changeHeader(index);
+                        headerModel.setProperty(metaDelegate.index, "isEnabled", cbEnabled.checkState === Qt.Checked);
+                        winHeader.changeHeader(metaDelegate.index);
                     }
                 }
                 Column {
@@ -48,14 +56,14 @@ Rectangle {
                         width: headerList.width / 3
                         height: 20
                         isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: model.name
+                        value: metaDelegate.name
                         onEditingFinish: txt => {
-                            let header = headerModel.get(index);
+                            let header = headerModel.get(metaDelegate.index);
 
-                            App.grpcQuery.setMetaItem(index, header.name, header.value, header.isEnabled);
+                            App.grpcQuery.setMetaItem(metaDelegate.index, header.name, header.value, header.isEnabled);
                         }
                         onTextChange: txt => {
-                            headerModel.setProperty(index, "name", txt);
+                            headerModel.setProperty(metaDelegate.index, "name", txt);
                         }
                     }
                     MenuSeparator {
@@ -76,14 +84,14 @@ Rectangle {
                         width: parent.width
                         height: 20
                         isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: model.value.toString()
+                        value: metaDelegate.value
                         onEditingFinish: txt => {
-                            let header = headerModel.get(index);
+                            let header = headerModel.get(metaDelegate.index);
 
-                            App.grpcQuery.setMetaItem(index, header.name, header.value, header.isEnabled);
+                            App.grpcQuery.setMetaItem(metaDelegate.index, header.name, header.value, header.isEnabled);
                         }
                         onTextChange: txt => {
-                            headerModel.setProperty(index, "value", txt);
+                            headerModel.setProperty(metaDelegate.index, "value", txt);
                         }
 
                         Component.onCompleted: {
@@ -101,13 +109,13 @@ Rectangle {
                 }
                 Button {
                     flat: true
-                    icon.source: "/resource/images/close.svg"
+                    icon.source: "qrc:/resource/images/close.svg"
                     icon.width: 22
                     icon.height: 22
                     icon.color: 'black'
                     onClicked: {
-                        App.grpcQuery.removeMetaItem(index);
-                        headerModel.remove(index);
+                        App.grpcQuery.removeMetaItem(metaDelegate.index);
+                        headerModel.remove(metaDelegate.index);
                     }
                 }
             }
@@ -125,7 +133,7 @@ Rectangle {
         Button {
             text: qsTr("Add")
             flat: true
-            icon.source: "/resource/images/add.svg"
+            icon.source: "qrc:/resource/images/add.svg"
             icon.width: 22
             icon.height: 22
             icon.color: 'black'
@@ -149,8 +157,7 @@ Rectangle {
 
         function onMetaChanged() {
             headerModel.clear();
-
-            fillData();
+            winHeader.fillData();
         }
     }
 
@@ -158,7 +165,7 @@ Rectangle {
         target: winHeader
 
         function onChangeHeader(idx) {
-            sync(idx);
+            winHeader.sync(idx);
         }
     }
 

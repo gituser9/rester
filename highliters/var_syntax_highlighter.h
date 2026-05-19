@@ -9,20 +9,28 @@
 class VarSyntaxHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
-
     // QML_ELEMENT
+
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged FINAL)
 
 public:
     explicit VarSyntaxHighlighter(QQuickTextDocument* parent = nullptr);
 
     Q_INVOKABLE void setDocument(QQuickTextDocument* pDoc);
 
+    // QML
+    bool enabled() const;
+    void setEnabled(bool newEnabled);
+
+signals:
+    void enabledChanged();
+
 protected:
     void highlightBlock(const QString& text) override;
 
 private:
-    QList<HighlightingRule> highlightingRules;
-    QTextCharFormat varFormat;
+    QList<HighlightingRule> _highlightingRules;
+    bool _enabled = true;
 };
 
 #endif // VARSYNTAXHIGHLIGHTER_H

@@ -1,8 +1,9 @@
 #include "curl_parser.h"
 
-CurlParser::CurlParser() : _urlRegex("^https?:\\/\\/")
+CurlParser::CurlParser() :
+    _urlRegex("^https?:\\/\\/"),
+    _varRegex("{{\\s*(.*?)\\s*}}")
 {
-
 }
 
 std::shared_ptr<Query> CurlParser::parse(QString command)
@@ -178,10 +179,12 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
         if (contentType.contains("multipart/form-data")) {
             query->setBodyType(BodyType::MULTIPART_FORM);
         }
-    } else {
+    }
+    else {
         if (!query->formData().isEmpty()) {
             query->setBodyType(BodyType::MULTIPART_FORM);
-        } else if (!query->body().isEmpty()) {
+        }
+        else if (!query->body().isEmpty()) {
             query->setBodyType(BodyType::JSON);
         }
     }
@@ -193,15 +196,14 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
             for (const QueryParam& item : formData) {
                 query->addFormData(item.name(), item.value());
             }
-
-        } else {
+        }
+        else {
             query->setBody(dataRaw);
         }
     }
 
     // chrome not set method if data-raw exists and method POST
-    bool isSetPost = (!query->formData().isEmpty() && query->queryType() == QueryType::GET)
-        || (!query->body().isEmpty() && query->queryType() == QueryType::GET);
+    bool isSetPost = (!query->formData().isEmpty() && query->queryType() == QueryType::GET) || (!query->body().isEmpty() && query->queryType() == QueryType::GET);
 
     if (isSetPost) {
         query->setQueryType(QueryType::POST);
@@ -212,9 +214,14 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
 
 QString CurlParser::generateCurl(Query* query) const noexcept
 {
-    QString url = "  --url '" + generateCurlUrl(query) + "' \\" + "\n";
+    auto ws = Workspace::getByQuery(query);
+    QVariantMap vars = ws->variables();
+    QString currentEnv = vars.value("env", "").toString();
+    QVariantList envVars = vars.value(currentEnv).toList();
+
+    QString url = "  --url '" + generateCurlUrl(query, envVars) + "' \\" + "\n";
     QString method = " --request " + Util::getQueryTypeString(query->queryType()) + " \\" + "\n";
-    QString curlCommand = "curl" + method + url + generateCurlHeaders(query) + generateCurlBody(query);
+    QString curlCommand = "curl" + method + url + generateCurlHeaders(query, envVars) + generateCurlBody(query);
 
     qsizetype pos = curlCommand.lastIndexOf("\\");
 
@@ -248,14 +255,17 @@ QStringList CurlParser::split(std::string line) const noexcept
 
         if (!word.empty()) {
             field += word;
-        } else {
+        }
+        else {
             std::string addition;
 
             if (!sq.empty()) {
                 addition = sq;
-            } else if (!dq.empty()) {
+            }
+            else if (!dq.empty()) {
                 addition = dq;
-            } else if (!escape.empty()) {
+            }
+            else if (!escape.empty()) {
                 addition = escape;
             }
 
@@ -279,7 +289,7 @@ QStringList CurlParser::split(std::string line) const noexcept
     return words;
 }
 
-QString CurlParser::generateCurlHeaders(Query* query) const noexcept
+QString CurlParser::generateCurlHeaders(Query* query, QVariantList envVars) const noexcept
 {
     QString headerString;
 
@@ -288,7 +298,8 @@ QString CurlParser::generateCurlHeaders(Query* query) const noexcept
             continue;
         }
 
-        headerString += "  --header '" + header.name() + ": " + header.value() + "' \\" + "\n";
+        QString value = Util::fillVars(header.value(), envVars, _varRegex);
+        headerString += "  --header '" + header.name() + ": " + value + "' \\" + "\n";
     }
 
     return headerString;
@@ -301,7 +312,8 @@ QString CurlParser::generateCurlBody(Query* query) const noexcept
     if (bodyType == BodyType::JSON) {
         // return "  --data '" + excapeCurlBody(query) + "' \\" + "'\n";
         return "  --data '" + excapeCurlBody(query) + "' \\\n";
-    } else if (bodyType == BodyType::MULTIPART_FORM) {
+    }
+    else if (bodyType == BodyType::MULTIPART_FORM) {
         QVariantList formData = query->formData();
         QString valuesString;
 
@@ -319,7 +331,8 @@ QString CurlParser::generateCurlBody(Query* query) const noexcept
         }
 
         return valuesString;
-    } else if (bodyType == BodyType::URL_ENCODED_FORM) {
+    }
+    else if (bodyType == BodyType::URL_ENCODED_FORM) {
         QString valuesString;
         QVariantList formData = query->formData();
 
@@ -344,34 +357,9 @@ QString CurlParser::generateCurlBody(Query* query) const noexcept
     return "";
 }
 
-QString CurlParser::generateCurlUrl(Query* query) const noexcept
+QString CurlParser::generateCurlUrl(Query* query, QVariantList envVars) const noexcept
 {
-    auto ws = Workspace::getByQuery(query);
-    QVariantMap vars = ws->variables();
-    QString currentEnv = vars.value("env", "").toString();
-    QVariantList envVars = vars.value(currentEnv).toList();
-
-    QString urlString = query->url();
-    auto varRegex = QRegularExpression("{{\\s*(.*?)\\s*}}");
-
-    if (!envVars.isEmpty()) {
-        QRegularExpressionMatchIterator iter = varRegex.globalMatch(urlString);
-
-        while (iter.hasNext()) {
-            QRegularExpressionMatch match = iter.next();
-            QString variable = match.captured(1).trimmed();
-
-            for (const QVariant& var : envVars) {
-                QVariantMap varMap = var.toMap();
-
-                if (varMap["name"] == variable) {
-                    urlString = urlString.replace("{{" + variable + "}}", varMap["value"].toString());
-                }
-            }
-        }
-    }
-
-    QUrl url = urlString;
+    QUrl url = Util::fillVars(query->url(), envVars, _varRegex);
     QUrlQuery urlParams;
 
     for (const QueryParam& param : query->paramList()) {
@@ -379,7 +367,8 @@ QString CurlParser::generateCurlUrl(Query* query) const noexcept
             continue;
         }
 
-        urlParams.addQueryItem(param.name(), param.value());
+        QString value = Util::fillVars(param.value(), envVars, _varRegex);
+        urlParams.addQueryItem(param.name(), value);
     }
 
     url.setQuery(urlParams.toString(QUrl::FullyEncoded));
@@ -426,7 +415,8 @@ QList<QueryParam> CurlParser::parseDataRaw(const QString& dataRaw) const noexcep
 
         if (match.hasMatch()) {
             name = match.captured(1);
-        } else {
+        }
+        else {
             continue;
         }
 

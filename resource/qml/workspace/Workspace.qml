@@ -1,8 +1,11 @@
+pragma ComponentBehavior: Bound
+
 import QtCore
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Dialogs
+// import Qt.labs.platform
 
 import io.rester
 import WorkspaceModel
@@ -19,7 +22,7 @@ Rectangle {
     property int currentIndex: -1
     property bool isLoading: true
     anchors.fill: parent
-    color: 'white'
+    // color: 'white'
 
     HoverHandler {
         id: mouse
@@ -169,7 +172,7 @@ Rectangle {
             Layout.fillWidth: true
 
             Component.onCompleted: {
-                showLoader();
+                ws.showLoader();
             }
 
             Component.onDestruction: {
@@ -195,16 +198,21 @@ Rectangle {
                         width: grid.elementWidth
                         height: grid.elementWidth + 60
 
+                        required property string uuid
+                        required property string name
+                        required property int index
+                        required property int lastUsageAt
+
                         Rectangle {
                             id: wsRect
                             width: grid.elementWidth
                             height: grid.elementWidth
-                            border.color: App.workspace.uuid === model.uuid ? 'blue' : 'lightgrey'
+                            border.color: App.workspace.uuid === wsCol.uuid ? 'blue' : 'lightgrey'
                             radius: 4
 
                             Text {
                                 anchors.centerIn: parent
-                                text: model.name
+                                text: wsCol.name
                                 font.bold: true
                                 font.pointSize: 16
                             }
@@ -214,11 +222,11 @@ Rectangle {
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 onClicked: mouse => {
                                     if (mouse.button === Qt.LeftButton) {
-                                        WorkspaceModel.setWorkspace(index);
+                                        WorkspaceModel.setWorkspace(wsCol.index);
                                     }
 
                                     if (mouse.button === Qt.RightButton) {
-                                        currentIndex = index;
+                                        ws.currentIndex = wsCol.index;
                                         contextMenu.popup();
                                     }
                                 }
@@ -227,10 +235,10 @@ Rectangle {
                                     id: contextMenu
 
                                     MenuItem {
-                                        enabled: App.workspace.uuid !== model.uuid
+                                        enabled: App.workspace.uuid !== wsCol.uuid
                                         text: qsTr("Choose")
                                         onTriggered: {
-                                            WorkspaceModel.setWorkspace(index);
+                                            WorkspaceModel.setWorkspace(wsCol.index);
                                         }
                                     }
                                     MenuItem {
@@ -242,15 +250,15 @@ Rectangle {
                                     MenuItem {
                                         text: qsTr("Edit")
                                         onTriggered: {
-                                            currentIndex = index;
+                                            ws.currentIndex = wsCol.index;
                                             mdlUpdWorkspace.open();
                                         }
                                     }
                                     MenuItem {
-                                        enabled: App.workspace.uuid !== model.uuid
+                                        enabled: App.workspace.uuid !== wsCol.uuid
                                         text: qsTr("Delete")
                                         onTriggered: {
-                                            currentIndex = index;
+                                            ws.currentIndex = wsCol.index;
                                             dlgRemoveWs.open();
                                         }
                                     }
@@ -271,8 +279,8 @@ Rectangle {
                                 icon.height: 16
                                 icon.color: 'black'
                                 onClicked: {
-                                    currentIndex = index;
-                                    mdlUpdWorkspace.currentText = model.name;
+                                    ws.currentIndex = wsCol.index;
+                                    mdlUpdWorkspace.currentText = wsCol.name;
                                     mdlUpdWorkspace.open();
                                 }
                             }
@@ -292,7 +300,7 @@ Rectangle {
                                     Text {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         font.pointSize: 10
-                                        text: model.lastUsageAt === 0 ? qsTr("Never") : getLastUsageString(model.lastUsageAt)
+                                        text: wsCol.lastUsageAt === 0 ? qsTr("Never") : ws.getLastUsageString(wsCol.lastUsageAt)
                                         color: 'lightgrey'
                                     }
                                 }
@@ -300,19 +308,19 @@ Rectangle {
                             Item {
                                 Layout.preferredWidth: 50
 
-                                visible: App.workspace.uuid === model.uuid
+                                visible: App.workspace.uuid === wsCol.uuid
                             }
                             Button {
                                 Layout.rightMargin: 17
 
-                                visible: App.workspace.uuid !== model.uuid
+                                visible: App.workspace.uuid !== wsCol.uuid
                                 flat: true
                                 icon.source: "/resource/images/close.svg"
                                 icon.width: 16
                                 icon.height: 16
                                 icon.color: 'black'
                                 onClicked: {
-                                    currentIndex = index;
+                                    ws.currentIndex = wsCol.index;
                                     dlgRemoveWs.open();
                                 }
                             }
@@ -343,10 +351,10 @@ Rectangle {
 
                 TextField {
                     id: tfExportInput
+                    placeholderText: qsTr("Path to exported folder")
+
                     Layout.fillWidth: true
                     Layout.rightMargin: 10
-                    // width: parent.width
-                    placeholderText: qsTr("Path to exported folder")
                 }
                 Button {
                     flat: true
@@ -379,8 +387,8 @@ Rectangle {
                         return;
                     }
 
-                    let importType = getImportType(cbExportType.currentText);
-                    WorkspaceModel.exportCollection(tfExportInput.text, currentIndex, importType);
+                    let importType = ws.getImportType(cbExportType.currentText);
+                    WorkspaceModel.exportCollection(tfExportInput.text, ws.currentIndex, importType);
                     dlgExport.close();
                 }
             }
@@ -408,9 +416,10 @@ Rectangle {
 
                 TextField {
                     id: tfInput
+                    placeholderText: qsTr("Path to exported config")
+
                     Layout.fillWidth: true
                     Layout.rightMargin: 10
-                    placeholderText: qsTr("Path to exported config")
                 }
                 Button {
                     flat: true
@@ -443,7 +452,7 @@ Rectangle {
                         return;
                     }
 
-                    let importType = getImportType(cbImportType.currentText);
+                    let importType = ws.getImportType(cbImportType.currentText);
                     WorkspaceModel.importFrom(tfInput.text, importType);
                     dlgImport.close();
                 }
@@ -457,7 +466,7 @@ Rectangle {
         title: qsTr("Update Workspace")
         placeholder: qsTr("Workspace Name")
         onOk: wsName => {
-            WorkspaceModel.update(currentIndex, wsName);
+            WorkspaceModel.update(ws.currentIndex, wsName);
         }
     }
 
@@ -478,7 +487,7 @@ Rectangle {
         buttons: MessageDialog.Ok | MessageDialog.Cancel
         modality: Qt.ApplicationModal
         onAccepted: {
-            WorkspaceModel.removeRows(currentIndex, 1);
+            WorkspaceModel.removeRows(ws.currentIndex, 1);
         }
     }
 
@@ -497,7 +506,7 @@ Rectangle {
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
         onAccepted: {
             let path = selectedFolder.toString().replace("file://", "");
-            folderDialogAccept(path);
+            ws.folderDialogAccept(path);
         }
     }
 

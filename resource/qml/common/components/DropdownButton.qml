@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -15,9 +17,9 @@ Rectangle {
 
     Component.onCompleted: {
         if (App.workspace.env === '') {
-            currentEnv = 'No Env';
+            dropDownView.currentEnv = 'No Env';
         } else {
-            currentEnv = App.workspace.env;
+            dropDownView.currentEnv = App.workspace.env;
         }
 
         setEnvs(App.workspace.getEnvNames());
@@ -42,11 +44,15 @@ Rectangle {
                 anchors.fill: parent
                 model: envModel
                 delegate: MenuItem {
-                    text: model.text
+                    id: menuDelegate
+
+                    required property string name
+
+                    text: menuDelegate.name
                     visible: true
                     onClicked: {
-                        if (App.workspace.env !== model.text) {
-                            App.setEnv(model.text);
+                        if (App.workspace.env !== menuDelegate.name) {
+                            App.setEnv(menuDelegate.name);
                         }
 
                         dropdown.visible = false;
@@ -61,12 +67,12 @@ Rectangle {
 
         function onWorkspaceChanged() {
             if (App.workspace.env === '') {
-                currentEnv = 'No Env';
+                dropDownView.currentEnv = 'No Env';
             } else {
-                currentEnv = App.workspace.env;
+                dropDownView.currentEnv = App.workspace.env;
             }
 
-            setEnvs(App.workspace.getEnvNames());
+            dropDownView.setEnvs(App.workspace.getEnvNames());
         }
     }
 
@@ -75,14 +81,14 @@ Rectangle {
 
         function onEnvChanged() {
             if (App.workspace.env === '') {
-                currentEnv = 'No Env';
+                dropDownView.currentEnv = 'No Env';
             } else {
-                currentEnv = App.workspace.env;
+                dropDownView.currentEnv = App.workspace.env;
             }
         }
 
         function onVariablesChanged() {
-            setEnvs(App.workspace.getEnvNames());
+            dropDownView.setEnvs(App.workspace.getEnvNames());
         }
     }
 
@@ -95,7 +101,7 @@ Rectangle {
 
         for (let envName of envs) {
             envModel.append({
-                text: envName
+                name: envName
             });
         }
     }

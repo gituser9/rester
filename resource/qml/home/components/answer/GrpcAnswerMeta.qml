@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -15,7 +17,7 @@ Rectangle {
 
     Component.onCompleted: {
         if (App.grpcQuery?.lastAnswer) {
-            fillHeaders(App.grpcQuery.lastAnswer.headers);
+            grpcAnswerMeta.fillHeaders(App.grpcQuery.lastAnswer.headers);
         }
     }
 
@@ -25,8 +27,14 @@ Rectangle {
         clip: true
         model: answerHeadersModel
         delegate: Rectangle {
-            height: rowHeight
+            id: metaDelegate
+            height: grpcAnswerMeta.rowHeight
             width: parent.width
+
+            required property bool isEnabled
+            required property int index
+            required property string name
+            required property string value
 
             RowLayout {
                 anchors.fill: parent
@@ -34,12 +42,12 @@ Rectangle {
                 Rectangle {
                     Layout.fillWidth: true
 
-                    height: rowHeight
+                    height: grpcAnswerMeta.rowHeight
 
                     TextEdit {
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width
-                        text: model.name
+                        text: metaDelegate.name
                         font.family: "Monospace"
                         readOnly: true
                         selectByMouse: true
@@ -48,7 +56,7 @@ Rectangle {
                 Rectangle {
                     Layout.fillWidth: true
 
-                    height: rowHeight
+                    height: grpcAnswerMeta.rowHeight
 
                     Flickable {
                         id: flick
@@ -69,7 +77,7 @@ Rectangle {
                         TextEdit {
                             width: flick.width
                             anchors.verticalCenter: parent.verticalCenter
-                            text: model.value
+                            text: metaDelegate.value
                             font.family: "Monospace"
                             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
                         }
@@ -79,13 +87,14 @@ Rectangle {
                     id: copybtn
 
                     property string tooltipText: qsTr("Copy value")
+
                     flat: true
                     icon.source: "/resource/images/copy.svg"
                     icon.width: 18
                     icon.height: 18
                     icon.color: 'black'
                     onClicked: {
-                        teCopy.text = model.value;
+                        teCopy.text = metaDelegate.value;
                         teCopy.selectAll();
                         teCopy.copy();
                         teCopy.clear();

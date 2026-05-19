@@ -16,14 +16,14 @@ App::App(QObject* parent) : QObject{parent}
     _settings = nullptr;
 
     // setup saver
-    _saverThread = new QThread();
+    _saverThread = new QThread(this);
     _saverThread->start();
 
     _saver = std::make_shared<Saver>();
     _saver->moveToThread(_saverThread);
 
     // setup ws
-    _wsClientThread = new QThread();
+    _wsClientThread = new QThread(this);
     _wsClientThread->start();
 
     _webSocketClient = std::make_shared<WebsocketClient>();

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -23,7 +25,7 @@ Item {
         let canSet = App.query !== null && App.query.lastAnswer !== null;
 
         if (canSet) {
-            setJson(App.query.lastAnswer);
+            answerBodyView.setJson(App.query.lastAnswer);
         }
     }
 
@@ -62,11 +64,16 @@ Item {
             visible: answerBodyView.isBig
             model: answerBodyView.stringList
             delegate: Row {
+                id: bigBodyDelegate
+
+                required property int index
+                required property string modelData
+
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
                 Text {
-                    text: `${index + 1} `
+                    text: `${bigBodyDelegate.index + 1} `
                     color: 'lightgrey'
                 }
                 TextEdit {
@@ -84,7 +91,7 @@ Item {
                     font.family: "Monospace"
                     readOnly: true
                     selectByMouse: true
-                    text: model.modelData
+                    text: bigBodyDelegate.modelData
                 }
             }
 
@@ -322,12 +329,12 @@ Item {
                     // for list
                     if (answerBodyView.isBig) {
                         for (const prop in answerBodyView.stringList) {
-                            if (stringList.hasOwnProperty(prop)) {
-                                delete stringList[prop];
+                            if (answerBodyView.stringList.hasOwnProperty(prop)) {
+                                delete answerBodyView.stringList[prop];
                             }
                         }
 
-                        stringList = null;
+                        answerBodyView.stringList = null;
                     }
 
                     // for all
@@ -400,7 +407,7 @@ Item {
                 return;
             }
 
-            setJson(App.query.lastAnswer);
+            answerBodyView.setJson(App.query.lastAnswer);
         }
     }
 
@@ -410,11 +417,11 @@ Item {
 
         if (isBig) {
             // for big
-            let bodyType = getAnswerBodyType(App.query.lastAnswer);
+            let bodyType = answerBodyView.getAnswerBodyType(App.query.lastAnswer);
             answerBodyView.stringList = answer.body.split("\n");
         } else {
             // for small
-            setSyntaxHighlighter();
+            answerBodyView.setSyntaxHighlighter();
             txtAnswerBody.text = answer.body;
         }
     }
@@ -452,7 +459,7 @@ Item {
             return;
         }
 
-        let bodyType = getAnswerBodyType(App.query.lastAnswer);
+        let bodyType = answerBodyView.getAnswerBodyType(App.query.lastAnswer);
 
         switch (bodyType) {
         case 'json':

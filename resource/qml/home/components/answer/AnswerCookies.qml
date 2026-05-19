@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -5,13 +7,12 @@ import QtQuick.Layouts
 import io.rester
 import core.app 1.0
 
-
 Item {
     id: cookiePage
     anchors.fill: parent
 
     Component.onCompleted: {
-        fillModel()
+        cookiePage.fillModel();
     }
 
     ListView {
@@ -20,6 +21,9 @@ Item {
         clip: true
         model: lmCookies
         delegate: Rectangle {
+            id: cookieDelegate
+            height: clCookie.height + 20
+            width: parent.width
 
             required property string name
             required property string expires
@@ -30,10 +34,6 @@ Item {
             required property string value
             required property bool httpOnly
             required property bool secure
-
-            id: cookieDelegate
-            height: clCookie.height + 20
-            width: parent.width
 
             ColumnLayout {
                 id: clCookie
@@ -46,7 +46,6 @@ Item {
                     Text {
                         Layout.fillWidth: true
 
-
                         text: cookieDelegate.name
                         font.pointSize: 14
                     }
@@ -54,29 +53,28 @@ Item {
                         Layout.fillWidth: true
                     }
                     Button {
+                        id: copybtn
 
                         property string tooltipText: qsTr("Copy value")
-
-                        id: copybtn
                         flat: true
                         icon.source: "/resource/images/copy.svg"
                         icon.width: 18
                         icon.height: 18
                         icon.color: 'black'
                         onClicked: {
-                            teCopy.text = cookieDelegate.value
-                            teCopy.selectAll()
-                            teCopy.copy()
-                            teCopy.clear()
+                            teCopy.text = cookieDelegate.value;
+                            teCopy.selectAll();
+                            teCopy.copy();
+                            teCopy.clear();
 
-                            copybtn.tooltipText = qsTr("Copied")
+                            copybtn.tooltipText = qsTr("Copied");
                         }
 
                         ToolTip.text: tooltipText
                         ToolTip.visible: hovered
                         ToolTip.toolTip.onVisibleChanged: {
                             if (!hovered) {
-                                tooltipText = qsTr("Copy value")
+                                tooltipText = qsTr("Copy value");
                             }
                         }
                     }
@@ -215,9 +213,8 @@ Item {
                         font.bold: true
                     }
                     TextEdit {
-                        Layout.fillWidth: true
-
                         id: teCookieValue
+                        Layout.fillWidth: true
                         readOnly: true
                         selectByMouse: true
                         text: cookieDelegate.value
@@ -237,7 +234,6 @@ Item {
         }
     }
 
-
     TextEdit {
         id: teCopy
         visible: false
@@ -247,31 +243,24 @@ Item {
         id: lmCookies
     }
 
-
     Connections {
         target: App.query
 
         function onLastAnswerChanged() {
-            cookiePage.fillModel()
+            cookiePage.fillModel();
         }
-
     }
 
     Connections {
         target: App
 
         function onQueryChanged() {
-            cookiePage.fillModel()
+            cookiePage.fillModel();
         }
     }
 
-
     function fillModel() {
-        lmCookies.clear()
-
-        // if (!App.query?.lastAnswer) {
-        //     return
-        // }
+        lmCookies.clear();
 
         for (let cookie of App.query.lastAnswer.cookies) {
             let cookObj = {
@@ -284,9 +273,9 @@ Item {
                 "domain": cookie["domain"] ?? "",
                 "path": cookie["path"] ?? "",
                 "value": cookie.value ?? ""
-            }
+            };
 
-            lmCookies.append(cookObj)
+            lmCookies.append(cookObj);
         }
     }
 }

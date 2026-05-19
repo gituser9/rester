@@ -297,6 +297,31 @@ QString Util::fillVars(const QString& str, const QVariantList& vars) noexcept
     return replaced;
 }
 
+QString Util::fillVars(const QString& str, const QVariantList& vars, QRegularExpression varRegex) noexcept
+{
+    if (vars.isEmpty()) {
+        return str;
+    }
+
+    QString replaced = str;
+    QRegularExpressionMatchIterator iter = varRegex.globalMatch(replaced);
+
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString variable = match.captured(1).trimmed();
+
+        for (const QVariant& var : vars) {
+            QVariantMap varMap = var.toMap();
+
+            if (varMap["name"] == variable) {
+                replaced = replaced.replace("{{" + variable + "}}", varMap["value"].toString());
+            }
+        }
+    }
+
+    return replaced;
+}
+
 QJsonObject Util::getJsonFromFile(const QString& path) noexcept
 {
     if (!QFile::exists(path)) {

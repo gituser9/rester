@@ -48,7 +48,8 @@ int main(int argc, char* argv[])
     qmlRegisterSingletonInstance<GrpcClient>("GrpcClient", 1, 0, "GrpcClient", grpcClient.get());
     qmlRegisterSingletonInstance<Util>("Util", 1, 0, "Util", util.get());
     qmlRegisterSingletonInstance<WorkspaceModel>("WorkspaceModel", 1, 0, "WorkspaceModel", workspaceModel.get());
-    qmlRegisterSingletonInstance<PinModel>("PinModel", 1, 0, "PinModel", pinModel.get());
+    // qmlRegisterSingletonInstance<PinModel>("PinModel", 1, 0, "PinModel", pinModel.get());
+    qmlRegisterSingletonInstance<PinModel>("core.app", 1, 0, "PinModel", pinModel.get());
     qmlRegisterType<HtmlSyntaxHighlighter>("HtmlSyntaxHighlighter", 1, 0, "HtmlSyntaxHighlighter");
     qmlRegisterType<JsonSyntaxHighlighter>("JsonSyntaxHighlighter", 1, 0, "JsonSyntaxHighlighter");
     qmlRegisterType<VarSyntaxHighlighter>("VarSyntaxHighlighter", 1, 0, "VarSyntaxHighlighter");
@@ -65,8 +66,6 @@ int main(int argc, char* argv[])
     );
 
     QQuickStyle::setStyle("Imagine");
-    // QQuickStyle::setStyle("FluentWinUI3");
-    // QQuickStyle::setStyle("Material");
 
     engine.loadFromModule("io.rester", "Main");
 

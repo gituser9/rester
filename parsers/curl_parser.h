@@ -18,7 +18,8 @@
 #include "../app_data/workspace.h"
 #include "../util.h"
 
-class CurlParser {
+class CurlParser
+{
 public:
     explicit CurlParser();
 
@@ -27,6 +28,7 @@ public:
 
 private:
     QRegularExpression _urlRegex;
+    QRegularExpression _varRegex;
 
     enum class ParseState {
         None,
@@ -42,9 +44,10 @@ private:
     };
 
     QStringList split(std::string line = "") const noexcept;
-    QString generateCurlHeaders(Query* query) const noexcept;
+    void extracted(Query*& query, QVariantList& envVars, QString& headerString) const;
+    QString generateCurlHeaders(Query* query, QVariantList envVars) const noexcept;
     QString generateCurlBody(Query* query) const noexcept;
-    QString generateCurlUrl(Query* query) const noexcept;
+    QString generateCurlUrl(Query* query, QVariantList envVars) const noexcept;
     QString excapeCurlBody(Query* query) const noexcept;
     QList<QueryParam> parseDataRaw(const QString& dataRaw) const noexcept;
 };

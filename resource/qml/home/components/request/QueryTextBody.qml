@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -10,18 +12,18 @@ import JsonSyntaxHighlighter
 import "../../../"
 
 Item {
+    id: txtBodyView
+    anchors.fill: parent
 
     property bool isQueryExists: false
 
-    anchors.fill: parent
-
     Component.onCompleted: {
         if (App.query === null) {
-            return
+            return;
         }
 
-        setHighlighter()
-        taQueryBody.text = App.query.body
+        txtBodyView.setHighlighter();
+        taQueryBody.text = App.query.body;
     }
 
     HtmlSyntaxHighlighter {
@@ -41,22 +43,21 @@ Item {
             font.family: "Monospace"
             tabStopDistance: 32
             onEditingFinished: {
-                App.query.body = taQueryBody.text
+                App.query.body = taQueryBody.text;
             }
         }
     }
-
 
     Connections {
         target: App
 
         function onQueryChanged() {
             if (App.query === null) {
-                return
+                return;
             }
 
-            setHighlighter()
-            taQueryBody.text = App.query.body
+            txtBodyView.setHighlighter();
+            taQueryBody.text = App.query.body;
         }
     }
 
@@ -64,48 +65,46 @@ Item {
         target: App.query
 
         function onBodyChanged() {
-            taQueryBody.text = App.query.body
+            taQueryBody.text = App.query.body;
         }
 
         function onBodyTypeChanged() {
-            setHighlighter()
+            txtBodyView.setHighlighter();
         }
     }
 
-
     function clear() {
-        App.query.body = ''
+        App.query.body = '';
     }
 
     function copy() {
-        taQueryBody.selectAll()
-        taQueryBody.copy()
+        taQueryBody.selectAll();
+        taQueryBody.copy();
     }
 
     function setHighlighter() {
-        let bodyType = getBodyType()
+        let bodyType = getBodyType();
 
         switch (bodyType) {
         case 'json':
-            jsonHilighter.setDocument(taQueryBody.textDocument)
-            break
+            jsonHilighter.setDocument(taQueryBody.textDocument);
+            break;
         case 'html':
         case 'xml':
-            htmlHilighter.setDocument(taQueryBody.textDocument)
+            htmlHilighter.setDocument(taQueryBody.textDocument);
         }
     }
 
     function getBodyType() {
         switch (App.query.bodyType) {
         case 1:
-            return 'json'
+            return 'json';
         case 4:
-            return 'xml'
+            return 'xml';
         case 5:
-            return 'html'
+            return 'html';
         default:
-            return ''
+            return '';
         }
     }
-
 }

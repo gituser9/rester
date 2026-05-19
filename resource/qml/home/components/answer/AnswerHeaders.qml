@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -6,20 +8,18 @@ import io.rester
 import HttpClient
 import core.app 1.0
 
-import '../../../common/components'
-
+import "../../../common/components"
 
 Rectangle {
+    id: answerHeadersView
 
     property int rowHeight: 40
 
-
     Component.onCompleted: {
         if (App.query?.lastAnswer) {
-            fillHeaders(App.query.lastAnswer.headers)
+            answerHeadersView.fillHeaders(App.query.lastAnswer.headers);
         }
     }
-
 
     ListView {
         id: headersList
@@ -27,89 +27,89 @@ Rectangle {
         clip: true
         model: answerHeadersModel
         delegate: Rectangle {
-            height: rowHeight
-            width: parent.width
+            id: headerDelegate
+            height: answerHeadersView.rowHeight
+            width: headersList.width
+
+            required property string name
+            required property string value
 
             RowLayout {
-                // height: rowHeight
                 anchors.fill: parent
 
                 Rectangle {
-                    height: rowHeight
-                    // implicitWidth: headersList.width / 2
+                    height: answerHeadersView.rowHeight
+
                     Layout.fillWidth: true
 
                     TextEdit {
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width
-                        text: model.name
+                        text: headerDelegate.name
                         font.family: "Monospace"
                         readOnly: true
                         selectByMouse: true
                     }
                 }
                 Rectangle {
-                    height: rowHeight
-                    // implicitWidth: headersList.width / 2
+                    height: answerHeadersView.rowHeight
+
                     Layout.fillWidth: true
 
                     Flickable {
-                         id: flick
-                         anchors.fill: parent
-                         clip: true
+                        id: flick
+                        anchors.fill: parent
+                        clip: true
 
-                         function ensureVisible(r) {
-                             if (contentX >= r.x)
-                                 contentX = r.x;
-                             else if (contentX+width <= r.x+r.width)
-                                 contentX = r.x+r.width-width;
-                             if (contentY >= r.y)
-                                 contentY = r.y;
-                             else if (contentY+height <= r.y+r.height)
-                                 contentY = r.y+r.height-height;
-                         }
+                        function ensureVisible(r) {
+                            if (contentX >= r.x)
+                                contentX = r.x;
+                            else if (contentX + width <= r.x + r.width)
+                                contentX = r.x + r.width - width;
+                            if (contentY >= r.y)
+                                contentY = r.y;
+                            else if (contentY + height <= r.y + r.height)
+                                contentY = r.y + r.height - height;
+                        }
 
-                         TextEdit {
-                             // anchors.fill: parent
-                             width: flick.width
-                             anchors.verticalCenter: parent.verticalCenter
-                             text: model.value
-                             font.family: "Monospace"
-                             onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
-                         }
+                        TextEdit {
+                            width: flick.width
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: headerDelegate.value
+                            font.family: "Monospace"
+                            onCursorRectangleChanged: flick.ensureVisible(cursorRectangle)
+                        }
                     }
                 }
                 Button {
+                    id: copybtn
 
                     property string tooltipText: qsTr("Copy value")
-
-                    id: copybtn
                     flat: true
                     icon.source: "/resource/images/copy.svg"
                     icon.width: 18
                     icon.height: 18
                     icon.color: 'black'
                     onClicked: {
-                        teCopy.text = model.value
-                        teCopy.selectAll()
-                        teCopy.copy()
-                        teCopy.clear()
+                        teCopy.text = headerDelegate.value;
+                        teCopy.selectAll();
+                        teCopy.copy();
+                        teCopy.clear();
 
-                        copybtn.tooltipText = qsTr("Copied")
+                        copybtn.tooltipText = qsTr("Copied");
                     }
 
                     ToolTip.text: tooltipText
                     ToolTip.visible: hovered
                     ToolTip.toolTip.onVisibleChanged: {
                         if (!hovered) {
-                            tooltipText = qsTr("Copy value")
+                            tooltipText = qsTr("Copy value");
                         }
                     }
                 }
             }
         }
     }
-
 
     ListModel {
         id: answerHeadersModel
@@ -120,12 +120,11 @@ Rectangle {
         visible: false
     }
 
-
     Connections {
         target: HttpClient
 
         function onFinished(answer) {
-            fillHeaders(answer.headers)
+            answerHeadersView.fillHeaders(answer.headers);
         }
     }
 
@@ -134,12 +133,10 @@ Rectangle {
 
         function onQueryChanged() {
             if (App.query?.lastAnswer) {
-                fillHeaders(App.query.lastAnswer.headers)
+                answerHeadersView.fillHeaders(App.query.lastAnswer.headers);
             }
         }
     }
-
-
 
     function fillHeaders(headers) {
         answerHeadersModel.clear();

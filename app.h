@@ -91,8 +91,6 @@ private:
     std::shared_ptr<Saver> _saver;
 
     QThread* _saverThread = nullptr;
-    QThread* _httpClientThread = nullptr;
-    QThread* _grpcClientThread = nullptr;
     QThread* _wsClientThread = nullptr;
     QString _configDirPath;
     QString _env;

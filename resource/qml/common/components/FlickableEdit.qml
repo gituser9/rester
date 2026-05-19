@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 
 Item {
@@ -52,8 +54,8 @@ Item {
                 // editingFinish(teMain.text)
             }
             onTextChanged: {
-                value = teMain.text;
-                textChange(teMain.text);
+                flickableEdit.value = teMain.text;
+                flickableEdit.textChange(teMain.text);
 
                 if (!syncTimer.running) {
                     syncTimer.start();

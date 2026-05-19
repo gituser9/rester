@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtCore
 import QtQuick
 import QtQuick.Layouts
@@ -7,10 +9,11 @@ import QtQuick.Dialogs
 import io.rester
 import core.app 1.0
 
-import '../../../common/components'
-
+import "../../../common/components"
 
 Item {
+    id: queryFormBody
+    anchors.fill: parent
 
     property bool isMultipart: true
     property string fileFieldName
@@ -18,12 +21,9 @@ Item {
 
     signal changeFormValue(int index)
 
-    id: queryFormBody
-    anchors.fill: parent
-
     Component.onCompleted: {
-        checkIsMultipart()
-        fillData()
+        queryFormBody.checkIsMultipart();
+        queryFormBody.fillData();
     }
 
     ListView {
@@ -33,8 +33,14 @@ Item {
         clip: true
         model: formDataModel
         delegate: Rectangle {
+            id: formDelegate
             height: 60
             width: formDataList.width
+
+            required property bool isEnabled
+            required property int index
+            required property string name
+            required property string value
 
             RowLayout {
                 id: itemRow
@@ -43,10 +49,10 @@ Item {
 
                 CheckBox {
                     id: cbEnabled
-                    checked: model.isEnabled
+                    checked: formDelegate.isEnabled
                     onClicked: {
-                        formDataModel.setProperty(index, "isEnabled", cbEnabled.checkState === Qt.Checked)
-                        changeFormValue(index)
+                        formDataModel.setProperty(formDelegate.index, "isEnabled", cbEnabled.checkState === Qt.Checked);
+                        queryFormBody.changeFormValue(formDelegate.index);
                     }
                 }
 
@@ -58,10 +64,10 @@ Item {
                         width: itemRow.width / 3
                         height: 20
                         isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: model.name
+                        value: formDelegate.name
                         onEditingFinish: txt => {
-                            tfFormDataName.value = txt
-                            App.query.setFormDataItem(index, txt, tfFormDataValue.value, true)
+                            tfFormDataName.value = txt;
+                            App.query.setFormDataItem(formDelegate.index, txt, tfFormDataValue.value, true);
                         }
                     }
                     MenuSeparator {
@@ -80,18 +86,18 @@ Item {
 
                     FlickableEdit {
                         id: tfFormDataValue
-                        visible: model.value.indexOf("file://") === -1
+                        visible: formDelegate.value.indexOf("file://") === -1
                         width: colVal.width
                         height: 20
                         isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: model.value
+                        value: formDelegate.value
                         onEditingFinish: txt => {
-                            tfFormDataValue.value = txt
-                            App.query.setFormDataItem(index, tfFormDataName.value, txt, true)
+                            tfFormDataValue.value = txt;
+                            App.query.setFormDataItem(formDelegate.index, tfFormDataName.value, txt, true);
                         }
                     }
                     Rectangle {
-                        visible: model.value.indexOf("file://") !== -1
+                        visible: formDelegate.value.indexOf("file://") !== -1
                         height: 30
                         width: parent.width
                         color: 'lightgrey'
@@ -105,7 +111,7 @@ Item {
                                 Layout.maximumWidth: colVal.width - 30
 
                                 clip: true
-                                text: extractFileName(model.value)
+                                text: queryFormBody.extractFileName(formDelegate.value)
                             }
                             Image {
                                 sourceSize.width: 14
@@ -116,18 +122,17 @@ Item {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        tfFormDataValue.value = ''
-                                        App.query.setFormDataItem(index, tfFormDataName.value, '', true)
-                                        formDataModel.setProperty(index, "value", '')
+                                        tfFormDataValue.value = '';
+                                        App.query.setFormDataItem(formDelegate.index, tfFormDataName.value, '', true);
+                                        formDataModel.setProperty(formDelegate.index, "value", '');
                                     }
                                 }
                             }
                         }
-
                     }
 
                     MenuSeparator {
-                        visible: model.value.indexOf("file://") === -1
+                        visible: formDelegate.value.indexOf("file://") === -1
                         width: parent.width
                         contentItem: Rectangle {
                             implicitWidth: parent.width
@@ -146,9 +151,9 @@ Item {
                         icon.height: 18
                         icon.color: 'black'
                         onClicked: {
-                            fileIndex = index
-                            fileFieldName = tfFormDataName.value
-                            fileDialog.open()
+                            fileIndex = formDelegate.index;
+                            fileFieldName = tfFormDataName.value;
+                            fileDialog.open();
                         }
                     }
                     Button {
@@ -158,8 +163,8 @@ Item {
                         icon.height: 18
                         icon.color: 'black'
                         onClicked: {
-                            App.query.removeFormDateItem(index)
-                            formDataModel.remove(index)
+                            App.query.removeFormDateItem(formDelegate.index);
+                            formDataModel.remove(formDelegate.index);
                         }
                     }
                 }
@@ -187,8 +192,8 @@ Item {
                     "name": '',
                     "value": '',
                     "isEnabled": true
-                })
-                App.query.addFormData('', '')
+                });
+                App.query.addFormData('', '');
             }
         }
     }
@@ -197,37 +202,35 @@ Item {
         id: formDataModel
     }
 
-
     FileDialog {
         id: fileDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
-        onAccepted:() => {
+        onAccepted: () => {
             formDataModel.set(fileIndex, {
                 "name": fileFieldName,
                 "value": selectedFile.toString(),
                 "isEnabled": true
-            })
-            App.query.setFormDataItem(fileIndex, fileFieldName, selectedFile.toString(), true)
+            });
+            App.query.setFormDataItem(fileIndex, fileFieldName, selectedFile.toString(), true);
 
-           fileFieldName = ''
-           fileIndex = -1
+            fileFieldName = '';
+            fileIndex = -1;
         }
     }
 
-    TextEdit{
+    TextEdit {
         id: teCopy
         visible: false
     }
-
 
     Connections {
         target: App
 
         function onQueryChanged() {
-            checkIsMultipart()
+            queryFormBody.checkIsMultipart();
 
             if (isMultipart) {
-                fillData()
+                queryFormBody.fillData();
             }
         }
     }
@@ -236,75 +239,73 @@ Item {
         target: queryFormBody
 
         function changeFormValue(idx) {
-            sync(idx)
+            queryFormBody.sync(idx);
         }
     }
 
-
     Timer {
         id: syncTimer
-        interval: 500;
-        running: true;
+        interval: 500
+        running: true
         repeat: false
     }
 
-
     function sync(idx) {
         syncTimer.triggered.connect(function () {
-            let param = headerModel.get(idx)
+            let param = headerModel.get(idx);
 
-            App.query.setFormDataItem(idx, param.name, param.value, param.isEnabled)
+            App.query.setFormDataItem(idx, param.name, param.value, param.isEnabled);
         });
-        syncTimer.start()
+        syncTimer.start();
     }
 
     function fillData() {
-        formDataModel.clear()
+        formDataModel.clear();
 
         for (let fd of App.query.formData) {
             formDataModel.append({
                 "isEnabled": fd.isEnabled,
                 "name": fd.name,
                 "value": fd.value
-            })
+            });
         }
     }
 
     function checkIsMultipart() {
         if (App.query !== null) {
-            isMultipart = App.query.bodyType === 2
+            isMultipart = App.query.bodyType === 2;
         } else {
-            isMultipart = false
+            isMultipart = false;
         }
     }
 
     function clear() {
-        formDataModel.clear()
-        App.query.formData = []
+        formDataModel.clear();
+        App.query.formData = [];
     }
 
     function copy() {
-        let copyStr = ""
+        let copyStr = "";
 
         for (let param of App.query.formData) {
-            copyStr += `${param.name}=${param.value}\n`
+            copyStr += `${param.name}=${param.value}\n`;
         }
 
-        teCopy.text = copyStr
-        teCopy.selectAll()
-        teCopy.copy()
-        teCopy.clear()
+        teCopy.text = copyStr;
+        teCopy.selectAll();
+        teCopy.copy();
+        teCopy.clear();
     }
 
     function extractFileName(filePath) {
-        let windowsRegex = /[^\\]*$/    // for Windows
-        let unixRegex = /[^\/]*$/       // for UNIX
+        let windowsRegex = /[^\\]*$/;    // for Windows
+        let unixRegex = /[^\/]*$/;       // for UNIX
 
-        let isWindows = filePath.includes('\\')
-        let regexToUse = isWindows ? windowsRegex : unixRegex
+        let isWindows = filePath.includes('\\');
+        let regexToUse = isWindows ? windowsRegex : unixRegex;
 
-        let fileName = filePath.match(regexToUse)[0]
+        let fileName = filePath.match(regexToUse)[0];
 
-        return fileName
+        return fileName;
     }
 }

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtCore
 import QtQuick
 import QtQuick.Controls
@@ -20,7 +22,7 @@ Item {
     property int currentIndex: 0
 
     Component.onCompleted: {
-        setSource(0);
+        answerView.setSource(0);
     }
 
     ColumnLayout {
@@ -40,7 +42,7 @@ Item {
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 100
 
-                color: App.query !== null ? getStatusColor(App.query) : "lightgrey"
+                color: App.query !== null ? answerView.getStatusColor(App.query) : "lightgrey"
                 radius: 4
 
                 Text {
@@ -81,7 +83,7 @@ Item {
                     font.pointSize: 12
                     font.weight: 700
                     padding: 8
-                    text: App.query && App.query?.lastAnswer ? getDurationString(App.query.lastAnswer.duration) : "0 ms"
+                    text: App.query && App.query?.lastAnswer ? answerView.getDurationString(App.query.lastAnswer.duration) : "0 ms"
                 }
             }
             Item {
@@ -188,7 +190,7 @@ Item {
 
         function onIsRequestWorkChanged() {
             if (HttpClient.isRequestWork) {
-                showLoader();
+                answerView.showLoader();
 
                 return;
             }

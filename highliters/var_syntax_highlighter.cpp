@@ -1,24 +1,31 @@
 #include "var_syntax_highlighter.h"
 
-VarSyntaxHighlighter::VarSyntaxHighlighter(QQuickTextDocument *parent) : QSyntaxHighlighter{parent}
+VarSyntaxHighlighter::VarSyntaxHighlighter(QQuickTextDocument* parent) : QSyntaxHighlighter{parent}
 {
-    HighlightingRule varRule;
+    QTextCharFormat varFormat;
     varFormat.setForeground(Qt::blue);
     varFormat.setFontWeight(QFont::DemiBold);
+
+    HighlightingRule varRule;
     varRule.pattern = QRegularExpression("{{\\s*(.*?)\\s*}}");
     varRule.pattern.optimize();
     varRule.format = varFormat;
-    highlightingRules.append(varRule);
+
+    _highlightingRules.append(varRule);
 }
 
-void VarSyntaxHighlighter::setDocument(QQuickTextDocument *pDoc)
+void VarSyntaxHighlighter::setDocument(QQuickTextDocument* pDoc)
 {
     QSyntaxHighlighter::setDocument(pDoc->textDocument());
 }
 
-void VarSyntaxHighlighter::highlightBlock(const QString &text)
+void VarSyntaxHighlighter::highlightBlock(const QString& text)
 {
-    for (const HighlightingRule &rule : std::as_const(highlightingRules)) {
+    if (!_enabled) {
+        return;
+    }
+
+    for (const HighlightingRule& rule : std::as_const(_highlightingRules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
 
         while (matchIterator.hasNext()) {
@@ -26,4 +33,21 @@ void VarSyntaxHighlighter::highlightBlock(const QString &text)
             setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
     }
+}
+
+bool VarSyntaxHighlighter::enabled() const
+{
+    return _enabled;
+}
+
+void VarSyntaxHighlighter::setEnabled(bool newEnabled)
+{
+    if (_enabled == newEnabled) {
+        return;
+    }
+
+    _enabled = newEnabled;
+
+    rehighlight();
+    emit enabledChanged();
 }

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -8,6 +10,7 @@ import core.app 1.0
 import "../../../../qml"
 
 Item {
+    id: queryBodyView
 
     property Constants consts: Constants {}
     property bool isForm: false
@@ -15,18 +18,13 @@ Item {
     signal clear
     signal copy
 
-
     Component.onCompleted: {
         if (App.query) {
-            cbBodyType.currentIndex = App.query.bodyType
+            cbBodyType.currentIndex = App.query.bodyType;
         }
 
-
-        checkIsForm()
+        queryBodyView.checkIsForm();
     }
-
-
-    id: queryBodyView
 
     ColumnLayout {
         anchors.fill: parent
@@ -36,13 +34,13 @@ Item {
             Layout.fillHeight: true
 
             Loader {
-                Layout.topMargin: 10
-                Layout.bottomMargin: 20
-
                 id: loader
                 asynchronous: true
                 anchors.fill: parent
                 sourceComponent: queryBodyView.isForm ? formBody : textBody
+
+                Layout.topMargin: 10
+                Layout.bottomMargin: 20
             }
         }
 
@@ -52,20 +50,20 @@ Item {
             Layout.alignment: Qt.AlignRight
 
             ComboBox {
-                Layout.bottomMargin: 8
-                Layout.rightMargin: 8
-                Layout.fillWidth: true
-                Layout.preferredWidth: 80
-
                 id: cbBodyType
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 model: ["None", "JSON", "Multipart Form", "Form URL Encoded", "XML"]
                 onActivated: {
-                    App.query.bodyType = cbBodyType.currentIndex
+                    App.query.bodyType = cbBodyType.currentIndex;
 
-                    checkIsForm()
-                    setContentTypeHeader(cbBodyType.currentValue)
+                    queryBodyView.checkIsForm();
+                    queryBodyView.setContentTypeHeader(cbBodyType.currentValue);
                 }
+
+                Layout.bottomMargin: 8
+                Layout.rightMargin: 8
+                Layout.fillWidth: true
+                Layout.preferredWidth: 80
             }
 
             Button {
@@ -74,11 +72,11 @@ Item {
 
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
-                icon.source: "/resource/images/close.svg"
+                icon.source: "qrc:/resource/images/close.svg"
                 flat: true
                 text: qsTr("Clear")
                 onClicked: {
-                    queryBodyView.clear()
+                    queryBodyView.clear();
                 }
             }
 
@@ -89,11 +87,10 @@ Item {
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
-                icon.source: "/resource/images/copy.svg"
+                icon.source: "qrc:/resource/images/copy.svg"
                 flat: true
-                // visible: !queryBodyView.isForm
                 onClicked: {
-                    queryBodyView.copy()
+                    queryBodyView.copy();
                 }
             }
 
@@ -105,44 +102,41 @@ Item {
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Beautify")
-                icon.source: "/resource/images/sound-module-line.svg"
+                icon.source: "qrc:/resource/images/sound-module-line.svg"
                 flat: true
                 onClicked: {
-                    App.query.beautify()
+                    App.query.beautify();
                 }
             }
         }
     }
-
 
     Connections {
         target: App
 
         function onQueryChanged() {
             if (App.query === null) {
-                return
+                return;
             }
 
-            cbBodyType.currentIndex = App.query.bodyType
-            checkIsForm()
+            cbBodyType.currentIndex = App.query.bodyType;
+            queryBodyView.checkIsForm();
         }
     }
-
 
     Component {
         id: textBody
 
         QueryTextBody {
+            id: tb
             Component.onCompleted: {
-                queryBodyView.clear.connect(tb.clear)
-                queryBodyView.copy.connect(tb.copy)
+                queryBodyView.clear.connect(tb.clear);
+                queryBodyView.copy.connect(tb.copy);
             }
             Component.onDestruction: {
-                queryBodyView.clear.disconnect(textBody.tb.clear)
-                queryBodyView.clear.disconnect(textBody.tb.copy)
+                queryBodyView.clear.disconnect(textBody.tb.clear);
+                queryBodyView.clear.disconnect(textBody.tb.copy);
             }
-
-            id: tb
             visible: !queryBodyView.isForm
         }
     }
@@ -151,59 +145,57 @@ Item {
         id: formBody
 
         QueryFormBody {
+            id: tf
             Component.onCompleted: {
-                queryBodyView.clear.connect(tf.clear)
-                queryBodyView.copy.connect(tf.copy)
+                queryBodyView.clear.connect(tf.clear);
+                queryBodyView.copy.connect(tf.copy);
             }
             Component.onDestruction: {
-                queryBodyView.clear.disconnect(tf.clear)
-                queryBodyView.copy.disconnect(tf.copy)
+                queryBodyView.clear.disconnect(tf.clear);
+                queryBodyView.copy.disconnect(tf.copy);
             }
-
-            id: tf
         }
     }
 
     function setContentTypeHeader(contentType) {
-        let headers = App.query.headers
+        let headers = App.query.headers;
 
-        switch(contentType) {
+        switch (contentType) {
         case "JSON":
             App.query.setHeader("Content-Type", "application/json; charset=UTF-8");
 
-            break
+            break;
         case "XML":
             App.query.setHeader("Content-Type", "application/xml");
 
-            break
+            break;
         case "Multipart Form":
             App.query.setHeader("Content-Type", "multipart/form-data");
 
-            break
+            break;
         case "Form URL Encoded":
             App.query.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            break
+            break;
         case "None":
-            App.query.removeHeader("Content-Type")
+            App.query.removeHeader("Content-Type");
 
-            break
+            break;
         }
     }
 
     function checkIsForm() {
         if (App.query === null) {
-            return
+            return;
         }
 
         switch (App.query.bodyType) {
         case 2:
         case 3:
-            queryBodyView.isForm = true
-            break
+            queryBodyView.isForm = true;
+            break;
         default:
-            queryBodyView.isForm = false
+            queryBodyView.isForm = false;
         }
     }
-
 }

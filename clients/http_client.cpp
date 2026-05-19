@@ -1,11 +1,14 @@
 #include "http_client.h"
 
-HttpClient::HttpClient(QObject* parent) : QObject{parent}
+HttpClient::HttpClient(QObject* parent) :
+    QObject{parent},
+    _varRegex("{{\\s*(.*?)\\s*}}")
 {
     _manager = new QNetworkAccessManager(this);
     // _manager->setRedirectPolicy(QNetworkRequest::SameOriginRedirectPolicy);
     _reply = nullptr;
     _isRequestWork = false;
+    _varRegex.optimize();
 
     connect(_manager, &QNetworkAccessManager::finished, this, &HttpClient::slotFinished);
 }
@@ -355,7 +358,7 @@ QString HttpClient::getErrorString(QNetworkReply* reply)
 
 QUrl HttpClient::prepareUrl(Query* query) const noexcept
 {
-    QString urlString = Util::fillVars(query->url(), _vars);
+    QString urlString = Util::fillVars(query->url(), _vars, _varRegex);
 
     if (urlString.startsWith("localhost")) {
         urlString = urlString.replace("localhost", "http://127.0.0.1");
@@ -369,7 +372,8 @@ QUrl HttpClient::prepareUrl(Query* query) const noexcept
             continue;
         }
 
-        urlParams.addQueryItem(param.name(), param.value());
+        QString value = Util::fillVars(param.value(), _vars, _varRegex);
+        urlParams.addQueryItem(param.name(), value);
     }
 
     url.setQuery(urlParams.toString(QUrl::FullyEncoded));
@@ -387,7 +391,7 @@ QMap<QByteArray, QByteArray> HttpClient::prepareHeaders(Query* query) const noex
             continue;
         }
 
-        QString val = Util::fillVars(header.value(), _vars);
+        QString val = Util::fillVars(header.value(), _vars, _varRegex);
         result[header.name().toUtf8()] = val.toUtf8();
     }
 

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -7,21 +9,19 @@ import HttpClient
 
 import "../../../../qml"
 
-
 Item {
+    id: waitView
+    anchors.fill: parent
 
     property Constants consts: Constants {}
-
-    anchors.fill: parent
 
     ColumnLayout {
         anchors.centerIn: parent
 
         Image {
-            Layout.alignment: Qt.AlignHCenter
-
             id: imgLoad
-            source: "/resource/images/rotate-loop.svg"
+            Layout.alignment: Qt.AlignHCenter
+            source: "qrc:/resource/images/rotate-loop.svg"
             sourceSize.width: 50
             sourceSize.height: 50
             states: State {
@@ -48,12 +48,11 @@ Item {
         Button {
             Layout.alignment: Qt.AlignHCenter
 
-            height: consts.bottomButtonHeight
+            height: waitView.consts.bottomButtonHeight
             text: qsTr("Cancel")
             onClicked: {
-                HttpClient.abortReply()
+                HttpClient.abortReply();
             }
         }
     }
-
 }

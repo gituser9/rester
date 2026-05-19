@@ -6,9 +6,8 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 import io.rester
-import core.app
+import core.app 1.0
 import RoutesModel
-import PinModel
 import Util
 
 import "./components"
@@ -39,7 +38,7 @@ Item {
                     flat: true
                     icon.color: 'black'
                     icon.height: 24
-                    icon.source: "/resource/images/folder-add.svg"
+                    icon.source: "qrc:/resource/images/folder-add.svg"
                     icon.width: 24
                     text: qsTr("Add Folder")
 
@@ -52,7 +51,7 @@ Item {
                     flat: true
                     icon.color: 'black'
                     icon.height: 24
-                    icon.source: "/resource/images/arrow-up-down.svg"
+                    icon.source: "qrc:/resource/images/arrow-up-down.svg"
                     icon.width: 24
                     text: qsTr("Add Request")
 
@@ -135,7 +134,7 @@ Item {
 
                     onDropped: drag => {
                         dragContainer.color = "transparent";
-                        RoutesModel.moveRows(moveIndex.parent, moveIndex.row, 1, treeView.index(row, column), row);
+                        RoutesModel.moveRows(routesItem.moveIndex.parent, routesItem.moveIndex.row, 1, root.treeView.index(root.row, root.column), root.row);
                     }
                     onEntered: drag => {
                         dragContainer.color = "lightblue";
@@ -188,11 +187,11 @@ Item {
                             RoutesModel.importFromHar(folderIdx, path);
                         }
                         onRemoveDir: {
-                            currentIndex = root.treeView.index(root.row, root.column);
+                            routesItem.currentIndex = root.treeView.index(root.row, root.column);
                             dlgRemoveFolder.open();
                         }
                         onStartDrag: {
-                            moveIndex = root.treeView.index(root.row, root.column);
+                            routesItem.moveIndex = root.treeView.index(root.row, root.column);
                         }
                         onToggleExpand: {
                             root.treeView.toggleExpanded(root.row);
@@ -203,7 +202,7 @@ Item {
                             root.nodeName = newDirName;
                             root.parentUuid = parentUuid;
 
-                            let idx = currentIndex = root.treeView.index(root.row, root.column);
+                            let idx = routesItem.currentIndex = root.treeView.index(root.row, root.column);
                             RoutesModel.updateFolder(idx, newDirName, 257); // TODO: fix magic number
                         }
                     }
@@ -222,7 +221,7 @@ Item {
                         x: root.padding + (root.isTreeNode ? (root.depth + 1) * root.indent : 0)
 
                         onCopyCurl: {
-                            let idx = root.treeView.index(row, column);
+                            let idx = root.treeView.index(root.row, root.column);
                             let curlCommand = RoutesModel.copyAsCurl(idx);
                             teCopy.text = curlCommand;
                             teCopy.selectAll();
@@ -237,11 +236,11 @@ Item {
                             PinModel.addPin(root.nodeUuid);
                         }
                         onSetQuery: {
-                            RoutesModel.setCurrentQuery(treeView.index(root.row, root.column));
-                            currentRow = root.row;
+                            RoutesModel.setCurrentQuery(root.treeView.index(root.row, root.column));
+                            routesItem.currentRow = root.row;
                         }
                         onStartDrag: {
-                            moveIndex = root.treeView.index(root.row, root.column);
+                            routesItem.moveIndex = root.treeView.index(root.row, root.column);
                         }
                         onUpdateQuery: (newQueryName, parentUuid) => {
                             root.nodeName = newQueryName;

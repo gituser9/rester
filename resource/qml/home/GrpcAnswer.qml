@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtCore
 import QtQuick
 import QtQuick.Controls
@@ -20,7 +22,7 @@ Item {
     property int currentIndex: 0
 
     Component.onCompleted: {
-        setSource(0);
+        answerView.setSource(0);
     }
 
     ColumnLayout {
@@ -40,7 +42,7 @@ Item {
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 100
 
-                color: getStatusColor(App.grpcQuery)
+                color: answerView.getStatusColor(App.grpcQuery)
                 radius: 4
 
                 Text {
@@ -81,7 +83,7 @@ Item {
                     font.pointSize: 12
                     font.weight: 700
                     padding: 8
-                    text: getDurationString(App.grpcQuery.lastAnswer.duration)
+                    text: answerView.getDurationString(App.grpcQuery.lastAnswer.duration)
                 }
             }
             Item {
@@ -134,7 +136,7 @@ Item {
                     if (size.label === "Mb" && size.size > 1) {
                         loader.sourceComponent = bigBody;
                     } else {
-                        setSource(0);
+                        answerView.setSource(0);
                     }
                 }
 
@@ -174,7 +176,7 @@ Item {
 
         function onIsRequestWorkChanged() {
             if (GrpcClient.isRequestWork) {
-                showLoader();
+                answerView.showLoader();
 
                 return;
             }
@@ -189,7 +191,7 @@ Item {
                 loader.sourceComponent = bigBody;
                 isBig = true;
             } else {
-                setSource(currentIndex);
+                answerView.setSource(currentIndex);
                 isBig = false;
             }
         }

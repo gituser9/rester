@@ -1,15 +1,16 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
-
 Item {
+    id: bigBodyVew
+    anchors.fill: parent
 
     signal download
     signal show
     signal clear
-
-    anchors.fill: parent
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -26,7 +27,7 @@ Item {
 
             text: qsTr("Show Anyway")
             onClicked: {
-                show()
+                bigBodyVew.show();
             }
         }
 
@@ -36,7 +37,7 @@ Item {
 
             text: qsTr("Download In File")
             onClicked: {
-                download()
+                bigBodyVew.download();
             }
         }
 
@@ -46,7 +47,7 @@ Item {
 
             text: qsTr("Clear Answer Body")
             onClicked: {
-                clear()
+                bigBodyVew.clear();
             }
         }
     }

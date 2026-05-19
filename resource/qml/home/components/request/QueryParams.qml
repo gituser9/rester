@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -5,6 +7,7 @@ import QtQuick.Layouts
 import io.rester
 import core.app 1.0
 import UrlHighlighter
+import VarSyntaxHighlighter
 
 import "../../modal"
 import "../../../common/components"
@@ -16,7 +19,7 @@ Rectangle {
     signal changeParam(int index)
 
     Component.onCompleted: {
-        fillData();
+        winParam.fillData();
     }
 
     ColumnLayout {
@@ -66,7 +69,7 @@ Rectangle {
             Button {
                 id: copybtn
                 flat: true
-                icon.source: "/resource/images/copy.svg"
+                icon.source: "qrc:/resource/images/copy.svg"
                 icon.width: 22
                 icon.height: 22
                 icon.color: 'black'
@@ -105,11 +108,11 @@ Rectangle {
             Button {
                 flat: true
                 text: qsTr("From URL")
-                icon.source: "/resource/images/download.svg"
+                icon.source: "qrc:/resource/images/download.svg"
                 icon.width: 18
                 icon.height: 18
                 onClicked: {
-                    fromUrl();
+                    winParam.fromUrl();
                 }
             }
         }
@@ -121,8 +124,18 @@ Rectangle {
             model: paramModel
             clip: true
             delegate: Rectangle {
+                id: paramDelegate
                 height: 50
                 width: winParam.width
+
+                required property bool isEnabled
+                required property int index
+                required property string name
+                required property string value
+
+                VarSyntaxHighlighter {
+                    id: varHighlighter
+                }
 
                 RowLayout {
                     spacing: 8
@@ -130,11 +143,13 @@ Rectangle {
 
                     CheckBox {
                         id: cbEnabled
-                        checked: model.isEnabled
+                        checked: paramDelegate.isEnabled
                         onClicked: {
-                            paramModel.setProperty(index, "isEnabled", cbEnabled.checkState === Qt.Checked);
-                            fillUrl();
-                            changeParam(index);
+                            paramModel.setProperty(paramDelegate.index, "isEnabled", cbEnabled.checkState === Qt.Checked);
+                            winParam.fillUrl();
+                            winParam.changeParam(paramDelegate.index);
+
+                            varHighlighter.enabled = cbEnabled.checked;
                         }
                     }
                     Column {
@@ -145,15 +160,15 @@ Rectangle {
                             isEnabled: cbEnabled.checkState === Qt.Checked
                             width: paramList.width / 3
                             height: 20
-                            value: model.name
+                            value: paramDelegate.name
                             onEditingFinish: txt => {
-                                let param = paramModel.get(index);
+                                let param = paramModel.get(paramDelegate.index);
 
-                                App.query.setParam(index, param.name, param.value, param.isEnabled);
+                                App.query.setParam(paramDelegate.index, param.name, param.value, param.isEnabled);
                             }
                             onTextChange: txt => {
-                                paramModel.setProperty(index, "name", txt);
-                                fillUrl();
+                                paramModel.setProperty(paramDelegate.index, "name", txt);
+                                winParam.fillUrl();
                             }
                         }
                         MenuSeparator {
@@ -174,15 +189,20 @@ Rectangle {
                             isEnabled: cbEnabled.checkState === Qt.Checked
                             width: paramList.width / 3
                             height: 20
-                            value: model.value
+                            value: paramDelegate.value
                             onEditingFinish: txt => {
-                                let param = paramModel.get(index);
+                                let param = paramModel.get(paramDelegate.index);
 
-                                App.query.setParam(index, param.name, param.value, param.isEnabled);
+                                App.query.setParam(paramDelegate.index, param.name, param.value, param.isEnabled);
                             }
                             onTextChange: txt => {
-                                paramModel.setProperty(index, "value", txt);
-                                fillUrl();
+                                paramModel.setProperty(paramDelegate.index, "value", txt);
+                                winParam.fillUrl();
+                            }
+
+                            Component.onCompleted: {
+                                varHighlighter.setDocument(paramValue.textDocument);
+                                varHighlighter.enabled = cbEnabled.checked;
                             }
                         }
                         MenuSeparator {
@@ -204,7 +224,7 @@ Rectangle {
                             App.query.removeParam(index);
                             paramModel.remove(index);
 
-                            fillUrl();
+                            winParam.fillUrl();
                         }
                     }
                 }
@@ -278,9 +298,9 @@ Rectangle {
 
         function onQueryChanged() {
             paramModel.clear();
-            fullUrl = "";
+            winParam.fullUrl = "";
 
-            fillData();
+            winParam.fillData();
         }
     }
 
@@ -288,7 +308,7 @@ Rectangle {
         target: winParam
 
         function onChangeParam(idx) {
-            sync(idx);
+            winParam.sync(idx);
         }
     }
 
@@ -296,7 +316,7 @@ Rectangle {
         target: App.query
 
         function onUrlChanged() {
-            rebuildUrl();
+            winParam.rebuildUrl();
         }
     }
 
@@ -304,7 +324,7 @@ Rectangle {
         target: App.workspace
 
         function onEnvChanged() {
-            rebuildUrl();
+            winParam.rebuildUrl();
         }
     }
 
@@ -338,7 +358,7 @@ Rectangle {
 
         if (vars) {
             for (let varr of vars) {
-                newUrl = replaceVariables(newUrl, varr);
+                newUrl = winParam.replaceVariables(newUrl, varr);
             }
         }
 
@@ -355,26 +375,37 @@ Rectangle {
                 "value": p.value,
                 "isEnabled": p.isEnabled
             });
-            newUrl += p.name + '=' + p.value + '&';
+
+            let pValue = p.value;
+
+            if (vars) {
+                for (let varr of vars) {
+                    pValue = winParam.replaceVariables(pValue, varr);
+                }
+            }
+
+            newUrl += p.name + '=' + pValue + '&';
         }
 
         // set full url
         if (newUrl.slice(-1) === '&') {
-            fullUrl = newUrl.substring(0, newUrl.length - 1);
+            winParam.fullUrl = newUrl.substring(0, newUrl.length - 1);
         } else {
-            fullUrl = newUrl;
+            winParam.fullUrl = newUrl;
         }
     }
 
     function fillUrl() {
-        let url = fullUrl;
+        let url = winParam.fullUrl;
         let urlArr = url.split("?");
 
+        let vars = [];
+
         if (App.workspace.env !== '') {
-            let vars = App.workspace.variables[App.workspace.env];
+            vars = App.workspace.variables[App.workspace.env];
 
             for (let varr of vars) {
-                urlArr[0] = replaceVariables(urlArr[0], varr);
+                urlArr[0] = winParam.replaceVariables(urlArr[0], varr);
             }
         }
 
@@ -387,13 +418,21 @@ Rectangle {
                 continue;
             }
 
-            url += param.name + '=' + param.value + '&';
+            let pValue = param.value;
+
+            if (vars) {
+                for (let varr of vars) {
+                    pValue = winParam.replaceVariables(pValue, varr);
+                }
+            }
+
+            url += param.name + '=' + pValue + '&';
         }
 
         if (url.slice(-1) === '&') {
-            fullUrl = url.substring(0, url.length - 1);
+            winParam.fullUrl = url.substring(0, url.length - 1);
         } else {
-            fullUrl = url;
+            winParam.fullUrl = url;
         }
     }
 
@@ -435,7 +474,7 @@ Rectangle {
         App.query.url = route;
 
         // set full url preview
-        fillUrl();
+        winParam.fillUrl();
     }
 
     function replaceVariables(inputString, varr) {
@@ -452,7 +491,7 @@ Rectangle {
 
         if (vars) {
             for (let varr of vars) {
-                newUrl = replaceVariables(newUrl, varr);
+                newUrl = winParam.replaceVariables(newUrl, varr);
             }
         }
 
@@ -466,14 +505,23 @@ Rectangle {
                 continue;
             }
 
-            newUrl += p.name + '=' + p.value + '&';
+            let pValue = p.value;
+
+            if (vars) {
+                for (let varr of vars) {
+                    pValue = winParam.replaceVariables(pValue, varr);
+                }
+            }
+
+            // newUrl += p.name + '=' + p.value + '&';
+            newUrl += p.name + '=' + pValue + '&';
         }
 
         // set full url
         if (newUrl.slice(-1) === '&') {
-            fullUrl = newUrl.substring(0, newUrl.length - 1);
+            winParam.fullUrl = newUrl.substring(0, newUrl.length - 1);
         } else {
-            fullUrl = newUrl;
+            winParam.fullUrl = newUrl;
         }
     }
 }

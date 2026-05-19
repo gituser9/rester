@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -23,7 +25,7 @@ Item {
         let canSet = App.grpcQuery !== null && App.grpcQuery.lastAnswer !== null;
 
         if (canSet) {
-            setJson(App.grpcQuery.lastAnswer);
+            answerBodyView.setJson(App.grpcQuery.lastAnswer);
         }
     }
 
@@ -62,11 +64,16 @@ Item {
             visible: answerBodyView.isBig
             model: answerBodyView.stringList
             delegate: Row {
+                id: listDelegate
+
+                required property int index
+                required property string modelData
+
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
                 Text {
-                    text: `${index + 1} `
+                    text: `${listDelegate.index + 1} `
                     color: 'lightgrey'
                 }
                 TextEdit {
@@ -84,7 +91,7 @@ Item {
                     font.family: "Monospace"
                     readOnly: true
                     selectByMouse: true
-                    text: model.modelData
+                    text: listDelegate.modelData
                 }
             }
 
@@ -322,12 +329,12 @@ Item {
                     // for list
                     if (answerBodyView.isBig) {
                         for (const prop in answerBodyView.stringList) {
-                            if (stringList.hasOwnProperty(prop)) {
-                                delete stringList[prop];
+                            if (answerBodyView.stringList.hasOwnProperty(prop)) {
+                                delete answerBodyView.stringList[prop];
                             }
                         }
 
-                        stringList = null;
+                        answerBodyView.stringList = null;
                     }
 
                     // for all

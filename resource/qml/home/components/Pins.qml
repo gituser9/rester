@@ -1,10 +1,12 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
-import io.rester
-
-import PinModel
+// import PinModel 1.0
+// import models.pins 1.0
+import core.app 1.0
 
 Item {
     id: pinItem
@@ -15,14 +17,17 @@ Item {
         id: pinList
         anchors.fill: parent
         clip: true
+        boundsBehavior: Flickable.StopAtBounds
         model: PinModel
-
         delegate: ItemDelegate {
+            id: pinDelegate
             height: 40
-            width: pinList.width
-            onClicked: {
-                pinItem.setQuery(model.uuid);
-            }
+            width: ListView.view.width
+            onClicked: pinItem.setQuery(pinDelegate.uuid)
+
+            required property string uuid
+            required property string name
+            required property int index
 
             RowLayout {
                 anchors.fill: parent
@@ -32,22 +37,24 @@ Item {
                 Image {
                     sourceSize.width: 18
                     sourceSize.height: 18
-                    source: "/resource/images/pushpin-fill.svg"
+                    source: "qrc:/resource/images/pushpin-fill.svg"
                 }
                 Text {
                     Layout.fillWidth: true
                     Layout.leftMargin: 8
 
-                    text: model.name
+                    text: pinDelegate.name
                 }
                 Button {
                     flat: true
-                    icon.source: "/resource/images/close.svg"
-                    icon.width: 18
-                    icon.height: 18
-                    icon.color: 'black'
+                    icon {
+                        source: "qrc:/resource/images/close.svg"
+                        width: 18
+                        height: 18
+                        color: "black"
+                    }
                     onClicked: {
-                        PinModel.removeRows(index, 1);
+                        PinModel.removeRows(pinDelegate.index, 1);
                     }
                 }
             }

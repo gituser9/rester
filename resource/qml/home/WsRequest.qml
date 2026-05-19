@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -9,16 +11,14 @@ import VarSyntaxHighlighter
 import "./../"
 import "../common/components"
 
-
 Item {
+    id: wsView
 
     property Constants consts: Constants {}
 
     Component.onDestruction: {
-        App.disconnectSocket()
+        App.disconnectSocket();
     }
-
-    id: wsView
 
     ColumnLayout {
         anchors.fill: parent
@@ -55,17 +55,16 @@ Item {
                 radius: 4
 
                 FlickableEdit {
+                    id: tfUrl
                     Layout.rightMargin: 8
 
                     Component.onCompleted: {
-                        varHilighter.setDocument(tfUrl.textDocument)
+                        varHilighter.setDocument(tfUrl.textDocument);
                     }
-
-                    id: tfUrl
                     anchors.fill: parent
                     value: App.query ? App.query.url : ''
                     onEditingFinish: txt => {
-                        App.query.url = txt
+                        App.query.url = txt;
                     }
                 }
             }
@@ -81,9 +80,9 @@ Item {
                     text: App.isActiveSocketConnect ? qsTr("DISCONNECT") : qsTr("CONNECT")
                     onClicked: {
                         if (App.isActiveSocketConnect) {
-                            App.disconnectSocket()
+                            App.disconnectSocket();
                         } else {
-                            App.connectToSocket()
+                            App.connectToSocket();
                         }
                     }
                 }
@@ -102,10 +101,9 @@ Item {
                 Layout.preferredHeight: 22
 
                 FlickableEdit {
+                    id: tfMsg
                     Layout.fillWidth: true
                     Layout.preferredHeight: 20
-
-                    id: tfMsg
                     value: ''
                 }
                 MenuSeparator {
@@ -119,7 +117,6 @@ Item {
                 }
             }
 
-
             Button {
                 Layout.leftMargin: 8
                 Layout.preferredHeight: wsView.consts.bottomButtonHeight
@@ -127,38 +124,35 @@ Item {
                 text: qsTr("SEND")
                 onClicked: {
                     if (!tfMsg.value) {
-                        return
+                        return;
                     }
 
                     msgModel.append({
-                                        message: tfMsg.value,
-                                        type: 'sended'
-                                    })
-                    App.sendToSocket(tfMsg.value)
-                    tfMsg.value = ''
+                        message: tfMsg.value,
+                        type: 'sended'
+                    });
+                    App.sendToSocket(tfMsg.value);
+                    tfMsg.value = '';
                 }
             }
-
-
         }
 
         ListView {
+            id: msgList
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.leftMargin: 8
             Layout.rightMargin: 8
-
-            id: msgList
             clip: true
             model: msgModel
             delegate: Item {
+                id: wsMsgDelegate
+                height: txtWsMsg.height + 8
+
                 required property string message
                 required property string type
 
                 Layout.fillWidth: true
-
-                id: wsMsgDelegate
-                height: txtWsMsg.height + 8
 
                 RowLayout {
                     Layout.fillWidth: true
@@ -173,23 +167,21 @@ Item {
                         font.family: "Monospace"
                         font.bold: true
                         text: wsMsgDelegate.type + ":"
-                        color: getColorForMessageType(wsMsgDelegate.type)
+                        color: wsView.getColorForMessageType(wsMsgDelegate.type)
                     }
                     Text {
+                        id: txtWsMsg
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
                         Layout.topMargin: 8
-
-                        id: txtWsMsg
                         font.family: "Monospace"
                         text: wsMsgDelegate.message
                     }
                     // if JSON
                     Button {
+                        id: btnBeautify
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
                         ToolTip.text: qsTr("Beautify")
                         ToolTip.visible: hovered
-
-                        id: btnBeautify
                         visible: mouse.hovered && wsView.isJSON(txtWsMsg.text)
                         flat: true
                         icon.source: "/resource/images/pencil.svg"
@@ -197,10 +189,11 @@ Item {
                         icon.height: 18
                         icon.color: 'black'
                         onClicked: {
-                            txtWsMsg.text = wsView.beautifyJSON(txtWsMsg.text)
+                            txtWsMsg.text = wsView.beautifyJSON(txtWsMsg.text);
                         }
                     }
                     Button {
+                        id: copyBtn
                         property string tooltipText: qsTr("Copy value")
 
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
@@ -208,11 +201,9 @@ Item {
                         ToolTip.visible: hovered
                         ToolTip.toolTip.onVisibleChanged: {
                             if (!hovered) {
-                                tooltipText = qsTr("Copy Message")
+                                tooltipText = qsTr("Copy Message");
                             }
                         }
-
-                        id: copyBtn
                         visible: mouse.hovered
                         flat: true
                         icon.source: "/resource/images/copy.svg"
@@ -220,12 +211,12 @@ Item {
                         icon.height: 18
                         icon.color: 'black'
                         onClicked: {
-                            teCopy.text = txtWsMsg.text
-                            teCopy.selectAll()
-                            teCopy.copy()
-                            teCopy.clear()
+                            teCopy.text = txtWsMsg.text;
+                            teCopy.selectAll();
+                            teCopy.copy();
+                            teCopy.clear();
 
-                            copyBtn.tooltipText = qsTr("Copied")
+                            copyBtn.tooltipText = qsTr("Copied");
                         }
                     }
 
@@ -235,11 +226,9 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                     }
                 }
-
             }
         }
     }
-
 
     TextEdit {
         id: teCopy
@@ -254,25 +243,23 @@ Item {
         id: varHilighter
     }
 
-
     Connections {
         target: App
 
         function onSocketReceived(msg) {
             msgModel.append({
-                                message: msg,
-                                type: 'received'
-                            })
+                message: msg,
+                type: 'received'
+            });
         }
 
         function onSocketError(msg) {
             msgModel.append({
-                                message: msg,
-                                type: 'error'
-                            })
+                message: msg,
+                type: 'error'
+            });
         }
     }
-
 
     function isJSON(str) {
         try {
@@ -295,15 +282,15 @@ Item {
 
     function getColorForMessageType(type) {
         if (type === 'received') {
-            return '#008200'
+            return '#008200';
         }
 
         if (type === 'sended') {
-            return '#5555ff'
+            return '#5555ff';
         }
 
         if (type === 'error') {
-            return '#ff0000'
+            return '#ff0000';
         }
     }
 }

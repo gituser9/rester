@@ -16,6 +16,7 @@
 #include <QVariantList>
 #include <QMap>
 #include <QByteArray>
+#include <QRegularExpression>
 
 #include <zlib.h>
 #include <brotli/decode.h>
@@ -56,6 +57,7 @@ private:
     QNetworkAccessManager* _manager;
     QNetworkReply* _reply;
     QVariantList _vars;
+    QRegularExpression _varRegex;
     std::chrono::steady_clock::time_point _startTime;
     bool _isRequestWork;
 

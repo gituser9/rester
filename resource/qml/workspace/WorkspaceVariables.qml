@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -17,7 +19,7 @@ Item {
     property string env: ''
 
     Component.onCompleted: {
-        fillData();
+        wsVars.fillData();
     }
     anchors.fill: parent
 
@@ -56,22 +58,27 @@ Item {
             orientation: ListView.Horizontal
             model: modeModel
             delegate: Button {
-                Component.onCompleted: {
-                    if (model.name === env) {
-                        envIndex = index;
-                    }
-                }
+                id: envDelefate
 
-                text: model.name
+                required property string name
+                required property int index
+
+                text: envDelefate.name
                 flat: true
                 width: 100
-                down: model.name === env
+                down: envDelefate.name === wsVars.env
                 onClicked: {
-                    env = model.name;
-                    envIndex = index;
+                    wsVars.env = envDelefate.name;
+                    wsVars.envIndex = envDelefate.index;
 
-                    fillVars(model.name);
-                    WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
+                    wsVars.fillVars(envDelefate.name);
+                    WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
+                }
+
+                Component.onCompleted: {
+                    if (envDelefate.name === wsVars.env) {
+                        wsVars.envIndex = index;
+                    }
                 }
             }
         }
@@ -83,8 +90,13 @@ Item {
             clip: true
             model: varModel
             delegate: Rectangle {
+                id: varDeleagate
                 height: 60
                 width: wsVars.width
+
+                required property string name
+                required property string value
+                required property int index
 
                 RowLayout {
                     spacing: 16
@@ -97,13 +109,13 @@ Item {
                             id: tfVarName
                             height: 20
                             width: varList.width / 2
-                            value: model.name
+                            value: varDeleagate.name
                             onEditingFinish: txt => {
-                                vars[env][index] = {
+                                wsVars.vars[wsVars.env][varDeleagate.index] = {
                                     "name": txt,
                                     "value": tfVarValue.text
                                 };
-                                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
+                                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                             }
                         }
                         MenuSeparator {
@@ -122,13 +134,13 @@ Item {
                             id: tfVarValue
                             height: 20
                             width: varList.width / 2
-                            value: model.value
+                            value: varDeleagate.value
                             onEditingFinish: txt => {
-                                vars[env][index] = {
+                                wsVars.vars[wsVars.env][varDeleagate.index] = {
                                     "name": tfVarName.text,
                                     "value": txt
                                 };
-                                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
+                                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                             }
                         }
                         MenuSeparator {
@@ -147,10 +159,10 @@ Item {
                         icon.height: 18
                         icon.color: 'black'
                         onClicked: {
-                            vars[env].splice(index, 1);
-                            varModel.remove(index);
+                            wsVars.vars[wsVars.env].splice(varDeleagate.index, 1);
+                            varModel.remove(varDeleagate.index);
 
-                            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
+                            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                         }
                     }
                 }
@@ -164,7 +176,7 @@ Item {
         anchors.bottomMargin: 8
         anchors.right: parent.right
         anchors.left: parent.left
-        visible: envIndex !== -1
+        visible: wsVars.envIndex !== -1
 
         Button {
             text: qsTr("Delete Environment")
@@ -174,14 +186,14 @@ Item {
             icon.height: 22
             icon.color: 'black'
             onClicked: {
-                delete vars[env];
+                delete wsVars.vars[wsVars.env];
 
-                modeModel.remove(envIndex);
-                env = '';
-                envIndex = -1;
+                modeModel.remove(wsVars.envIndex);
+                wsVars.env = '';
+                wsVars.envIndex = -1;
                 varModel.clear();
 
-                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
+                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
             }
         }
         Item {
@@ -199,10 +211,10 @@ Item {
                     "name": '',
                     "value": ''
                 };
-                vars[env].push(data);
+                wsVars.vars[wsVars.env].push(data);
                 varModel.append(data);
 
-                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
+                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
             }
         }
     }
@@ -221,25 +233,17 @@ Item {
         title: qsTr("Create Environment")
         placeholder: qsTr("Environment Name")
         onOk: envName => {
-            if (vars["env"] === undefined) {
-                vars = {};
-                vars.env = envName;
+            if (wsVars.vars["env"] === undefined) {
+                wsVars.vars = {};
+                wsVars.vars.env = envName;
             }
 
-            vars[envName] = [];
+            wsVars.vars[envName] = [];
             modeModel.append({
                 "name": envName
             });
 
-            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, vars);
-        }
-    }
-
-    Connections {
-        target: App.workspace
-
-        function onVariablesChanged() {
-            // fillData()
+            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
         }
     }
 
@@ -270,7 +274,7 @@ Item {
             return;
         }
 
-        for (let item of vars[env]) {
+        for (let item of wsVars.vars[wsVars.env]) {
             varModel.append({
                 "name": item.name,
                 "value": item.value

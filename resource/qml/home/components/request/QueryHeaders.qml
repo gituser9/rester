@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -6,18 +8,16 @@ import io.rester
 import core.app 1.0
 import VarSyntaxHighlighter
 
-import '../../../common/components'
-
+import "../../../common/components"
 
 Rectangle {
+    id: winHeader
 
     signal changeHeader(int index)
 
     Component.onCompleted: {
-        fillData()
+        winHeader.fillData();
     }
-
-    id: winHeader
     anchors.fill: parent
 
     ListView {
@@ -27,8 +27,18 @@ Rectangle {
         clip: true
         model: headerModel
         delegate: Rectangle {
+            id: headerDelegate
             height: 60
             width: parent.width
+
+            required property bool isEnabled
+            required property int index
+            required property string name
+            required property string value
+
+            VarSyntaxHighlighter {
+                id: varHilighter
+            }
 
             RowLayout {
                 spacing: 16
@@ -36,10 +46,12 @@ Rectangle {
 
                 CheckBox {
                     id: cbEnabled
-                    checked: model.isEnabled
+                    checked: headerDelegate.isEnabled
                     onClicked: {
-                        headerModel.setProperty(index, "isEnabled", cbEnabled.checkState === Qt.Checked)
-                        changeHeader(index)
+                        headerModel.setProperty(headerDelegate.index, "isEnabled", cbEnabled.checkState === Qt.Checked);
+                        winHeader.changeHeader(headerDelegate.index);
+
+                        varHilighter.enabled = cbEnabled.checked;
                     }
                 }
                 Column {
@@ -50,14 +62,14 @@ Rectangle {
                         width: headerList.width / 3
                         height: 20
                         isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: model.name
+                        value: headerDelegate.name
                         onEditingFinish: txt => {
-                            let header = headerModel.get(index)
+                            let header = headerModel.get(headerDelegate.index);
 
-                            App.query.setHeader(index, header.name, header.value, header.isEnabled)
+                            App.query.setHeader(headerDelegate.index, header.name, header.value, header.isEnabled);
                         }
                         onTextChange: txt => {
-                            headerModel.setProperty(index, "name", txt)
+                            headerModel.setProperty(headerDelegate.index, "name", txt);
                         }
                     }
                     MenuSeparator {
@@ -74,22 +86,23 @@ Rectangle {
                     Layout.leftMargin: 16
 
                     FlickableEdit {
-                        Component.onCompleted: {
-                            varHilighter.setDocument(tfHeaderValue.textDocument)
-                        }
-
                         id: tfHeaderValue
                         width: parent.width
                         height: 20
                         isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: model.value.toString()
+                        value: headerDelegate.value
                         onEditingFinish: txt => {
-                             let header = headerModel.get(index)
+                            let header = headerModel.get(headerDelegate.index);
 
-                             App.query.setHeader(index, header.name, header.value, header.isEnabled)
+                            App.query.setHeader(headerDelegate.index, header.name, header.value, header.isEnabled);
                         }
                         onTextChange: txt => {
-                            headerModel.setProperty(index, "value", txt)
+                            headerModel.setProperty(headerDelegate.index, "value", txt);
+                        }
+
+                        Component.onCompleted: {
+                            varHilighter.setDocument(tfHeaderValue.textDocument);
+                            varHilighter.enabled = cbEnabled.checked;
                         }
                     }
                     MenuSeparator {
@@ -108,8 +121,8 @@ Rectangle {
                     icon.height: 22
                     icon.color: 'black'
                     onClicked: {
-                        App.query.removeHeader(index)
-                        headerModel.remove(index)
+                        App.query.removeHeader(headerDelegate.index);
+                        headerModel.remove(headerDelegate.index);
                     }
                 }
             }
@@ -133,11 +146,11 @@ Rectangle {
             icon.color: 'black'
             onClicked: {
                 headerModel.append({
-                                       "name": '',
-                                       "value": '',
-                                       "isEnabled": true
-                                   })
-                App.query.addHeader('', '')
+                    "name": '',
+                    "value": '',
+                    "isEnabled": true
+                });
+                App.query.addHeader('', '');
             }
         }
     }
@@ -150,9 +163,8 @@ Rectangle {
         target: App
 
         function onQueryChanged() {
-            headerModel.clear()
-
-            fillData()
+            headerModel.clear();
+            winHeader.fillData();
         }
     }
 
@@ -160,39 +172,33 @@ Rectangle {
         target: winHeader
 
         function onChangeHeader(idx) {
-            sync(idx)
+            winHeader.sync(idx);
         }
     }
 
     Timer {
         id: syncTimer
-        interval: 500;
-        running: true;
+        interval: 500
+        running: true
         repeat: false
     }
 
-    VarSyntaxHighlighter {
-        id: varHilighter
-    }
-
-
-
     function sync(idx) {
         syncTimer.triggered.connect(function () {
-            let param = headerModel.get(idx)
+            let param = headerModel.get(idx);
 
-            App.query.setHeader(idx, param.name, param.value, param.isEnabled)
+            App.query.setHeader(idx, param.name, param.value, param.isEnabled);
         });
-        syncTimer.start()
+        syncTimer.start();
     }
 
     function fillData() {
         for (let h of App.query.headers) {
             headerModel.append({
-                                   "name": h.name,
-                                   "value": h.value,
-                                   "isEnabled": h.isEnabled
-                               })
+                "name": h.name,
+                "value": h.value,
+                "isEnabled": h.isEnabled
+            });
         }
     }
 }
