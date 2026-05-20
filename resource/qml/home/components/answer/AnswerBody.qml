@@ -3,7 +3,7 @@ pragma ValueTypeBehavior: Addressable
 pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
@@ -145,7 +145,7 @@ Item {
 
                 visible: tfFilter.text.length !== 0
                 flat: true
-                icon.source: "/resource/images/close.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 icon.width: 18
                 icon.height: 18
                 icon.color: 'black'
@@ -204,7 +204,7 @@ Item {
 
                 visible: searchEngine.size > 0
                 flat: true
-                icon.source: "/resource/images/close.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 icon.width: 18
                 icon.height: 18
                 icon.color: 'black'
@@ -282,7 +282,7 @@ Item {
 
                 visible: searchEngine.size > 1
                 flat: true
-                icon.source: "/resource/images/arrow-up-s.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/arrow-up-s.svg"
                 icon.width: 18
                 icon.height: 18
                 icon.color: 'black'
@@ -300,7 +300,7 @@ Item {
 
                 visible: searchEngine.size > 1
                 flat: true
-                icon.source: "/resource/images/arrow-down-s.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/arrow-down-s.svg"
                 icon.width: 18
                 icon.height: 18
                 icon.color: 'black'
@@ -320,7 +320,7 @@ Item {
                 implicitWidth: answerBodyView.btnWidth
                 implicitHeight: answerBodyView.consts.bottomButtonHeight
                 text: qsTr("Clear")
-                icon.source: "/resource/images/close.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 flat: true
                 onClicked: {
                     // for txt
@@ -352,7 +352,7 @@ Item {
                 implicitWidth: answerBodyView.btnWidth
                 implicitHeight: answerBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
-                icon.source: "/resource/images/copy.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 flat: true
                 onClicked: {
                     if (answerBodyView.isBig) {

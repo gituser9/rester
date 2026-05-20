@@ -3,7 +3,7 @@ pragma ValueTypeBehavior: Addressable
 pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
@@ -42,7 +42,7 @@ Rectangle {
             Button {
                 text: qsTr("Import from cURL")
                 flat: true
-                icon.source: "/resource/images/upload.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
                 icon.width: 18
                 icon.height: 18
                 onClicked: {
@@ -71,7 +71,7 @@ Rectangle {
             Button {
                 id: copybtn
                 flat: true
-                icon.source: "qrc:/resource/images/copy.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 icon.width: 22
                 icon.height: 22
                 icon.color: 'black'
@@ -110,7 +110,7 @@ Rectangle {
             Button {
                 flat: true
                 text: qsTr("From URL")
-                icon.source: "qrc:/resource/images/download.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/download.svg"
                 icon.width: 18
                 icon.height: 18
                 onClicked: {
@@ -218,7 +218,7 @@ Rectangle {
                     }
                     Button {
                         flat: true
-                        icon.source: "/resource/images/close.svg"
+                        icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                         icon.width: 18
                         icon.height: 18
                         icon.color: 'black'
@@ -243,7 +243,7 @@ Rectangle {
                 visible: paramModel.count > 0
                 text: qsTr("Clear")
                 flat: true
-                icon.source: "/resource/images/close.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 icon.width: 22
                 icon.height: 22
                 icon.color: 'black'
@@ -258,7 +258,7 @@ Rectangle {
             Button {
                 text: qsTr("Add")
                 flat: true
-                icon.source: "/resource/images/add.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
                 icon.width: 22
                 icon.height: 22
                 icon.color: 'black'

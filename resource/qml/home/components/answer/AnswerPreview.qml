@@ -4,9 +4,6 @@ pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 
-import io.rester
-import core.app 1.0
-
 Item {
     id: previewView
 

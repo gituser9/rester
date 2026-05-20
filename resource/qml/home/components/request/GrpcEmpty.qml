@@ -4,7 +4,7 @@ pragma FunctionSignatureBehavior: Enforced
 
 import QtCore
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Dialogs
 
 import io.rester
@@ -21,7 +21,7 @@ Item {
             checkable: true
             flat: true
             text: qsTr("Upload Proto")
-            icon.source: "/resource/images/upload.svg"
+            icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
             icon.width: 20
             icon.height: 20
             icon.color: 'black'

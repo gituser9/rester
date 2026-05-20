@@ -3,7 +3,7 @@ pragma ValueTypeBehavior: Addressable
 pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
@@ -118,7 +118,7 @@ Rectangle {
                 }
                 Button {
                     flat: true
-                    icon.source: "/resource/images/close.svg"
+                    icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                     icon.width: 22
                     icon.height: 22
                     icon.color: 'black'
@@ -142,7 +142,7 @@ Rectangle {
         Button {
             text: qsTr("Add")
             flat: true
-            icon.source: "/resource/images/add.svg"
+            icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
             icon.width: 22
             icon.height: 22
             icon.color: 'black'

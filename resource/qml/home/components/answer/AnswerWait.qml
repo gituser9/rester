@@ -4,7 +4,7 @@ pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 
 import io.rester
 import HttpClient
@@ -23,7 +23,7 @@ Item {
         Image {
             id: imgLoad
             Layout.alignment: Qt.AlignHCenter
-            source: "qrc:/resource/images/rotate-loop.svg"
+            source: "qrc:/qt/qml/io/rester/resource/images/rotate-loop.svg"
             sourceSize.width: 50
             sourceSize.height: 50
             states: State {

@@ -4,7 +4,7 @@ pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 
 import io.rester
 import core.app 1.0
@@ -74,7 +74,7 @@ Item {
 
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
-                icon.source: "qrc:/resource/images/close.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 flat: true
                 text: qsTr("Clear")
                 onClicked: {
@@ -89,7 +89,7 @@ Item {
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
-                icon.source: "qrc:/resource/images/copy.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 flat: true
                 onClicked: {
                     queryBodyView.copy();
@@ -104,7 +104,7 @@ Item {
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Beautify")
-                icon.source: "qrc:/resource/images/sound-module-line.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/sound-module-line.svg"
                 flat: true
                 onClicked: {
                     App.query.beautify();

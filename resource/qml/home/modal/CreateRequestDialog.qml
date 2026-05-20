@@ -3,7 +3,7 @@ pragma ValueTypeBehavior: Addressable
 pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import "../../common/components"

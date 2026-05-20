@@ -5,7 +5,7 @@ pragma FunctionSignatureBehavior: Enforced
 import QtCore
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Dialogs
 // import Qt.labs.platform
 
@@ -52,7 +52,7 @@ Rectangle {
 
                 flat: true
                 text: qsTr("Open Folder")
-                icon.source: "/resource/images/folder.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/folder.svg"
                 icon.width: 20
                 icon.height: 20
                 icon.color: 'black'
@@ -67,7 +67,7 @@ Rectangle {
 
                 flat: true
                 text: qsTr("Add")
-                icon.source: "/resource/images/add.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
                 icon.width: 24
                 icon.height: 24
                 icon.color: 'black'
@@ -80,7 +80,7 @@ Rectangle {
 
                 flat: true
                 text: qsTr("Download")
-                icon.source: "/resource/images/download.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/download.svg"
                 icon.width: 20
                 icon.height: 20
                 icon.color: 'black'
@@ -94,7 +94,7 @@ Rectangle {
 
                 flat: true
                 text: qsTr("Upload")
-                icon.source: "/resource/images/upload.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
                 icon.width: 20
                 icon.height: 20
                 icon.color: 'black'
@@ -116,7 +116,7 @@ Rectangle {
                 y: (ws.height / 2) - 25
                 x: (ws.width / 2) - 25
 
-                source: "/resource/images/rotate-loop.svg"
+                source: "qrc:/qt/qml/io/rester/resource/images/rotate-loop.svg"
                 sourceSize.width: 50
                 sourceSize.height: 50
                 states: State {
@@ -276,7 +276,7 @@ Rectangle {
 
                             Button {
                                 flat: true
-                                icon.source: "/resource/images/pencil.svg"
+                                icon.source: "qrc:/qt/qml/io/rester/resource/images/pencil.svg"
                                 icon.width: 16
                                 icon.height: 16
                                 icon.color: 'black'
@@ -317,7 +317,7 @@ Rectangle {
 
                                 visible: App.workspace.uuid !== wsCol.uuid
                                 flat: true
-                                icon.source: "/resource/images/close.svg"
+                                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                                 icon.width: 16
                                 icon.height: 16
                                 icon.color: 'black'
@@ -360,7 +360,7 @@ Rectangle {
                 }
                 Button {
                     flat: true
-                    icon.source: "/resource/images/folder.svg"
+                    icon.source: "qrc:/qt/qml/io/rester/resource/images/folder.svg"
                     icon.width: 22
                     icon.height: 22
                     icon.color: 'black'
@@ -425,7 +425,7 @@ Rectangle {
                 }
                 Button {
                     flat: true
-                    icon.source: "/resource/images/file-upload.svg"
+                    icon.source: "qrc:/qt/qml/io/rester/resource/images/file-upload.svg"
                     icon.width: 22
                     icon.height: 22
                     icon.color: 'black'

@@ -3,7 +3,7 @@ pragma ValueTypeBehavior: Addressable
 pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
@@ -59,7 +59,7 @@ Item {
 
                         property string tooltipText: qsTr("Copy value")
                         flat: true
-                        icon.source: "/resource/images/copy.svg"
+                        icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                         icon.width: 18
                         icon.height: 18
                         icon.color: 'black'

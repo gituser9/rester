@@ -4,10 +4,8 @@ pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 
-// import PinModel 1.0
-// import models.pins 1.0
 import core.app 1.0
 
 Item {
@@ -39,7 +37,7 @@ Item {
                 Image {
                     sourceSize.width: 18
                     sourceSize.height: 18
-                    source: "qrc:/resource/images/pushpin-fill.svg"
+                    source: "qrc:/qt/qml/io/rester/resource/images/pushpin-fill.svg"
                 }
                 Text {
                     Layout.fillWidth: true
@@ -50,7 +48,7 @@ Item {
                 Button {
                     flat: true
                     icon {
-                        source: "qrc:/resource/images/close.svg"
+                        source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                         width: 18
                         height: 18
                         color: "black"

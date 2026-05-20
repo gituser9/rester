@@ -5,7 +5,7 @@ pragma FunctionSignatureBehavior: Enforced
 import QtCore
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Dialogs
 
 import io.rester
@@ -58,7 +58,7 @@ Rectangle {
         // Button {
         //     visible: isHover
         //     flat: true
-        //     icon.source: "/resource/images/more-line.svg"
+        //     icon.source: "qrc:/qt/qml/io/rester/resource/images/more-line.svg"
         //     icon.width: 20
         //     icon.height: 20
         //     icon.color: 'black'
@@ -173,13 +173,13 @@ Rectangle {
 
     function getIcon(): string {
         if (!childrenCount) {
-            return "qrc:/resource/images/folder-empty.svg";
+            return "qrc:/qt/qml/io/rester/resource/images/folder-empty.svg";
         }
 
         if (isExpanded) {
-            return 'qrc:/resource/images/folder-open.svg';
+            return 'qrc:/qt/qml/io/rester/resource/images/folder-open.svg';
         }
 
-        return 'qrc:/resource/images/folder.svg';
+        return 'qrc:/qt/qml/io/rester/resource/images/folder.svg';
     }
 }

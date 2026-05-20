@@ -5,7 +5,7 @@ pragma FunctionSignatureBehavior: Enforced
 import QtCore
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Dialogs
 
 import io.rester
@@ -118,7 +118,7 @@ Item {
                             Image {
                                 sourceSize.width: 14
                                 sourceSize.height: 14
-                                source: "/resource/images/close.svg"
+                                source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
 
                                 MouseArea {
                                     anchors.fill: parent
@@ -148,7 +148,7 @@ Item {
                     Button {
                         visible: isMultipart
                         flat: true
-                        icon.source: "/resource/images/file-upload.svg"
+                        icon.source: "qrc:/qt/qml/io/rester/resource/images/file-upload.svg"
                         icon.width: 18
                         icon.height: 18
                         icon.color: 'black'
@@ -160,7 +160,7 @@ Item {
                     }
                     Button {
                         flat: true
-                        icon.source: "/resource/images/close.svg"
+                        icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                         icon.width: 18
                         icon.height: 18
                         icon.color: 'black'
@@ -185,7 +185,7 @@ Item {
         Button {
             text: qsTr("Add")
             flat: true
-            icon.source: "/resource/images/add.svg"
+            icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
             icon.width: 22
             icon.height: 22
             icon.color: 'black'

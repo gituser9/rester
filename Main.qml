@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Window
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
@@ -66,14 +66,14 @@ Window {
                 }
                 Button {
                     flat: true
-                    icon.source: "/resource/images/repeat-line.svg"
+                    icon.source: "qrc:/qt/qml/io/rester/resource/images/repeat-line.svg"
                     icon.width: 24
                     icon.height: 24
                     icon.color: 'black'
                     onClicked: {
                         popWorkspaces.open();
 
-                        wsLoader.setSource("./resource/qml/workspace/Workspace.qml");
+                        wsLoader.setSource("./resource/qml/workspace/WorkspaceList.qml");
                     }
                 }
                 Item {
@@ -93,7 +93,7 @@ Window {
 
                     text: qsTr("Env")
                     flat: true
-                    icon.source: "/resource/images/exchange-dollar.svg"
+                    icon.source: "qrc:/qt/qml/io/rester/resource/images/exchange-dollar.svg"
                     icon.width: 24
                     icon.height: 24
                     icon.color: 'black'
@@ -108,7 +108,7 @@ Window {
 
                 //     text: qsTr("Settings")
                 //     flat: true
-                //     icon.source: "/resource/images/sound-module-line.svg"
+                //     icon.source: "qrc:/qt/qml/io/rester/resource/images/sound-module-line.svg"
                 //     icon.width: 24
                 //     icon.height: 24
                 //     icon.color: 'black'

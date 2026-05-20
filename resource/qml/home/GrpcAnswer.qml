@@ -4,7 +4,7 @@ pragma FunctionSignatureBehavior: Enforced
 
 import QtCore
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 import QtQuick.Dialogs
 
@@ -96,7 +96,7 @@ Item {
             Button {
                 visible: answerView.isBig
                 flat: true
-                icon.source: "/resource/images/download.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/download.svg"
                 icon.width: 22
                 icon.height: 22
                 icon.color: 'black'

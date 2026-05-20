@@ -17,12 +17,13 @@ endif()
 # Libs
 ##################################################################
 find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml QuickControls2 Gui WebSockets Concurrent)
+qt_standard_project_setup(REQUIRES 6.10)
+
 find_package(ZLIB)
 find_package(gRPC CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(Brotli CONFIG REQUIRED)
 
-qt_standard_project_setup(REQUIRES 6.10)
 
 ##################################################################
 # Sources
@@ -46,12 +47,11 @@ file(GLOB PROJECT_SOURCES
     importers/*.cpp
     exporters/*.h
     exporters/*.cpp
-    qml.qrc
 )
 
 qt_add_executable(
     rester
-    ${PROJECT_SOURCES}
+    # ${PROJECT_SOURCES}
 )
 
 ##################################################################
@@ -100,10 +100,39 @@ qt_add_qml_module(
         resource/qml/home/modal/InputDialog.qml
         resource/qml/home/modal/UpdateNodeDialog.qml
         resource/qml/settings/Settings.qml
-        resource/qml/workspace/Workspace.qml
+        resource/qml/workspace/WorkspaceList.qml
         resource/qml/workspace/WorkspaceVariables.qml
+    SOURCES
+        ${PROJECT_SOURCES}
+    RESOURCES
+        "resource/images/add.svg"
+        "resource/images/arrow-down-s.svg"
+        "resource/images/arrow-up-s.svg"
+        "resource/images/arrow-up-down.svg"
+        "resource/images/close.svg"
+        "resource/images/copy.svg"
+        "resource/images/download.svg"
+        "resource/images/exchange-dollar.svg"
+        "resource/images/file-upload.svg"
+        "resource/images/folder.svg"
+        "resource/images/folder-add.svg"
+        "resource/images/folder-empty.svg"
+        "resource/images/folder-open.svg"
+        "resource/images/github-fill.svg"
+        "resource/images/magic.svg"
+        "resource/images/more-line.svg"
+        "resource/images/pencil.svg"
+        "resource/images/pushpin-fill.svg"
+        "resource/images/repeat-line.svg"
+        "resource/images/rotate-loop.svg"
+        "resource/images/send.svg"
+        "resource/images/sound-module-line.svg"
+        "resource/images/upload.svg"
 
-    DEPENDENCIES QtQuick
+
+    DEPENDENCIES
+        QtQuick
+        QtQuick.Controls.Imagine 6.0
     # ENABLE_TYPE_COMPILER
     IMPORT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resource/qml
 )
@@ -128,6 +157,7 @@ qt_add_qml_module(
 target_link_libraries(rester
     PRIVATE Qt6::Core
     PRIVATE Qt6::Quick
+    PRIVATE Qt6::Qml
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Gui
     PRIVATE Qt6::WebSockets

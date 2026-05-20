@@ -5,7 +5,7 @@ pragma FunctionSignatureBehavior: Enforced
 import QtCore
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Dialogs
 
 import io.rester
@@ -94,7 +94,7 @@ Item {
                 ToolTip.visible: hovered
 
                 flat: true
-                icon.source: "/resource/images/rotate-loop.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/rotate-loop.svg"
                 icon.width: 18
                 icon.height: 18
                 onClicked: {

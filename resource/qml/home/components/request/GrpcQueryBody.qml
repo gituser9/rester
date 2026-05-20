@@ -5,7 +5,7 @@ pragma FunctionSignatureBehavior: Enforced
 import QtCore
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Dialogs
 
 import io.rester
@@ -49,7 +49,7 @@ Item {
             Button {
                 Layout.fillWidth: true
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
-                icon.source: "qrc:/resource/images/upload.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
                 flat: true
                 text: qsTr("Upload")
                 icon.width: 18
@@ -61,7 +61,7 @@ Item {
             Button {
                 Layout.fillWidth: true
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
-                icon.source: "qrc:/resource/images/close.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 flat: true
                 text: qsTr("Clear")
                 onClicked: {
@@ -72,7 +72,7 @@ Item {
                 Layout.fillWidth: true
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
-                icon.source: "qrc:/resource/images/copy.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 flat: true
                 onClicked: {
                     queryBodyView.copy();
@@ -82,7 +82,7 @@ Item {
                 Layout.fillWidth: true
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Beautify")
-                icon.source: "qrc:/resource/images/sound-module-line.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/sound-module-line.svg"
                 flat: true
                 onClicked: {
                     App.grpcQuery.body = Util.beautify(App.grpcQuery.body, 1);

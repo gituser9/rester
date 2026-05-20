@@ -4,7 +4,7 @@ pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 
 import io.rester
 import core.app 1.0
@@ -36,7 +36,7 @@ Item {
         anchors.topMargin: 8
         anchors.rightMargin: 8
         text: qsTr("Generate")
-        icon.source: "/resource/images/magic.svg"
+        icon.source: "qrc:/qt/qml/io/rester/resource/images/magic.svg"
         flat: true
         onClicked: {
             let emptyBoby = GrpcClient.generateBody(App.grpcQuery);

@@ -4,7 +4,7 @@ pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 
 import io.rester
 import core.app
@@ -186,7 +186,7 @@ Item {
                         ToolTip.visible: hovered
                         visible: mouse.hovered && wsView.isJSON(txtWsMsg.text)
                         flat: true
-                        icon.source: "/resource/images/pencil.svg"
+                        icon.source: "qrc:/qt/qml/io/rester/resource/images/pencil.svg"
                         icon.width: 18
                         icon.height: 18
                         icon.color: 'black'
@@ -208,7 +208,7 @@ Item {
                         }
                         visible: mouse.hovered
                         flat: true
-                        icon.source: "/resource/images/copy.svg"
+                        icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                         icon.width: 18
                         icon.height: 18
                         icon.color: 'black'

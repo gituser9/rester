@@ -3,7 +3,7 @@ pragma ValueTypeBehavior: Addressable
 pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 import QtQuick.Dialogs
 
@@ -40,7 +40,7 @@ Item {
                     flat: true
                     icon.color: 'black'
                     icon.height: 24
-                    icon.source: "qrc:/resource/images/folder-add.svg"
+                    icon.source: "qrc:/qt/qml/io/rester/resource/images/folder-add.svg"
                     icon.width: 24
                     text: qsTr("Add Folder")
 
@@ -53,7 +53,7 @@ Item {
                     flat: true
                     icon.color: 'black'
                     icon.height: 24
-                    icon.source: "qrc:/resource/images/arrow-up-down.svg"
+                    icon.source: "qrc:/qt/qml/io/rester/resource/images/arrow-up-down.svg"
                     icon.width: 24
                     text: qsTr("Add Request")
 
