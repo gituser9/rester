@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Controls
@@ -297,7 +298,7 @@ Rectangle {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             paramModel.clear();
             winParam.fullUrl = "";
 
@@ -308,7 +309,7 @@ Rectangle {
     Connections {
         target: winParam
 
-        function onChangeParam(idx) {
+        function onChangeParam(idx: int): void {
             winParam.sync(idx);
         }
     }
@@ -316,7 +317,7 @@ Rectangle {
     Connections {
         target: App.query
 
-        function onUrlChanged() {
+        function onUrlChanged(): void {
             winParam.rebuildUrl();
         }
     }
@@ -324,7 +325,7 @@ Rectangle {
     Connections {
         target: App.workspace
 
-        function onEnvChanged() {
+        function onEnvChanged(): void {
             winParam.rebuildUrl();
         }
     }
@@ -343,7 +344,7 @@ Rectangle {
         }
     }
 
-    function sync(idx) {
+    function sync(idx: int): void {
         syncTimer.triggered.connect(function () {
             let param = paramModel.get(idx);
 
@@ -352,7 +353,7 @@ Rectangle {
         syncTimer.start();
     }
 
-    function fillData() {
+    function fillData(): void {
         // url
         let newUrl = App.query.url;
         let vars = App.workspace.variables[App.workspace.env];
@@ -396,7 +397,7 @@ Rectangle {
         }
     }
 
-    function fillUrl() {
+    function fillUrl(): void {
         let url = winParam.fullUrl;
         let urlArr = url.split("?");
 
@@ -437,7 +438,7 @@ Rectangle {
         }
     }
 
-    function fromUrl() {
+    function fromUrl(): void {
         if (App.query.url === '') {
             return;
         }
@@ -478,14 +479,15 @@ Rectangle {
         winParam.fillUrl();
     }
 
-    function replaceVariables(inputString, varr) {
+    // TODO: type
+    function replaceVariables(inputString: string, varr: var): string {
         let regex = new RegExp(`{{\s*(${varr.name})\s*}}`);
         let replacedString = inputString.replace(regex, varr.value);
 
         return replacedString;
     }
 
-    function rebuildUrl() {
+    function rebuildUrl(): void {
         // url
         let newUrl = App.query.url;
         let vars = App.workspace.variables[App.workspace.env];

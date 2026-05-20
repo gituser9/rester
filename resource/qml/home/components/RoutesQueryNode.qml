@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
@@ -140,14 +141,14 @@ Item {
     Connections {
         target: App.query
 
-        function onQueryTypeChanged() {
+        function onQueryTypeChanged(): void {
             if (App.query.uuid === requestNode.uuid) {
                 requestNode.queryType = Util.getQueryTypeString(App.query.queryType);
             }
         }
     }
 
-    function getTypeColor(qType) {
+    function getTypeColor(qType: string): string {
         switch (qType) {
         case 'GET':
             return '#5100cb';

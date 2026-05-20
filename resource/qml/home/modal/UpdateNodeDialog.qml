@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Controls
@@ -54,14 +55,4 @@ Popup {
             }
         }
     }
-
-    // function getCurrentIndex() {
-    //     for (let i = 0; i < cbModel.count; ++i) {
-    //         if (cbModel.get(i).value === itemParentUuid) {
-    //             return i;
-    //         }
-    //     }
-
-    //     return 0;
-    // }
 }

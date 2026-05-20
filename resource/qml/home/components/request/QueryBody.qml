@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
@@ -115,7 +116,7 @@ Item {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             if (App.query === null) {
                 return;
             }
@@ -158,7 +159,7 @@ Item {
         }
     }
 
-    function setContentTypeHeader(contentType) {
+    function setContentTypeHeader(contentType: string): void {
         let headers = App.query.headers;
 
         switch (contentType) {
@@ -185,7 +186,7 @@ Item {
         }
     }
 
-    function checkIsForm() {
+    function checkIsForm(): void {
         if (App.query === null) {
             return;
         }

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtCore
 import QtQuick
@@ -155,7 +156,7 @@ Rectangle {
     CreateRequestDialog {
         id: popAddQuery
 
-        onOk: function (queryName, queryType) {
+        onOk: function (queryName: string, queryType: int): void {
             folderNode.createQuery(queryName, queryType);
         }
     }
@@ -170,7 +171,7 @@ Rectangle {
         }
     }
 
-    function getIcon() {
+    function getIcon(): string {
         if (!childrenCount) {
             return "qrc:/resource/images/folder-empty.svg";
         }

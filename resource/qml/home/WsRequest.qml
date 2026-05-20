@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
@@ -247,22 +248,22 @@ Item {
     Connections {
         target: App
 
-        function onSocketReceived(msg) {
+        function onSocketReceived(msg: string): void {
             msgModel.append({
-                message: msg,
-                type: 'received'
+                "message": msg,
+                "type": 'received'
             });
         }
 
-        function onSocketError(msg) {
+        function onSocketError(msg: string): void {
             msgModel.append({
-                message: msg,
-                type: 'error'
+                "message": msg,
+                "type": 'error'
             });
         }
     }
 
-    function isJSON(str) {
+    function isJSON(str: string): bool {
         try {
             JSON.parse(str);
 
@@ -272,7 +273,7 @@ Item {
         }
     }
 
-    function beautifyJSON(str) {
+    function beautifyJSON(str: string): string {
         try {
             const jsonObj = JSON.parse(str);
             return JSON.stringify(jsonObj, null, 4);
@@ -281,7 +282,7 @@ Item {
         }
     }
 
-    function getColorForMessageType(type) {
+    function getColorForMessageType(type: string): string {
         if (type === 'received') {
             return '#008200';
         }

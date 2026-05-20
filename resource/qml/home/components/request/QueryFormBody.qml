@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtCore
 import QtQuick
@@ -227,7 +228,7 @@ Item {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             queryFormBody.checkIsMultipart();
 
             if (isMultipart) {
@@ -239,7 +240,7 @@ Item {
     Connections {
         target: queryFormBody
 
-        function changeFormValue(idx) {
+        function changeFormValue(idx: int): void {
             queryFormBody.sync(idx);
         }
     }
@@ -251,8 +252,8 @@ Item {
         repeat: false
     }
 
-    function sync(idx) {
-        syncTimer.triggered.connect(function () {
+    function sync(idx: int): void {
+        syncTimer.triggered.connect(function (): void {
             let param = headerModel.get(idx);
 
             App.query.setFormDataItem(idx, param.name, param.value, param.isEnabled);
@@ -260,7 +261,7 @@ Item {
         syncTimer.start();
     }
 
-    function fillData() {
+    function fillData(): void {
         formDataModel.clear();
 
         for (let fd of App.query.formData) {
@@ -272,7 +273,7 @@ Item {
         }
     }
 
-    function checkIsMultipart() {
+    function checkIsMultipart(): void {
         if (App.query !== null) {
             isMultipart = App.query.bodyType === 2;
         } else {
@@ -280,12 +281,12 @@ Item {
         }
     }
 
-    function clear() {
+    function clear(): void {
         formDataModel.clear();
         App.query.formData = [];
     }
 
-    function copy() {
+    function copy(): void {
         let copyStr = "";
 
         for (let param of App.query.formData) {
@@ -298,7 +299,7 @@ Item {
         teCopy.clear();
     }
 
-    function extractFileName(filePath) {
+    function extractFileName(filePath: string): string {
         let windowsRegex = /[^\\]*$/;    // for Windows
         let unixRegex = /[^\/]*$/;       // for UNIX
 

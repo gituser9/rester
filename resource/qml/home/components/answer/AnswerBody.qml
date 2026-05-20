@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Controls
@@ -183,15 +184,15 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: (containsMouse ? Qt.IBeamCursor : Qt.ArrowCursor)
-                    onClicked: function (mouse) {
+                    onClicked: function (mouse: MouseEvent) {
                         parent.focus = true;
                         mouse.accepted = false;
                     }
-                    onPressed: function (mouse) {
+                    onPressed: function (mouse: MouseEvent) {
                         parent.focus = true;
                         mouse.accepted = false;
                     }
-                    onDoubleClicked: function (mouse) {
+                    onDoubleClicked: function (mouse: MouseEvent) {
                         parent.focus = true;
                         parent.selectAll();
                         mouse.accepted = false;
@@ -250,7 +251,7 @@ Item {
                     anchors.fill: indexTextInput
                     hoverEnabled: true
                     cursorShape: (containsMouse ? Qt.IBeamCursor : Qt.ArrowCursor)
-                    onClicked: function (mouse) {
+                    onClicked: function (mouse: MouseEvent) {
                         indexTextInput.focus = true;
                         mouse.accepted = false;
                     }
@@ -401,7 +402,7 @@ Item {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             if (!App.query?.lastAnswer) {
                 txtAnswerBody.text = '';
 
@@ -412,7 +413,8 @@ Item {
         }
     }
 
-    function setJson(answer) {
+    // TODO: answer type
+    function setJson(answer: var): void {
         let size = Util.getAnswerSize(answer.byteCount);
         answerBodyView.isBig = size.label === "Mb" && size.size > 1;
 
@@ -427,7 +429,7 @@ Item {
         }
     }
 
-    function getAnswerBodyType(answer) {
+    function getAnswerBodyType(answer: var): string {
         let ct = '';
 
         if (answer.headers['Content-Type']) {
@@ -455,7 +457,7 @@ Item {
         }
     }
 
-    function setSyntaxHighlighter() {
+    function setSyntaxHighlighter(): void {
         if (!App.query?.lastAnswer) {
             return;
         }
@@ -472,13 +474,13 @@ Item {
         }
     }
 
-    function highlightNext() {
+    function highlightNext(): void {
         searchEngine.onNextHighlightChanged();
 
         indexTextInput.text = parseInt(searchEngine.highlightIndex);
     }
 
-    function highlightPrev() {
+    function highlightPrev(): void {
         searchEngine.onPrevHighlightChanged();
 
         indexTextInput.text = parseInt(searchEngine.highlightIndex);

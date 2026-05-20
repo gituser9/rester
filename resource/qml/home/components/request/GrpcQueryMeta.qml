@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Controls
@@ -156,7 +157,7 @@ Rectangle {
     Connections {
         target: App.grpcQuery
 
-        function onMetaChanged() {
+        function onMetaChanged(): void {
             headerModel.clear();
             winHeader.fillData();
         }
@@ -165,7 +166,7 @@ Rectangle {
     Connections {
         target: winHeader
 
-        function onChangeHeader(idx) {
+        function onChangeHeader(idx: int): void {
             winHeader.sync(idx);
         }
     }
@@ -181,8 +182,8 @@ Rectangle {
         id: varHilighter
     }
 
-    function sync(idx) {
-        syncTimer.triggered.connect(function () {
+    function sync(idx: int): void {
+        syncTimer.triggered.connect(function (): void {
             let param = headerModel.get(idx);
 
             App.grpcQuery.setMetaItem(idx, param.name, param.value, param.isEnabled);
@@ -190,7 +191,7 @@ Rectangle {
         syncTimer.start();
     }
 
-    function fillData() {
+    function fillData(): void {
         for (let h of App.grpcQuery.meta) {
             headerModel.append({
                 "name": h.name,

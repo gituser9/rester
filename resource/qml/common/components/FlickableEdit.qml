@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 
@@ -29,7 +30,7 @@ Item {
         anchors.fill: parent
         clip: true
 
-        function ensureVisible(r) {
+        function ensureVisible(r: rect): void {
             if (contentX >= r.x)
                 contentX = r.x;
             else if (contentX + width <= r.x + r.width)
@@ -83,7 +84,7 @@ Item {
         repeat: false
     }
 
-    function startTimer() {
+    function startTimer(): void {
         syncTimer.triggered.connect(() => {
             if (prevValue !== teMain.text) {
                 prevValue = teMain.text;

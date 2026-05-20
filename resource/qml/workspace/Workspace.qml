@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtCore
 import QtQuick
@@ -525,14 +526,14 @@ Rectangle {
         repeat: false
     }
 
-    function getLastUsageString(msecs) {
+    function getLastUsageString(msecs: int): string {
         let date = new Date(msecs);
         let str = `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 
         return str;
     }
 
-    function folderDialogAccept(path) {
+    function folderDialogAccept(path: string): void {
         if (folderDialogMode === 'import') {
             tfInput.text = path;
         }
@@ -546,13 +547,13 @@ Rectangle {
         }
     }
 
-    function showLoader() {
+    function showLoader(): void {
         loadTimer.triggered.connect(function () {
             ws.isLoading = true;
         });
         loadTimer.start();
 
-        loaderTimer.triggered.connect(function () {
+        loaderTimer.triggered.connect(function (): void {
             WorkspaceModel.loadWorkspaces();
             ws.isLoading = false;
             loadTimer.stop();
@@ -560,7 +561,7 @@ Rectangle {
         loaderTimer.start();
     }
 
-    function getImportType(typeStr) {
+    function getImportType(typeStr: string): int {
         if (typeStr === "Rester") {
             return 0;
         }

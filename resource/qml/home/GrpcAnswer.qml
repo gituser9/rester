@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtCore
 import QtQuick
@@ -175,7 +176,7 @@ Item {
     Connections {
         target: GrpcClient
 
-        function onIsRequestWorkChanged() {
+        function onIsRequestWorkChanged(): void {
             if (GrpcClient.isRequestWork) {
                 answerView.showLoader();
 
@@ -197,7 +198,7 @@ Item {
             }
         }
 
-        function onRequestError(errorString) {
+        function onRequestError(errorString: string): void {
             if (loaderTimer.running) {
                 loaderTimer.stop();
             }
@@ -246,7 +247,7 @@ Item {
         }
     }
 
-    function getDurationString(ms) {
+    function getDurationString(ms: int): string { // todo: from C++
         if (ms < 1000) {
             return ms + ' ms';
         }
@@ -260,7 +261,7 @@ Item {
         return ((ms / 1000) / 60) + 'm';
     }
 
-    function getStatusColor(query) {
+    function getStatusColor(query: GrpcQuery): string {
         if (query.lastAnswer === null) {
             return 'lightgrey';
         }
@@ -282,7 +283,7 @@ Item {
         return '#d86a6f'; // Server errors
     }
 
-    function setSource(idx) {
+    function setSource(idx: int): void {
         currentIndex = idx;
         let path = "./components/answer/";
 
@@ -300,7 +301,7 @@ Item {
         loader.setSource(path);
     }
 
-    function showLoader() {
+    function showLoader(): void {
         loaderTimer.triggered.connect(() => {
             if (GrpcClient.isRequestWork) {
                 let path = "./components/answer/AnswerWait.qml";

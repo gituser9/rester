@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtCore
 import QtQuick
@@ -189,7 +190,7 @@ Item {
     Connections {
         target: HttpClient
 
-        function onIsRequestWorkChanged() {
+        function onIsRequestWorkChanged(): void {
             if (HttpClient.isRequestWork) {
                 answerView.showLoader();
 
@@ -211,7 +212,7 @@ Item {
             }
         }
 
-        function onHttpError(errorString) {
+        function onHttpError(errorString: string): void {
             if (loaderTimer.running) {
                 loaderTimer.stop();
             }
@@ -256,7 +257,7 @@ Item {
         }
     }
 
-    function getDurationString(ms) {
+    function getDurationString(ms: int): string {
         if (ms < 1000) {
             return ms + ' ms';
         }
@@ -270,8 +271,8 @@ Item {
         return ((ms / 1000) / 60) + 'm';
     }
 
-    function getStatusColor(query) {
-        if (query.lastAnswer === null) {
+    function getStatusColor(query: Query): string {
+        if (!query || query.lastAnswer === null) {
             return 'lightgrey';
         }
 
@@ -296,7 +297,7 @@ Item {
         return 'lightgrey';
     }
 
-    function setSource(idx) {
+    function setSource(idx: int): void {
         currentIndex = idx;
         let path = "./components/answer/";
 
@@ -317,7 +318,7 @@ Item {
         loader.setSource(path);
     }
 
-    function showLoader() {
+    function showLoader(): void {
         loaderTimer.triggered.connect(() => {
             if (HttpClient.isRequestWork) {
                 let path = "./components/answer/AnswerWait.qml";

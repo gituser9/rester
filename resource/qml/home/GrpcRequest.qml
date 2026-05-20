@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtCore
 import QtQuick
@@ -206,7 +207,7 @@ Item {
     Connections {
         target: App.grpcQuery
 
-        function onDataChanged() {
+        function onDataChanged(): void {
             if (grpcView.currentIndex === -1) {
                 grpcView.currentIndex = grpcView.isEmptyQuery() ? -1 : 0;
                 grpcView.setSource(grpcView.currentIndex);
@@ -220,7 +221,7 @@ Item {
     }
 
     // Funcs
-    function setSource(idx) {
+    function setSource(idx: int): void {
         currentIndex = idx;
         let path = "./components/request/";
 
@@ -241,7 +242,7 @@ Item {
         loader.setSource(path);
     }
 
-    function isEmptyQuery() {
+    function isEmptyQuery(): void {
         let srv = App.grpcQuery.availableSrv;
         let rpc = App.grpcQuery.availableRpc;
 

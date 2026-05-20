@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
@@ -52,7 +53,7 @@ Item {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             if (App.query === null) {
                 return;
             }
@@ -65,25 +66,25 @@ Item {
     Connections {
         target: App.query
 
-        function onBodyChanged() {
+        function onBodyChanged(): void {
             taQueryBody.text = App.query.body;
         }
 
-        function onBodyTypeChanged() {
+        function onBodyTypeChanged(): void {
             txtBodyView.setHighlighter();
         }
     }
 
-    function clear() {
+    function clear(): void {
         App.query.body = '';
     }
 
-    function copy() {
+    function copy(): void {
         taQueryBody.selectAll();
         taQueryBody.copy();
     }
 
-    function setHighlighter() {
+    function setHighlighter(): void {
         let bodyType = getBodyType();
 
         switch (bodyType) {
@@ -96,7 +97,7 @@ Item {
         }
     }
 
-    function getBodyType() {
+    function getBodyType(): string {
         switch (App.query.bodyType) {
         case 1:
             return 'json';

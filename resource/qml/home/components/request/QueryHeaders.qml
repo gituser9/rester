@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Controls
@@ -163,7 +164,7 @@ Rectangle {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             headerModel.clear();
             winHeader.fillData();
         }
@@ -172,7 +173,7 @@ Rectangle {
     Connections {
         target: winHeader
 
-        function onChangeHeader(idx) {
+        function onChangeHeader(idx: int): void {
             winHeader.sync(idx);
         }
     }
@@ -184,8 +185,8 @@ Rectangle {
         repeat: false
     }
 
-    function sync(idx) {
-        syncTimer.triggered.connect(function () {
+    function sync(idx: int): void {
+        syncTimer.triggered.connect(function (): void {
             let param = headerModel.get(idx);
 
             App.query.setHeader(idx, param.name, param.value, param.isEnabled);
@@ -193,7 +194,7 @@ Rectangle {
         syncTimer.start();
     }
 
-    function fillData() {
+    function fillData(): void {
         for (let h of App.query.headers) {
             headerModel.append({
                 "name": h.name,

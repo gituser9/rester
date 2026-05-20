@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
@@ -60,7 +61,7 @@ Item {
     Connections {
         target: App
 
-        function onGrpcQueryChanged() {
+        function onGrpcQueryChanged(): void {
             if (!App.grpcQuery) {
                 return;
             }
@@ -77,7 +78,7 @@ Item {
     Connections {
         target: App.grpcQuery
 
-        function onBodyChanged() {
+        function onBodyChanged(): void {
             taQueryBody.text = App.grpcQuery.body;
         }
     }
@@ -86,11 +87,11 @@ Item {
         id: jsonHilighter
     }
 
-    function clear() {
+    function clear(): void {
         App.grpcQuery.body = '';
     }
 
-    function copy() {
+    function copy(): void {
         taQueryBody.selectAll();
         taQueryBody.copy();
     }

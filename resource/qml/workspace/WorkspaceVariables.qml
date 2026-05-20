@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Controls
@@ -248,7 +249,7 @@ Item {
         }
     }
 
-    function fillData() {
+    function fillData(): void {
         vars = App.workspace.variables;
 
         if (Object.keys(vars).length === 0) {
@@ -265,10 +266,10 @@ Item {
             });
         }
 
-        fillVars();
+        wsVars.fillVars();
     }
 
-    function fillVars() {
+    function fillVars(): void {
         varModel.clear();
 
         if (env === '') {

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Controls
@@ -247,7 +248,7 @@ Item {
     Connections {
         target: App.query
 
-        function onLastAnswerChanged() {
+        function onLastAnswerChanged(): void {
             cookiePage.fillModel();
         }
     }
@@ -255,12 +256,12 @@ Item {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             cookiePage.fillModel();
         }
     }
 
-    function fillModel() {
+    function fillModel(): void {
         lmCookies.clear();
 
         for (let cookie of App.query.lastAnswer.cookies) {

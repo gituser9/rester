@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
@@ -176,7 +177,7 @@ Item {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             cbQueryType.currentIndex = App.query?.queryType ?? 0;
             tfUrl.value = App.query ? App.query.url : '';
         }
@@ -185,7 +186,7 @@ Item {
     Connections {
         target: App.query
 
-        function onQueryTypeChanged() {
+        function onQueryTypeChanged(): void {
             cbQueryType.currentIndex = App.query.queryType;
         }
     }
@@ -196,7 +197,7 @@ Item {
     }
 
     // Funcs
-    function setSource(idx) {
+    function setSource(idx: int): string {
         currentIndex = idx;
         let path = "./components/request/";
 

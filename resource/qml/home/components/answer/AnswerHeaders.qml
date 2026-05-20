@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Layouts
@@ -62,7 +63,7 @@ Rectangle {
                         anchors.fill: parent
                         clip: true
 
-                        function ensureVisible(r) {
+                        function ensureVisible(r: rect): void {
                             if (contentX >= r.x)
                                 contentX = r.x;
                             else if (contentX + width <= r.x + r.width)
@@ -124,7 +125,8 @@ Rectangle {
     Connections {
         target: HttpClient
 
-        function onFinished(answer) {
+        // TODO: type
+        function onFinished(answer: var): void {
             answerHeadersView.fillHeaders(answer.headers);
         }
     }
@@ -132,14 +134,14 @@ Rectangle {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             if (App.query?.lastAnswer) {
                 answerHeadersView.fillHeaders(App.query.lastAnswer.headers);
             }
         }
     }
 
-    function fillHeaders(headers) {
+    function fillHeaders(headers: var): void {
         answerHeadersModel.clear();
 
         for (let key in headers) {

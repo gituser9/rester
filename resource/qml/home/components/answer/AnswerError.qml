@@ -1,4 +1,6 @@
 pragma ComponentBehavior: Bound
+pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 

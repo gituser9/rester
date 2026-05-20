@@ -169,7 +169,7 @@ Window {
     Connections {
         target: App
 
-        function onQueryChanged() {
+        function onQueryChanged(): void {
             if (!App.query) {
                 return;
             }
@@ -178,7 +178,7 @@ Window {
             root.setAnswerSource(App.query.queryType);
         }
 
-        function onGrpcQueryChanged() {
+        function onGrpcQueryChanged(): void {
             if (!App.grpcQuery) {
                 return;
             }
@@ -187,7 +187,7 @@ Window {
             root.setAnswerSource(App.grpcQuery.queryType);
         }
 
-        function onShowError(txt) {
+        function onShowError(txt): void {
             toastManager.show(txt);
         }
     }
@@ -248,7 +248,7 @@ Window {
         }
     }
 
-    function setSource(typ) {
+    function setSource(typ): void {
         let path = "./resource/qml/home/";
         let typStr = Util.getQueryTypeString(typ);
         let view = '';
@@ -273,7 +273,7 @@ Window {
         ldrQuery.setSource(path + view);
     }
 
-    function setAnswerSource(typ) {
+    function setAnswerSource(typ): void {
         let path = "./resource/qml/home/";
         let typStr = Util.getQueryTypeString(typ);
         let view = '';
@@ -298,7 +298,7 @@ Window {
         ldrAnswer.setSource(path + view);
     }
 
-    function isAnswerVisible() {
+    function isAnswerVisible(): bool {
         if (!App.query && !App.grpcQuery) {
             return false;
         }

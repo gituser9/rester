@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
 import QtQuick.Controls
@@ -66,7 +67,7 @@ Rectangle {
     Connections {
         target: App
 
-        function onWorkspaceChanged() {
+        function onWorkspaceChanged(): void {
             if (App.workspace.env === '') {
                 dropDownView.currentEnv = 'No Env';
             } else {
@@ -80,7 +81,7 @@ Rectangle {
     Connections {
         target: App.workspace
 
-        function onEnvChanged() {
+        function onEnvChanged(): void {
             if (App.workspace.env === '') {
                 dropDownView.currentEnv = 'No Env';
             } else {
@@ -88,7 +89,7 @@ Rectangle {
             }
         }
 
-        function onVariablesChanged() {
+        function onVariablesChanged(): void {
             dropDownView.setEnvs(App.workspace.getEnvNames());
         }
     }
@@ -97,12 +98,12 @@ Rectangle {
         id: envModel
     }
 
-    function setEnvs(envs) {
+    function setEnvs(envs: list<string>): void {
         envModel.clear();
 
         for (let envName of envs) {
             envModel.append({
-                name: envName
+                "name": envName
             });
         }
     }
