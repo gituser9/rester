@@ -7,10 +7,6 @@ import QtQuick.Layouts
 import QtQuick.Controls.Imagine
 
 import io.rester
-import GrpcClient
-import core.app 1.0
-
-// import "../../../common/components"
 
 Rectangle {
     id: grpcAnswerMeta
@@ -126,7 +122,7 @@ Rectangle {
     }
 
     Connections {
-        target: GrpcClient
+        target: App.grpcClient
 
         // TODO: type
         function onRequestFinished(answer: var): void {

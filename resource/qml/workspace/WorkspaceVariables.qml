@@ -7,8 +7,6 @@ import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
-import WorkspaceModel
-import core.app 1.0
 
 import "../home/modal"
 import "../common/components"
@@ -74,7 +72,7 @@ Item {
                     wsVars.envIndex = envDelefate.index;
 
                     wsVars.fillVars(envDelefate.name);
-                    WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
+                    App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                 }
 
                 Component.onCompleted: {
@@ -117,7 +115,7 @@ Item {
                                     "name": txt,
                                     "value": tfVarValue.text
                                 };
-                                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
+                                App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                             }
                         }
                         MenuSeparator {
@@ -142,7 +140,7 @@ Item {
                                     "name": tfVarName.text,
                                     "value": txt
                                 };
-                                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
+                                App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                             }
                         }
                         MenuSeparator {
@@ -164,7 +162,7 @@ Item {
                             wsVars.vars[wsVars.env].splice(varDeleagate.index, 1);
                             varModel.remove(varDeleagate.index);
 
-                            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
+                            App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                         }
                     }
                 }
@@ -195,7 +193,7 @@ Item {
                 wsVars.envIndex = -1;
                 varModel.clear();
 
-                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
+                App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
             }
         }
         Item {
@@ -216,7 +214,7 @@ Item {
                 wsVars.vars[wsVars.env].push(data);
                 varModel.append(data);
 
-                WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
+                App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
             }
         }
     }
@@ -245,7 +243,7 @@ Item {
                 "name": envName
             });
 
-            WorkspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
+            App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
         }
     }
 

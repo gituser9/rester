@@ -6,7 +6,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Imagine
 
-import core.app 1.0
+// import core.app 1.0
+import io.rester
 
 Item {
     id: pinItem
@@ -18,7 +19,7 @@ Item {
         anchors.fill: parent
         clip: true
         boundsBehavior: Flickable.StopAtBounds
-        model: PinModel
+        model: App.pinModel
         delegate: ItemDelegate {
             id: pinDelegate
             height: 40
@@ -54,7 +55,7 @@ Item {
                         color: "black"
                     }
                     onClicked: {
-                        PinModel.removeRows(pinDelegate.index, 1);
+                        App.pinModel.removeRows(pinDelegate.index, 1);
                     }
                 }
             }

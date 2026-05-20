@@ -9,7 +9,6 @@
 class VarSyntaxHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
-    // QML_ELEMENT
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged FINAL)
 

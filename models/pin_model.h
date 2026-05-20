@@ -11,7 +11,6 @@ class PinModel : public QAbstractListModel
 {
     Q_OBJECT
     QML_ELEMENT
-    QML_SINGLETON
 
 public:
     explicit PinModel(QObject* parent = nullptr);

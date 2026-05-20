@@ -443,3 +443,28 @@ void App::setIsActiveSocketConnect(bool newIsActiveSocketConnect)
 
     emit isActiveSocketConnectChanged();
 }
+
+RoutesModel* App::routesModel() const
+{
+    return _routesModel.get();
+}
+
+PinModel* App::pinModel() const
+{
+    return _pinModel.get();
+}
+
+WorkspaceModel* App::workspaceModel() const
+{
+    return _workspaceModel.get();
+}
+
+HttpClient* App::httpClient() const
+{
+    return _httpClient.get();
+}
+
+GrpcClient* App::grpcClient() const
+{
+    return _grpcClient.get();
+}

@@ -1,6 +1,7 @@
 #ifndef SEARCHSYNTAXHIGHLIGHTER_H
 #define SEARCHSYNTAXHIGHLIGHTER_H
 
+#include <QtQmlIntegration/qqmlintegration.h>
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 

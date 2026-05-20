@@ -42,21 +42,18 @@ int main(int argc, char* argv[])
     core->setGrpcClient(grpcClient);
     core->setup();
 
-    qmlRegisterSingletonInstance<App>("core.app", 1, 0, "App", core);
-    qmlRegisterSingletonInstance<RoutesModel>("RoutesModel", 1, 0, "RoutesModel", routesModel.get());
-    qmlRegisterSingletonInstance<HttpClient>("HttpClient", 1, 0, "HttpClient", httpClient.get());
-    qmlRegisterSingletonInstance<GrpcClient>("GrpcClient", 1, 0, "GrpcClient", grpcClient.get());
-    qmlRegisterSingletonInstance<Util>("Util", 1, 0, "Util", util.get());
-    qmlRegisterSingletonInstance<WorkspaceModel>("WorkspaceModel", 1, 0, "WorkspaceModel", workspaceModel.get());
-    // qmlRegisterSingletonInstance<PinModel>("PinModel", 1, 0, "PinModel", pinModel.get());
-    qmlRegisterSingletonInstance<PinModel>("core.app", 1, 0, "PinModel", pinModel.get());
-    qmlRegisterType<HtmlSyntaxHighlighter>("HtmlSyntaxHighlighter", 1, 0, "HtmlSyntaxHighlighter");
-    qmlRegisterType<JsonSyntaxHighlighter>("JsonSyntaxHighlighter", 1, 0, "JsonSyntaxHighlighter");
-    qmlRegisterType<VarSyntaxHighlighter>("VarSyntaxHighlighter", 1, 0, "VarSyntaxHighlighter");
-    qmlRegisterType<UrlHighlighter>("UrlHighlighter", 1, 0, "UrlHighlighter");
-    qmlRegisterType<SearchEngine>("SearchEngine", 1, 0, "SearchEngine");
+    QQmlEngine::setObjectOwnership(core, QQmlEngine::CppOwnership);
+
+    qmlRegisterSingletonInstance<App>("io.rester", 1, 0, "App", core);
+    qmlRegisterSingletonInstance<Util>("io.rester", 1, 0, "Util", util.get());
+    qmlRegisterType<HtmlSyntaxHighlighter>("io.rester", 1, 0, "HtmlSyntaxHighlighter");
+    qmlRegisterType<JsonSyntaxHighlighter>("io.rester", 1, 0, "JsonSyntaxHighlighter");
+    qmlRegisterType<VarSyntaxHighlighter>("io.rester", 1, 0, "VarSyntaxHighlighter");
+    qmlRegisterType<UrlHighlighter>("io.rester", 1, 0, "UrlHighlighter");
+    qmlRegisterType<SearchEngine>("io.rester", 1, 0, "SearchEngine");
 
     QQmlApplicationEngine engine;
+
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,

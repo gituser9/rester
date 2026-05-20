@@ -7,8 +7,6 @@ import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
-import core.app 1.0
-import VarSyntaxHighlighter
 
 import "../../../common/components"
 

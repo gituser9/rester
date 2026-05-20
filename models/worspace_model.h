@@ -21,6 +21,7 @@
 class WorkspaceModel : public QAbstractListModel
 {
     Q_OBJECT
+    QML_ELEMENT
 
 public:
     explicit WorkspaceModel(QObject* parent = nullptr);

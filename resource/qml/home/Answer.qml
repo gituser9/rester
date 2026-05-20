@@ -9,10 +9,6 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 import io.rester
-import core.app 1.0
-import HttpClient
-import RoutesModel
-import Util
 
 import "../../qml"
 import "./components/answer"
@@ -41,10 +37,10 @@ Item {
             spacing: 8
 
             Rectangle {
+                id: statusContainer
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 100
-
-                color: App.query !== null ? answerView.getStatusColor(App.query) : "lightgrey"
+                color: answerView.getStatusColor(App.query)
                 radius: 4
 
                 Text {
@@ -188,10 +184,19 @@ Item {
     }
 
     Connections {
-        target: HttpClient
+        target: App.query
+
+        function onLastAnswerChanged() {
+            statusContainer.color = answerView.getStatusColor(App.query);
+            txtSize.text = Util.getAnswerSizeString(App.query.lastAnswer?.byteCount ?? 0);
+        }
+    }
+
+    Connections {
+        target: App.httpClient
 
         function onIsRequestWorkChanged(): void {
-            if (HttpClient.isRequestWork) {
+            if (App.httpClient.isRequestWork) {
                 answerView.showLoader();
 
                 return;
@@ -207,7 +212,7 @@ Item {
                 loader.sourceComponent = bigBody;
                 isBig = true;
             } else {
-                setSource(currentIndex);
+                answerView.setSource(currentIndex);
                 isBig = false;
             }
         }
@@ -253,7 +258,7 @@ Item {
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
         onAccepted: {
             let path = selectedFolder.toString().replace("file://", "");
-            RoutesModel.downloadBigAnswer(path, App.query);
+            App.routesModel.downloadBigAnswer(path, App.query);
         }
     }
 
@@ -272,7 +277,7 @@ Item {
     }
 
     function getStatusColor(query: Query): string {
-        if (!query || query.lastAnswer === null) {
+        if (!query || !query.lastAnswer) {
             return 'lightgrey';
         }
 
@@ -320,7 +325,7 @@ Item {
 
     function showLoader(): void {
         loaderTimer.triggered.connect(() => {
-            if (HttpClient.isRequestWork) {
+            if (App.httpClient.isRequestWork) {
                 let path = "./components/answer/AnswerWait.qml";
                 loader.setSource(path);
             }

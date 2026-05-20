@@ -7,7 +7,6 @@ import QtQuick.Layouts
 import QtQuick.Controls.Imagine
 
 import io.rester
-import HttpClient
 
 import "../../../../qml"
 
@@ -53,7 +52,7 @@ Item {
             height: waitView.consts.bottomButtonHeight
             text: qsTr("Cancel")
             onClicked: {
-                HttpClient.abortReply();
+                App.httpClient.abortReply();
             }
         }
     }

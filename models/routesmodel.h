@@ -31,7 +31,6 @@ class RoutesModel : public QAbstractItemModel
 {
     Q_OBJECT
     QML_ELEMENT
-    QML_SINGLETON
 
 public:
     explicit RoutesModel(QObject* parent = nullptr);

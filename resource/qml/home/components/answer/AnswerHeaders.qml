@@ -7,8 +7,6 @@ import QtQuick.Layouts
 import QtQuick.Controls.Imagine
 
 import io.rester
-import HttpClient
-import core.app 1.0
 
 import "../../../common/components"
 
@@ -87,6 +85,7 @@ Rectangle {
                     id: copybtn
 
                     property string tooltipText: qsTr("Copy value")
+
                     flat: true
                     icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                     icon.width: 18
@@ -123,7 +122,7 @@ Rectangle {
     }
 
     Connections {
-        target: HttpClient
+        target: App.httpClient
 
         // TODO: type
         function onFinished(answer: var): void {

@@ -19,12 +19,19 @@ class App : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    QML_SINGLETON
 
     Q_PROPERTY(Workspace* workspace READ workspace NOTIFY workspaceChanged FINAL)
     Q_PROPERTY(Query* query READ query NOTIFY queryChanged FINAL)
     Q_PROPERTY(GrpcQuery* grpcQuery READ grpcQuery NOTIFY grpcQueryChanged FINAL)
     Q_PROPERTY(Settings* settings READ settings NOTIFY settingsChanged FINAL)
     Q_PROPERTY(bool isActiveSocketConnect READ isActiveSocketConnect WRITE setIsActiveSocketConnect NOTIFY isActiveSocketConnectChanged FINAL)
+
+    Q_PROPERTY(RoutesModel* routesModel READ routesModel CONSTANT)
+    Q_PROPERTY(PinModel* pinModel READ pinModel CONSTANT)
+    Q_PROPERTY(WorkspaceModel* workspaceModel READ workspaceModel CONSTANT)
+    Q_PROPERTY(HttpClient* httpClient READ httpClient CONSTANT)
+    Q_PROPERTY(GrpcClient* grpcClient READ grpcClient CONSTANT)
 
 public:
     explicit App(QObject* parent = nullptr);
@@ -57,6 +64,12 @@ public:
     Settings* settings() const;
     bool isActiveSocketConnect() const;
     void setIsActiveSocketConnect(bool newIsActiveSocketConnect);
+
+    RoutesModel* routesModel() const;
+    PinModel* pinModel() const;
+    WorkspaceModel* workspaceModel() const;
+    HttpClient* httpClient() const;
+    GrpcClient* grpcClient() const;
 
 signals:
     void showError(const QString&);

@@ -9,10 +9,6 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 import io.rester
-import core.app
-import GrpcClient
-import RoutesModel
-import Util
 
 import "../../qml"
 import "./components/answer"
@@ -41,11 +37,12 @@ Item {
             spacing: 8
 
             Rectangle {
-                Layout.preferredHeight: 40
-                Layout.preferredWidth: 100
-
+                id: statusContainer
                 color: answerView.getStatusColor(App.grpcQuery)
                 radius: 4
+
+                Layout.preferredHeight: 40
+                Layout.preferredWidth: 100
 
                 Text {
                     id: txtStatus
@@ -174,10 +171,19 @@ Item {
     }
 
     Connections {
-        target: GrpcClient
+        target: App.grpcQuery
+
+        function onLastAnswerChanged() {
+            statusContainer.color = answerView.getStatusColor(App.grpcQuery);
+            txtSize.text = Util.getAnswerSizeString(App.grpcQuery.lastAnswer?.byteCount ?? 0);
+        }
+    }
+
+    Connections {
+        target: App.grpcClient
 
         function onIsRequestWorkChanged(): void {
-            if (GrpcClient.isRequestWork) {
+            if (App.grpcClient.isRequestWork) {
                 answerView.showLoader();
 
                 return;
@@ -243,7 +249,7 @@ Item {
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
         onAccepted: {
             let path = selectedFolder.toString().replace("file://", "");
-            RoutesModel.downloadBigAnswer(path, App.grpcQuery);
+            App.routesModel.downloadBigAnswer(path, App.grpcQuery);
         }
     }
 
@@ -262,7 +268,7 @@ Item {
     }
 
     function getStatusColor(query: GrpcQuery): string {
-        if (query.lastAnswer === null) {
+        if (!query || !query.lastAnswer) {
             return 'lightgrey';
         }
 
@@ -303,7 +309,7 @@ Item {
 
     function showLoader(): void {
         loaderTimer.triggered.connect(() => {
-            if (GrpcClient.isRequestWork) {
+            if (App.grpcClient.isRequestWork) {
                 let path = "./components/answer/AnswerWait.qml";
                 loader.setSource(path);
             }

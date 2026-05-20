@@ -45,9 +45,10 @@ struct CallResult {
     QVariantMap meta;
 };
 
-class GrpcClient final : public QObject
+class GrpcClient : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
 
     Q_PROPERTY(bool isRequestWork READ isRequestWork WRITE setIsRequestWork NOTIFY isRequestWorkChanged)
 

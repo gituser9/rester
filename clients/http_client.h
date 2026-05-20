@@ -35,18 +35,19 @@ enum class CompressAlg {
 class HttpClient : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
 
     Q_PROPERTY(bool isRequestWork READ isRequestWork WRITE setIsRequestWork NOTIFY isRequestWorkChanged)
 
 public:
     explicit HttpClient(QObject* parent = nullptr);
 
-    Q_INVOKABLE void makeRequest(Query* query);
+    Q_INVOKABLE void makeRequest(Query* query); // TODO: not invokable
     Q_INVOKABLE void abortReply();
 
     bool isRequestWork() const;
     void setIsRequestWork(bool newIsRequestWork);
-    void setVars(const QVariantList& newVars);
+    void setVars(const QVariantList& newVars); // TODO: need types
 
 signals:
     void finished(QSharedPointer<HttpAnswer>);

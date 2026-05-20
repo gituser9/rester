@@ -7,9 +7,6 @@ import QtQuick.Layouts
 import QtQuick.Controls.Imagine
 
 import io.rester
-import core.app 1.0
-import JsonSyntaxHighlighter
-import GrpcClient
 
 import "../../../"
 
@@ -39,7 +36,7 @@ Item {
         icon.source: "qrc:/qt/qml/io/rester/resource/images/magic.svg"
         flat: true
         onClicked: {
-            let emptyBoby = GrpcClient.generateBody(App.grpcQuery);
+            let emptyBoby = App.grpcClient.generateBody(App.grpcQuery);
             App.grpcQuery.body = emptyBoby;
         }
     }

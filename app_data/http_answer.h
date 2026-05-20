@@ -9,9 +9,10 @@
 
 #include "../util.h"
 
-class HttpAnswer final : public QObject {
-
+class HttpAnswer : public QObject
+{
     Q_OBJECT
+    QML_ELEMENT
 
     Q_PROPERTY(int status READ status WRITE setStatus NOTIFY statusChanged)
     Q_PROPERTY(QString body READ body WRITE setBody NOTIFY bodyChanged)
@@ -22,7 +23,7 @@ class HttpAnswer final : public QObject {
 
 public:
     explicit HttpAnswer(QObject* parent = nullptr);
-    virtual ~HttpAnswer() = default;
+    ~HttpAnswer() override = default;
 
     int status() const;
     void setStatus(int newStatus);

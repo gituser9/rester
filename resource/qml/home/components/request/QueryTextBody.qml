@@ -7,9 +7,6 @@ import QtQuick.Layouts
 import QtQuick.Controls.Imagine
 
 import io.rester
-import core.app 1.0
-import HtmlSyntaxHighlighter
-import JsonSyntaxHighlighter
 
 import "../../../"
 

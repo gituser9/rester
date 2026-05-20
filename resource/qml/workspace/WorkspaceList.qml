@@ -10,8 +10,6 @@ import QtQuick.Dialogs
 // import Qt.labs.platform
 
 import io.rester
-import WorkspaceModel
-import core.app 1.0
 
 import "../home/modal"
 import "../common/components"
@@ -147,7 +145,7 @@ Rectangle {
             height: 20
             value: ""
             onTextChange: txt => {
-                WorkspaceModel.filter(txt);
+                App.workspaceModel.filter(txt);
             }
 
             Layout.fillWidth: true
@@ -178,7 +176,7 @@ Rectangle {
             }
 
             Component.onDestruction: {
-                WorkspaceModel.clean();
+                App.workspaceModel.clean();
             }
 
             GridLayout {
@@ -193,7 +191,7 @@ Rectangle {
 
                 Repeater {
                     id: repeater
-                    model: WorkspaceModel
+                    model: App.workspaceModel
 
                     ColumnLayout {
                         id: wsCol
@@ -224,7 +222,7 @@ Rectangle {
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 onClicked: mouse => {
                                     if (mouse.button === Qt.LeftButton) {
-                                        WorkspaceModel.setWorkspace(wsCol.index);
+                                        App.workspaceModel.setWorkspace(wsCol.index);
                                     }
 
                                     if (mouse.button === Qt.RightButton) {
@@ -240,7 +238,7 @@ Rectangle {
                                         enabled: App.workspace.uuid !== wsCol.uuid
                                         text: qsTr("Choose")
                                         onTriggered: {
-                                            WorkspaceModel.setWorkspace(wsCol.index);
+                                            App.workspaceModel.setWorkspace(wsCol.index);
                                         }
                                     }
                                     MenuItem {
@@ -390,7 +388,7 @@ Rectangle {
                     }
 
                     let importType = ws.getImportType(cbExportType.currentText);
-                    WorkspaceModel.exportCollection(tfExportInput.text, ws.currentIndex, importType);
+                    App.workspaceModel.exportCollection(tfExportInput.text, ws.currentIndex, importType);
                     dlgExport.close();
                 }
             }
@@ -455,7 +453,7 @@ Rectangle {
                     }
 
                     let importType = ws.getImportType(cbImportType.currentText);
-                    WorkspaceModel.importFrom(tfInput.text, importType);
+                    App.workspaceModel.importFrom(tfInput.text, importType);
                     dlgImport.close();
                 }
             }
@@ -468,7 +466,7 @@ Rectangle {
         title: qsTr("Update Workspace")
         placeholder: qsTr("Workspace Name")
         onOk: wsName => {
-            WorkspaceModel.update(ws.currentIndex, wsName);
+            App.workspaceModel.update(ws.currentIndex, wsName);
         }
     }
 
@@ -478,7 +476,7 @@ Rectangle {
         title: qsTr("Create Workspace")
         placeholder: qsTr("Workspace Name")
         onOk: wsName => {
-            WorkspaceModel.create(wsName);
+            App.workspaceModel.create(wsName);
         }
     }
 
@@ -489,7 +487,7 @@ Rectangle {
         buttons: MessageDialog.Ok | MessageDialog.Cancel
         modality: Qt.ApplicationModal
         onAccepted: {
-            WorkspaceModel.removeRows(ws.currentIndex, 1);
+            App.workspaceModel.removeRows(ws.currentIndex, 1);
         }
     }
 
@@ -539,7 +537,7 @@ Rectangle {
         }
 
         if (folderDialogMode === 'export') {
-            WorkspaceModel.exportTo(path);
+            App.workspaceModel.exportTo(path);
         }
 
         if (folderDialogMode === 'export_collection') {
@@ -554,7 +552,7 @@ Rectangle {
         loadTimer.start();
 
         loaderTimer.triggered.connect(function (): void {
-            WorkspaceModel.loadWorkspaces();
+            App.workspaceModel.loadWorkspaces();
             ws.isLoading = false;
             loadTimer.stop();
         });

@@ -9,8 +9,6 @@ import QtQuick.Controls.Imagine
 import QtQuick.Dialogs
 
 import io.rester
-import core.app
-import VarSyntaxHighlighter
 
 import "./../"
 import "../common/components"

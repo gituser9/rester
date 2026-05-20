@@ -21,9 +21,11 @@
 class Util : public QObject
 {
     Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
 
 public:
-    explicit Util(QObject* parent = nullptr);
+    Util(QObject* parent = nullptr);
 
     static QueryType getQueryType(QString typeString);
     static BodyType getBodyType(QString typeString);

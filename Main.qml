@@ -4,9 +4,6 @@ import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
-import core.app 1.0
-import RoutesModel
-import Util
 
 import "./resource/qml/home"
 import "resource/qml/workspace"
@@ -248,7 +245,7 @@ Window {
         }
     }
 
-    function setSource(typ): void {
+    function setSource(typ: int): void {
         let path = "./resource/qml/home/";
         let typStr = Util.getQueryTypeString(typ);
         let view = '';
