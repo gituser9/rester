@@ -50,6 +50,7 @@ public:
     Q_INVOKABLE void sendToSocket(const QString& data);
     Q_INVOKABLE void loadProto(const QString& filePath);
     Q_INVOKABLE void reloadProto();
+    Q_INVOKABLE void resetQuery();
 
     void setRoutesModel(const std::shared_ptr<RoutesModel>& newRoutesModel);
     void setWorkspaceModel(const std::shared_ptr<WorkspaceModel>& newWorkspaceModel);

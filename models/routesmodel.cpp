@@ -138,6 +138,10 @@ bool RoutesModel::removeRows(int row, int count, const QModelIndex& parent)
         return false;
     }
 
+    if (row < 0 || row >= parentNode->nodes().size() || (row + count) > parentNode->nodes().size()) {
+        return false;
+    }
+
     TreeNode* child = parentNode->nodes().at(row);
 
     if (child == nullptr) {
@@ -146,9 +150,9 @@ bool RoutesModel::removeRows(int row, int count, const QModelIndex& parent)
 
     QString uuid = child->uuid();
 
+    // beginRemoveRows(parent, row, row + count - 1);
     beginResetModel();
-    // beginRemoveRows(parent, row, row);
-    parentNode->removeNode(row);
+    parentNode->removeNode(child);
     endResetModel();
     // endRemoveRows();
 

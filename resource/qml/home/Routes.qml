@@ -21,6 +21,7 @@ Item {
     property var currentIndex
     property int currentRow: -1
     property var moveIndex
+    property string removeUuid
 
     ColumnLayout {
         anchors.fill: parent
@@ -232,6 +233,7 @@ Item {
                         }
                         onRemoveQuery: {
                             routesItem.currentIndex = root.treeView.index(root.row, root.column);
+                            routesItem.removeUuid = root.nodeUuid;
                             dlgRemoveQuery.open();
                         }
                         onSetPin: {
@@ -310,8 +312,13 @@ Item {
         onButtonClicked: (button, role) => {
             switch (button) {
             case MessageDialog.Ok:
+                if (routesItem.removeUuid === App.query.uuid) {
+                    App.resetQuery();
+                }
+
                 App.routesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
                 dlgRemoveQuery.close();
+
                 break;
             }
         }

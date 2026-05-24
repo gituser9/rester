@@ -251,7 +251,7 @@ void App::sendToSocket(const QString& data)
 
 void App::loadProto(const QString& filePath)
 {
-    auto protoInfo = _grpcClient->parseProtoFile(filePath);
+    QList<ProtoServiceInfo> protoInfo = _grpcClient->parseProtoFile(filePath);
 
     QStringList srv;
     QMap<QString, QStringList> rpc;
@@ -288,6 +288,14 @@ void App::reloadProto()
     }
 
     loadProto(_grpcQuery->filePath());
+}
+
+void App::resetQuery()
+{
+    disconnectQueries();
+
+    _query = nullptr;
+    _grpcQuery = nullptr;
 }
 
 Query* App::query() const
