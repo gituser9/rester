@@ -83,7 +83,6 @@ void Importer::exportCollection(QSharedPointer<Workspace> workspace, const QStri
 
 shared_ptr<Workspace> Importer::fromRester(const QString& filePath) const noexcept
 {
-
     QJsonObject json = Util::getJsonFromFile(filePath);
 
     if (json.isEmpty()) {

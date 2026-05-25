@@ -20,7 +20,7 @@ Rectangle {
     required property string parentUuid
     required property int imgPadding
     required property bool isExpanded
-    required property bool childrenCount
+    required property bool hasChildren
     required property Item dragParent
 
     property bool isHover: false
@@ -74,6 +74,12 @@ Rectangle {
                     popAddQuery.open();
                 }
             }
+            // MenuItem {
+            //     text: qsTr("Add Folder")
+            //     onTriggered: {
+            //         popAddFolder.open();
+            //     }
+            // }
             MenuItem {
                 text: qsTr("Import from HAR")
                 onTriggered: {
@@ -155,7 +161,7 @@ Rectangle {
     CreateRequestDialog {
         id: popAddQuery
 
-        onOk: function (queryName: string, queryType: int): void {
+        onOk: function (queryName, queryType) {
             folderNode.createQuery(queryName, queryType);
         }
     }
@@ -171,7 +177,7 @@ Rectangle {
     }
 
     function getIcon(): string {
-        if (!childrenCount) {
+        if (!hasChildren) {
             return "qrc:/qt/qml/io/rester/resource/images/folder-empty.svg";
         }
 

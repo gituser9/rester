@@ -115,7 +115,7 @@ Item {
                 required property int row
                 required property int column
                 required property bool expanded
-                required property int hasChildren
+                required property bool hasChildren
                 readonly property real indent: 20
                 required property bool isTreeNode
                 required property TreeView treeView
@@ -162,11 +162,11 @@ Item {
 
                     RoutesFolderNode {
                         id: folderNode
-                        childrenCount: root.hasChildren
+                        hasChildren: root.hasChildren
                         dragParent: treeViewItem
                         height: root.height
                         imgPadding: (root.depth * root.indent)
-                        isExpanded: root.treeView.isExpanded(root.row)
+                        isExpanded: root.isFolderExpanded
                         name: root.nodeName
                         parentUuid: parentUuid
                         width: root.width - (root.isTreeNode ? (root.depth + 1) * root.indent : 0) - 8
@@ -174,9 +174,16 @@ Item {
 
                         Component.onCompleted: {
                             if (root.isFolderExpanded) {
-                                root.treeView.expand(root.row);
+                                if (!root.expanded) {
+                                    root.treeView.expand(root.row);
+                                }
+                            } else {
+                                if (root.expanded) {
+                                    root.treeView.collapse(root.row);
+                                }
                             }
                         }
+
                         onCreateDir: dirName => {
                             let parentIdx = root.treeView.index(root.row, root.column);
                             App.routesModel.addFolder(dirName, parentIdx);
@@ -198,8 +205,8 @@ Item {
                         }
                         onToggleExpand: {
                             root.treeView.toggleExpanded(root.row);
-
-                            App.routesModel.toggleFolderExpanded(root.treeView.index(root.row, root.column));
+                            let idx = root.treeView.index(root.row, root.column);
+                            App.routesModel.toggleFolderExpanded(idx);
                         }
                         onUpdateDir: (newDirName, parentUuid) => {
                             root.nodeName = newDirName;
@@ -312,7 +319,7 @@ Item {
         onButtonClicked: (button, role) => {
             switch (button) {
             case MessageDialog.Ok:
-                if (routesItem.removeUuid === App.query.uuid) {
+                if (App.query && routesItem.removeUuid === App.query.uuid) {
                     App.resetQuery();
                 }
 

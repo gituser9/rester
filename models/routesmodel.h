@@ -60,6 +60,7 @@ public:
     Q_INVOKABLE void addQuery(QString name, QString type, const QModelIndex& parentIdx);
     Q_INVOKABLE void updateFolder(const QModelIndex& index, const QVariant& value, int role);
     Q_INVOKABLE void toggleFolderExpanded(const QModelIndex& idx);
+    Q_INVOKABLE bool isFolderExpanded(const QModelIndex& idx) const;
     Q_INVOKABLE void updateQuery(const QModelIndex& index, const QVariant& value, int role);
     Q_INVOKABLE void setCurrentQuery(const QModelIndex& idx);
     Q_INVOKABLE void downloadBigAnswer(QString dirPath, Query const* qry) const noexcept;
@@ -71,12 +72,13 @@ public slots:
 
 signals:
     void queryChanged();
+    void queryRemoved(const QString&);
+    void setQuery(Query*);
+    void setGrpcQuery(GrpcQuery*);
+    void treeLoaded();
     void treeChanged(std::shared_ptr<Workspace>);
     void moderError(QString);
     void error(const QString&);
-    void setQuery(Query*);
-    void setGrpcQuery(GrpcQuery*);
-    void queryRemoved(const QString&);
 
 private:
     enum RoleType {

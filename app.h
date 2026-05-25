@@ -35,7 +35,7 @@ class App : public QObject
 
 public:
     explicit App(QObject* parent = nullptr);
-    virtual ~App();
+    ~App() override;
 
     void setup();
 

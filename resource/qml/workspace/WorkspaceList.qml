@@ -7,7 +7,6 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Imagine
 import QtQuick.Dialogs
-// import Qt.labs.platform
 
 import io.rester
 
@@ -22,7 +21,6 @@ Rectangle {
     property int currentIndex: -1
     property bool isLoading: true
     anchors.fill: parent
-    // color: 'white'
 
     HoverHandler {
         id: mouse
@@ -331,6 +329,7 @@ Rectangle {
         }
     }
 
+    // Modals
     Popup {
         id: dlgExport
         anchors.centerIn: parent
@@ -373,8 +372,11 @@ Rectangle {
             }
             ComboBox {
                 id: cbExportType
+                model: mdlExport
+                textRole: "text"
+                valueRole: "value"
+
                 Layout.fillWidth: true
-                model: ["Rester", "Postman", "Insomnia (v5)", "HAR"]
             }
 
             Button {
@@ -387,8 +389,7 @@ Rectangle {
                         return;
                     }
 
-                    let importType = ws.getImportType(cbExportType.currentText);
-                    App.workspaceModel.exportCollection(tfExportInput.text, ws.currentIndex, importType);
+                    App.workspaceModel.exportCollection(tfExportInput.text, ws.currentIndex, cbExportType.currentValue);
                     dlgExport.close();
                 }
             }
@@ -437,8 +438,11 @@ Rectangle {
             }
             ComboBox {
                 id: cbImportType
+                model: mdlImport
+                textRole: "text"
+                valueRole: "value"
+
                 Layout.fillWidth: true
-                model: ["Rester", "Postman", "Insomnia (v5)", "Swagger | OpenAPI", "HAR"]
             }
 
             Button {
@@ -452,8 +456,7 @@ Rectangle {
                         return;
                     }
 
-                    let importType = ws.getImportType(cbImportType.currentText);
-                    App.workspaceModel.importFrom(tfInput.text, importType);
+                    App.workspaceModel.importFrom(tfInput.text, cbImportType.currentValue);
                     dlgImport.close();
                 }
             }
@@ -510,6 +513,7 @@ Rectangle {
         }
     }
 
+    // Types
     Timer {
         id: loaderTimer
         interval: 1
@@ -524,6 +528,53 @@ Rectangle {
         repeat: false
     }
 
+    ListModel {
+        id: mdlImport
+
+        ListElement {
+            text: "Rester"
+            value: 0
+        }
+        ListElement {
+            text: "Postman"
+            value: 1
+        }
+        ListElement {
+            text: "Insomnia v5"
+            value: 2
+        }
+        ListElement {
+            text: "Swagger | OpenAPI"
+            value: 3
+        }
+        ListElement {
+            text: "HAR"
+            value: 4
+        }
+    }
+
+    ListModel {
+        id: mdlExport
+
+        ListElement {
+            text: "Rester"
+            value: 0
+        }
+        ListElement {
+            text: "Postman"
+            value: 1
+        }
+        ListElement {
+            text: "Insomnia v5"
+            value: 2
+        }
+        ListElement {
+            text: "HAR"
+            value: 4
+        }
+    }
+
+    // Funcs
     function getLastUsageString(msecs: int): string {
         let date = new Date(msecs);
         let str = `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
@@ -546,38 +597,16 @@ Rectangle {
     }
 
     function showLoader(): void {
-        loadTimer.triggered.connect(function () {
+        loadTimer.triggered.connect(() => {
             ws.isLoading = true;
         });
         loadTimer.start();
 
-        loaderTimer.triggered.connect(function (): void {
+        loaderTimer.triggered.connect(() => {
             App.workspaceModel.loadWorkspaces();
             ws.isLoading = false;
             loadTimer.stop();
         });
         loaderTimer.start();
-    }
-
-    function getImportType(typeStr: string): int {
-        if (typeStr === "Rester") {
-            return 0;
-        }
-
-        if (typeStr === "Postman") {
-            return 1;
-        }
-
-        if (typeStr === "Insomnia (v5)") {
-            return 2;
-        }
-
-        if (typeStr === "Swagger") {
-            return 3;
-        }
-
-        if (typeStr === "HAR") {
-            return 4;
-        }
     }
 }

@@ -219,6 +219,8 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND COMPILER_FLAGS "-g3")
     list(APPEND COMPILER_FLAGS "-Wall")
     list(APPEND COMPILER_FLAGS "-Wpedantic")
+
+    target_compile_definitions(rester PRIVATE QT_QML_DEBUG)
 endif ()
 
 target_compile_options(rester PRIVATE ${COMPILER_FLAGS})

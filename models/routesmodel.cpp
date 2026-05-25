@@ -50,16 +50,16 @@ QModelIndex RoutesModel::parent(const QModelIndex& index) const
     TreeNode* node = getItem(index);
     TreeNode* parentNode = node->parent();
 
-    if (parentNode == nullptr) {
+    if (parentNode == nullptr || parentNode == _currentWorkspace.get()) {
         return {};
     }
 
-    if (parentNode == _currentWorkspace.get()) {
+    TreeNode* grandParentNode = parentNode->parent();
+    if (grandParentNode == nullptr) {
         return {};
     }
 
-    qsizetype row = parentNode->nodes().indexOf(node);
-
+    qsizetype row = grandParentNode->nodes().indexOf(parentNode);
     if (row == -1) {
         return {};
     }
@@ -134,7 +134,8 @@ bool RoutesModel::removeRows(int row, int count, const QModelIndex& parent)
 {
     TreeNode* parentNode = getItem(parent);
 
-    if (parentNode == nullptr) {
+    if (parentNode == nullptr || count <= 0) {
+        qDebug() << "EXIT: parent null or count <= 0";
         return false;
     }
 
@@ -150,11 +151,11 @@ bool RoutesModel::removeRows(int row, int count, const QModelIndex& parent)
 
     QString uuid = child->uuid();
 
-    // beginRemoveRows(parent, row, row + count - 1);
-    beginResetModel();
-    parentNode->removeNode(child);
-    endResetModel();
-    // endRemoveRows();
+    beginRemoveRows(parent, row, row + count - 1);
+    // beginResetModel();
+    parentNode->removeNode(row);
+    // endResetModel();
+    endRemoveRows();
 
     emit treeChanged(_currentWorkspace);
     emit queryRemoved(uuid);
@@ -164,21 +165,43 @@ bool RoutesModel::removeRows(int row, int count, const QModelIndex& parent)
 
 bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild)
 {
-    if (sourceParent.row() == destinationParent.row()) {
+    if (sourceParent == destinationParent && sourceRow == destinationChild) {
         return false;
     }
 
     TreeNode* sourceParentNode = getItem(sourceParent);
     TreeNode* destinationParentNode = getItem(destinationParent);
+
+    if (!sourceParentNode || !destinationParentNode) {
+        return false;
+    }
+
+    if (sourceRow < 0 || sourceRow >= sourceParentNode->nodes().size()) {
+        return false;
+    }
+
     TreeNode* movingNode = sourceParentNode->nodes().at(sourceRow);
 
     if (destinationParentNode->nodeType() == NodeType::QueryNode) {
         auto destParentNode = destinationParentNode->parent();
+
+        if (!destParentNode) {
+            return false;
+        }
+
         destinationChild = destParentNode->nodes().indexOf(destinationParentNode);
         destinationParentNode = destParentNode;
     }
 
-    beginResetModel();
+    int destRow = destinationChild;
+
+    if (sourceParent == destinationParent && destinationChild > sourceRow) {
+        destRow = destinationChild + 1;
+    }
+
+    if (!beginMoveRows(sourceParent, sourceRow, sourceRow + count - 1, destinationParent, destRow)) {
+        return false;
+    }
 
     if (sourceParentNode == destinationParentNode) {
         sourceParentNode->moveNode(sourceRow, destinationChild);
@@ -186,7 +209,7 @@ bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
     else {
         sourceParentNode->softRemoveNode(sourceRow);
 
-        if ((destinationParentNode->nodes().count() - 1) < destinationChild) {
+        if (destinationChild < 0 || destinationChild > destinationParentNode->nodes().count()) {
             destinationParentNode->addNode(movingNode);
         }
         else {
@@ -194,7 +217,8 @@ bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
         }
     }
 
-    endResetModel();
+    endMoveRows();
+    emit treeChanged(_currentWorkspace);
 
     return true;
 }
@@ -350,6 +374,17 @@ void RoutesModel::toggleFolderExpanded(const QModelIndex& idx)
     emit treeChanged(_currentWorkspace);
 }
 
+bool RoutesModel::isFolderExpanded(const QModelIndex& idx) const
+{
+    if (!idx.isValid()) {
+        return false;
+    }
+
+    TreeNode* node = getItem(idx);
+
+    return getExpandedFromNode(node);
+}
+
 void RoutesModel::updateQuery(const QModelIndex& index, const QVariant& value, int role)
 {
     QString qryData = value.toString();
@@ -401,6 +436,8 @@ void RoutesModel::loadTree(shared_ptr<Workspace> workspace) noexcept
     beginResetModel();
     _currentWorkspace = workspace;
     endResetModel();
+
+    emit treeLoaded();
 }
 
 QString RoutesModel::getQueryTypeFromNode(TreeNode* node) const noexcept
