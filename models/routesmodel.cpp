@@ -371,6 +371,7 @@ void RoutesModel::toggleFolderExpanded(const QModelIndex& idx)
     auto fldr = static_cast<Folder*>(idx.internalPointer());
     fldr->setIsExpanded(!fldr->isExpanded());
 
+    emit dataChanged(idx, idx, {FolderExpandedRole});
     emit treeChanged(_currentWorkspace);
 }
 

@@ -179,15 +179,15 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: (containsMouse ? Qt.IBeamCursor : Qt.ArrowCursor)
-                    onClicked: function (mouse: MouseEvent) {
+                    onClicked: mouse => {
                         parent.focus = true;
                         mouse.accepted = false;
                     }
-                    onPressed: function (mouse: MouseEvent) {
+                    onPressed: mouse => {
                         parent.focus = true;
                         mouse.accepted = false;
                     }
-                    onDoubleClicked: function (mouse: MouseEvent) {
+                    onDoubleClicked: mouse => {
                         parent.focus = true;
                         parent.selectAll();
                         mouse.accepted = false;
@@ -246,7 +246,7 @@ Item {
                     anchors.fill: indexTextInput
                     hoverEnabled: true
                     cursorShape: (containsMouse ? Qt.IBeamCursor : Qt.ArrowCursor)
-                    onClicked: function (mouse: MouseEvent) {
+                    onClicked: mouse => {
                         indexTextInput.focus = true;
                         mouse.accepted = false;
                     }

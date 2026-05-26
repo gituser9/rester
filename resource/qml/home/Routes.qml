@@ -98,7 +98,7 @@ Item {
         TreeView {
             id: treeViewItem
             clip: true
-            model: App.routesModel
+            model: App.routesFilterModel
 
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -106,7 +106,6 @@ Item {
 
             delegate: ItemDelegate {
                 id: root
-                highlighted: row === routesItem.currentRow
                 implicitHeight: rowHeight
                 implicitWidth: treeViewItem.width
 
@@ -137,7 +136,7 @@ Item {
 
                     onDropped: drag => {
                         dragContainer.color = "transparent";
-                        App.routesModel.moveRows(routesItem.moveIndex.parent, routesItem.moveIndex.row, 1, root.treeView.index(root.row, root.column), root.row);
+                        App.routesFilterModel.moveRows(routesItem.moveIndex.parent, routesItem.moveIndex.row, 1, root.treeView.index(root.row, root.column), root.row);
                     }
                     onEntered: drag => {
                         dragContainer.color = "lightblue";
@@ -172,29 +171,32 @@ Item {
                         width: root.width - (root.isTreeNode ? (root.depth + 1) * root.indent : 0) - 8
                         x: root.isTreeNode ? (root.depth + 1) * root.indent : 0
 
-                        Component.onCompleted: {
-                            if (root.isFolderExpanded) {
-                                if (!root.expanded) {
+                        // Qt.caller ?
+                        Timer {
+                            id: syncTimer
+                            interval: 0
+                            onTriggered: {
+                                if (root.isFolderExpanded && !root.expanded) {
                                     root.treeView.expand(root.row);
-                                }
-                            } else {
-                                if (root.expanded) {
+                                } else if (!root.isFolderExpanded && root.expanded) {
                                     root.treeView.collapse(root.row);
                                 }
                             }
                         }
 
+                        Component.onCompleted: syncTimer.start()
+
                         onCreateDir: dirName => {
                             let parentIdx = root.treeView.index(root.row, root.column);
-                            App.routesModel.addFolder(dirName, parentIdx);
+                            App.routesFilterModel.addFolder(dirName, parentIdx);
                         }
                         onCreateQuery: (name, type) => {
                             let idx = root.treeView.index(root.row, root.column);
-                            App.routesModel.addQuery(name, type, idx);
+                            App.routesFilterModel.addQuery(name, type, idx);
                         }
                         onImportHar: path => {
                             let folderIdx = root.treeView.index(root.row, root.column);
-                            App.routesModel.importFromHar(folderIdx, path);
+                            App.routesFilterModel.importFromHar(folderIdx, path);
                         }
                         onRemoveDir: {
                             routesItem.currentIndex = root.treeView.index(root.row, root.column);
@@ -206,14 +208,14 @@ Item {
                         onToggleExpand: {
                             root.treeView.toggleExpanded(root.row);
                             let idx = root.treeView.index(root.row, root.column);
-                            App.routesModel.toggleFolderExpanded(idx);
+                            App.routesFilterModel.toggleFolderExpanded(idx);
                         }
                         onUpdateDir: (newDirName, parentUuid) => {
                             root.nodeName = newDirName;
                             root.parentUuid = parentUuid;
 
                             let idx = routesItem.currentIndex = root.treeView.index(root.row, root.column);
-                            App.routesModel.updateFolder(idx, newDirName, 257); // TODO: fix magic number
+                            App.routesFilterModel.updateFolder(idx, newDirName, 257); // TODO: fix magic number
                         }
                     }
                 }
@@ -223,16 +225,18 @@ Item {
                     RoutesQueryNode {
                         id: queryNode
                         height: root.rowHeight
+                        width: treeViewItem.width - 16
+                        x: root.x + 8
+
                         name: root.nodeName
                         parentUuid: parentUuid
                         queryType: root.nodeQueryType
                         uuid: root.nodeUuid
-                        width: treeViewItem.width
-                        x: root.padding + (root.isTreeNode ? (root.depth + 1) * root.indent : 0)
+                        nodePadding: root.padding + (root.isTreeNode ? (root.depth + 1) * root.indent : 0)
 
                         onCopyCurl: {
                             let idx = root.treeView.index(root.row, root.column);
-                            let curlCommand = App.routesModel.copyAsCurl(idx);
+                            let curlCommand = App.routesFilterModel.copyAsCurl(idx);
                             teCopy.text = curlCommand;
                             teCopy.selectAll();
                             teCopy.copy();
@@ -241,13 +245,15 @@ Item {
                         onRemoveQuery: {
                             routesItem.currentIndex = root.treeView.index(root.row, root.column);
                             routesItem.removeUuid = root.nodeUuid;
+
                             dlgRemoveQuery.open();
                         }
                         onSetPin: {
-                            PinModel.addPin(root.nodeUuid);
+                            App.pinModel.addPin(queryNode.uuid);
                         }
                         onSetQuery: {
-                            App.routesModel.setCurrentQuery(root.treeView.index(root.row, root.column));
+                            App.routesFilterModel.setCurrentQuery(root.treeView.index(root.row, root.column));
+
                             routesItem.currentRow = root.row;
                         }
                         onStartDrag: {
@@ -259,9 +265,41 @@ Item {
 
                             let idx = root.treeView.index(root.row, root.column);
 
-                            App.routesModel.updateQuery(idx, newQueryName, 0);
+                            App.routesFilterModel.updateQuery(idx, newQueryName, 0);
                         }
                     }
+                }
+            }
+        }
+        TextField {
+            id: tfFilter
+            text: ""
+            selectByMouse: true
+            placeholderText: qsTr("Filter")
+            rightPadding: clearBtn.width + 8
+            onTextChanged: {
+                App.routesFilterModel.setFilterText(tfFilter.text);
+            }
+
+            Layout.fillWidth: true
+            Layout.bottomMargin: 8
+            Layout.leftMargin: 8
+            Layout.rightMargin: 8
+
+            Button {
+                id: clearBtn
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.rightMargin: 4
+                visible: tfFilter.text.length > 0
+                flat: true
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
+                icon.width: 18
+                icon.height: 18
+                icon.color: 'black'
+                onClicked: {
+                    tfFilter.clear();
+                    tfFilter.forceActiveFocus();
                 }
             }
         }
@@ -279,7 +317,7 @@ Item {
 
         onOk: dirName => {
             let parentIdx = treeViewItem.index(-1, -1);
-            App.routesModel.addFolder(dirName, parentIdx);
+            App.routesFilterModel.addFolder(dirName, parentIdx);
         }
     }
 
@@ -288,7 +326,7 @@ Item {
 
         onOk: (queryName, queryType) => {
             let parentIdx = treeViewItem.index(-1, -1);
-            App.routesModel.addQuery(queryName, queryType, parentIdx);
+            App.routesFilterModel.addQuery(queryName, queryType, parentIdx);
         }
     }
 
@@ -302,7 +340,7 @@ Item {
         onButtonClicked: (button, role) => {
             switch (button) {
             case MessageDialog.Ok:
-                App.routesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
+                App.routesFilterModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
                 dlgRemoveFolder.close();
                 break;
             }
@@ -323,7 +361,7 @@ Item {
                     App.resetQuery();
                 }
 
-                App.routesModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
+                App.routesFilterModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
                 dlgRemoveQuery.close();
 
                 break;

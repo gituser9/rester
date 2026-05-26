@@ -12,6 +12,7 @@
 #include "clients/grpc_client.h"
 #include "models/pin_model.h"
 #include "models/routesmodel.h"
+#include "models/routes_filter_proxy.h"
 #include "models/worspace_model.h"
 #include "parsers/curl_parser.h"
 
@@ -32,6 +33,7 @@ class App : public QObject
     Q_PROPERTY(WorkspaceModel* workspaceModel READ workspaceModel CONSTANT)
     Q_PROPERTY(HttpClient* httpClient READ httpClient CONSTANT)
     Q_PROPERTY(GrpcClient* grpcClient READ grpcClient CONSTANT)
+    Q_PROPERTY(RoutesFilterModel* routesFilterModel READ routesFilterModel CONSTANT)
 
 public:
     explicit App(QObject* parent = nullptr);
@@ -67,6 +69,7 @@ public:
     void setIsActiveSocketConnect(bool newIsActiveSocketConnect);
 
     RoutesModel* routesModel() const;
+    RoutesFilterModel* routesFilterModel() const;
     PinModel* pinModel() const;
     WorkspaceModel* workspaceModel() const;
     HttpClient* httpClient() const;
@@ -96,6 +99,7 @@ public slots:
 
 private:
     std::shared_ptr<RoutesModel> _routesModel;
+    std::shared_ptr<RoutesFilterModel> _routesFilterModel;
     std::shared_ptr<WorkspaceModel> _workspaceModel;
     std::shared_ptr<PinModel> _pinModel;
 

@@ -67,6 +67,15 @@ public:
     Q_INVOKABLE void importFromHar(const QModelIndex& parentIdx, const QString& filePath) noexcept;
     Q_INVOKABLE QString copyAsCurl(const QModelIndex& idx) const;
 
+    enum RoleType {
+        NameRole = Qt::UserRole + 1,
+        NodeTypeRole,
+        QueryTypeRole,
+        FolderExpandedRole,
+        UuidRole,
+        ParentUuidRole,
+    };
+    Q_ENUM(RoleType)
 public slots:
     void loadTree(std::shared_ptr<Workspace> workspace) noexcept;
 
@@ -81,14 +90,6 @@ signals:
     void error(const QString&);
 
 private:
-    enum RoleType {
-        NameRole = Qt::UserRole + 1,
-        NodeTypeRole,
-        QueryTypeRole,
-        FolderExpandedRole,
-        UuidRole,
-        ParentUuidRole,
-    };
     std::shared_ptr<Workspace> _currentWorkspace;
     QHash<int, QByteArray> _names;
 

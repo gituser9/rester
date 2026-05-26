@@ -11,13 +11,67 @@ import io.rester
 import "../modal"
 import "../../colors"
 
-Item {
+Rectangle {
     id: requestNode
+    radius: 8
+    border.width: 0
+    border.color: "transparent"
+    clip: true
+
+    states: [
+        State {
+            name: "selected"
+            PropertyChanges {
+                target: requestNode
+                color: "#DBEAFE"
+                border.color: "transparent"
+                border.width: 0
+            }
+            PropertyChanges {
+                target: leftIndicator
+                visible: true
+            }
+        },
+        State {
+            name: "hovered"
+            PropertyChanges {
+                target: requestNode
+                color: "#E2E8F0"
+                border.color: "#E2E8F0"
+                border.width: 0
+            }
+            PropertyChanges {
+                target: leftIndicator
+                visible: false
+            }
+        }
+    ]
+    transitions: Transition {
+        from: "*"
+        to: "*"
+        ParallelAnimation {
+            ColorAnimation {
+                properties: "color"
+                duration: 160
+                easing.type: Easing.OutQuad
+            }
+        }
+    }
+    onUuidChanged: {
+        if (App.query) {
+            setState(App.query.uuid);
+        }
+
+        if (App.grpcQuery) {
+            setState(App.grpcQuery.uuid);
+        }
+    }
 
     required property string name
     required property string uuid
     required property string parentUuid
     required property string queryType
+    required property double nodePadding
 
     property bool isHovered: false
 
@@ -29,6 +83,29 @@ Item {
     signal setPin
     signal updateQuery(string newQueryName, string parentUuid)
 
+    Behavior on color {
+        ColorAnimation {
+            duration: 160
+        }
+    }
+    Behavior on border.color {
+        ColorAnimation {
+            duration: 160
+        }
+    }
+
+    Rectangle {
+        id: leftIndicator
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 3
+        color: "#2563EB"
+        radius: width / 2
+        visible: false
+        anchors.margins: 4
+    }
+
     RowLayout {
         anchors.fill: parent
         spacing: 8
@@ -39,16 +116,16 @@ Item {
             text: requestNode.queryType
             font.bold: true
             color: requestNode.getTypeColor(requestNode.queryType)
+
+            Layout.leftMargin: nodePadding
         }
         Text {
             id: txtName
-            Layout.maximumWidth: parent.width / 2.2
             clip: true
             wrapMode: Text.WordWrap
             text: requestNode.name
-        }
-        Item {
-            width: 8
+
+            Layout.maximumWidth: parent.width - txtQueryType.width - nodePadding - 16
         }
         Item {
             Layout.fillWidth: true
@@ -73,9 +150,17 @@ Item {
             }
         }
         onEntered: {
+            if (requestNode.state !== "selected") {
+                requestNode.state = "hovered";
+            }
+
             requestNode.isHovered = true;
         }
         onExited: {
+            if (requestNode.state !== "selected") {
+                requestNode.state = "";
+            }
+
             requestNode.isHovered = false;
         }
         onReleased: {
@@ -146,6 +231,18 @@ Item {
         }
     }
 
+    Connections {
+        target: App.routesModel
+
+        function onSetQuery(qry: Query): void {
+            requestNode.setState(qry.uuid);
+        }
+
+        function onSetGrpcQuery(qry: GrpcQuery): void {
+            requestNode.setState(qry.uuid);
+        }
+    }
+
     function getTypeColor(qType: string): string {
         switch (qType) {
         case 'GET':
@@ -166,6 +263,14 @@ Item {
             return '#a855ff';
         default:
             return '#000000';
+        }
+    }
+
+    function setState(uuid: string): void {
+        if (uuid === requestNode.uuid) {
+            requestNode.state = "selected";
+        } else {
+            requestNode.state = "";
         }
     }
 }

@@ -33,7 +33,7 @@ class Query : public TreeNode
 
 public:
     explicit Query(TreeNode* parent = nullptr);
-    virtual ~Query();
+    ~Query() override;
 
     // Properties
     QString url() const;

@@ -15,6 +15,8 @@ App::App(QObject* parent) : QObject{parent}
     _workspace = nullptr;
     _settings = nullptr;
 
+    _routesFilterModel = std::make_shared<RoutesFilterModel>();
+
     // setup saver
     _saverThread = new QThread(this);
     _saverThread->start();
@@ -120,6 +122,7 @@ void App::setGrpcClient(const std::shared_ptr<GrpcClient> newGrpcClient)
 void App::setWorkspaceModel(const std::shared_ptr<WorkspaceModel>& newWorkspaceModel)
 {
     _workspaceModel = newWorkspaceModel;
+    _routesFilterModel->setSourceModel(_routesModel.get());
 
     // workspace model connects
     connect(_workspaceModel.get(), &WorkspaceModel::varsUpdate, this, &App::updateEnvVars);
@@ -455,6 +458,11 @@ void App::setIsActiveSocketConnect(bool newIsActiveSocketConnect)
 RoutesModel* App::routesModel() const
 {
     return _routesModel.get();
+}
+
+RoutesFilterModel* App::routesFilterModel() const
+{
+    return _routesFilterModel.get();
 }
 
 PinModel* App::pinModel() const
