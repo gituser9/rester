@@ -1,7 +1,6 @@
 #include "pin_model.h"
 
-PinModel::PinModel(QObject* parent)
-    : QAbstractListModel(parent)
+PinModel::PinModel(QObject* parent) : QAbstractListModel(parent)
 {
     _names[static_cast<int>(RoleNames::NameRole)] = "name";
     _names[static_cast<int>(RoleNames::UuidRole)] = "uuid";

@@ -55,7 +55,7 @@ Popup {
         ComboBox {
             id: cbQueryType
             Layout.fillWidth: true
-            model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "WS", "GRPC"] // TODO: from App
+            model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "WS", "GRPC", "GRAPHQL"] // TODO: from App
         }
         RowLayout {
             Layout.fillWidth: true

@@ -22,12 +22,6 @@ Rectangle {
     property bool isLoading: true
     anchors.fill: parent
 
-    HoverHandler {
-        id: mouse
-        acceptedDevices: PointerDevice.Mouse
-        cursorShape: Qt.PointingHandCursor
-    }
-
     ColumnLayout {
         anchors.fill: parent
 

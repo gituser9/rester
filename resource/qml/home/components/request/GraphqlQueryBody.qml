@@ -13,7 +13,7 @@ import io.rester
 import "../../../../qml"
 
 Item {
-    id: queryBodyView
+    id: graphqlBodyView
 
     property Constants consts: Constants {}
 
@@ -27,26 +27,38 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            Loader {
-                id: loader
-                Layout.topMargin: 10
-                Layout.bottomMargin: 20
-                asynchronous: true
+            ScrollView {
                 anchors.fill: parent
-                sourceComponent: textBody
+
+                TextArea {
+                    id: taQueryBody
+                    verticalAlignment: TextEdit.AlignTop
+                    font.family: "Monospace"
+                    tabStopDistance: 32
+                    text: App.graphqlQuery?.body
+                    onEditingFinished: {
+                        App.graphqlQuery.body = taQueryBody.text;
+                    }
+
+                    Component.onCompleted: {
+                        graphqlSyntaxHighlighter.setDocument(taQueryBody.textDocument);
+                    }
+                }
             }
         }
 
         // buttons
         RowLayout {
             Layout.fillWidth: true
-            Layout.bottomMargin: 8
+            Layout.bottomMargin: graphqlBodyView.consts.space
 
-            spacing: 8
+            spacing: graphqlBodyView.consts.space
 
             Button {
                 Layout.fillWidth: true
-                implicitHeight: queryBodyView.consts.bottomButtonHeight
+
+                visible: false
+                implicitHeight: graphqlBodyView.consts.bottomButtonHeight
                 icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
                 flat: true
                 text: qsTr("Upload")
@@ -58,46 +70,34 @@ Item {
             }
             Button {
                 Layout.fillWidth: true
-                implicitHeight: queryBodyView.consts.bottomButtonHeight
+                implicitHeight: graphqlBodyView.consts.bottomButtonHeight
                 icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 flat: true
                 text: qsTr("Clear")
                 onClicked: {
-                    queryBodyView.clear();
+                    taQueryBody.clear();
                 }
             }
             Button {
                 Layout.fillWidth: true
-                implicitHeight: queryBodyView.consts.bottomButtonHeight
+                implicitHeight: graphqlBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
                 icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 flat: true
                 onClicked: {
-                    queryBodyView.copy();
+                    taQueryBody.selectAll();
+                    taQueryBody.copy();
                 }
             }
             Button {
                 Layout.fillWidth: true
-                implicitHeight: queryBodyView.consts.bottomButtonHeight
+                implicitHeight: graphqlBodyView.consts.bottomButtonHeight
                 text: qsTr("Beautify")
                 icon.source: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
                 flat: true
                 onClicked: {
-                    App.grpcQuery.body = Util.beautify(App.grpcQuery.body, 1);
+                    App.graphqlQuery.body = Util.beautify(App.graphqlQuery.body, 6); // TODO: enum
                 }
-            }
-        }
-    }
-
-    Component {
-        id: textBody
-
-        GrpcQueryTextBody {
-            id: tb
-
-            Component.onCompleted: {
-                queryBodyView.clear.connect(tb.clear);
-                queryBodyView.copy.connect(tb.copy);
             }
         }
     }
@@ -105,10 +105,14 @@ Item {
     FileDialog {
         id: fileDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.HomeLocation)[0]
-        nameFilters: ["Proto files (*.proto)"]
+        nameFilters: ["Proto files (*.graphql)"]
         onAccepted: () => {
             let path = selectedFile.toString().replace("file://", "");
-            App.loadProto(path);
+        // App.loadProto(path);
         }
+    }
+
+    GraphqlSyntaxHighlighter {
+        id: graphqlSyntaxHighlighter
     }
 }

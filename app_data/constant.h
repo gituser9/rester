@@ -3,8 +3,9 @@
 
 enum NodeType { // TODO: enum class
     FolderNode = 0,
-    QueryNode,
-    GrpcQueryNode,
+    QueryNode = 1,
+    GrpcQueryNode = 2,
+    GraphqlQueryNode = 3,
 };
 
 enum class QueryType {
@@ -15,16 +16,18 @@ enum class QueryType {
     DELETE = 4,
     HEAD = 5,
     WS = 6,
-    GRPC = 7
+    GRPC = 7,
+    GRAPHQL = 8
 };
 
 enum class BodyType {
     NONE = 0,
-    JSON,
-    MULTIPART_FORM,
-    URL_ENCODED_FORM,
-    XML,
-    HTML
+    JSON = 1,
+    MULTIPART_FORM = 2,
+    URL_ENCODED_FORM = 3,
+    XML = 4,
+    HTML = 5,
+    GRAPHQL = 6
 };
 
 enum class ImportType {

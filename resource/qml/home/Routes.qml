@@ -8,13 +8,11 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 import io.rester
-// import core.app 1.0
-// import App.routesModel
-// import Util
 
 import "./components"
 import "./modal"
 
+// TODO: consts
 Item {
     id: routesItem
 
@@ -275,7 +273,7 @@ Item {
             id: tfFilter
             text: ""
             selectByMouse: true
-            placeholderText: qsTr("Filter")
+            placeholderText: qsTr("Filter (name, body)")
             rightPadding: clearBtn.width + 8
             onTextChanged: {
                 App.routesFilterModel.setFilterText(tfFilter.text);

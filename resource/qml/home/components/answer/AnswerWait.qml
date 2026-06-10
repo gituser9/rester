@@ -52,7 +52,13 @@ Item {
             height: waitView.consts.bottomButtonHeight
             text: qsTr("Cancel")
             onClicked: {
-                App.httpClient.abortReply();
+                if (App.query) {
+                    App.httpClient.abortReply();
+                }
+
+                if (App.graphqlQuery) {
+                    App.graphqlClient.abortReply();
+                }
             }
         }
     }

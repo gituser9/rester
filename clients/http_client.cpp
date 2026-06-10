@@ -264,6 +264,7 @@ void HttpClient::send(Query* query, QNetworkRequest& request)
         break;
     case QueryType::WS:
     case QueryType::GRPC:
+    case QueryType::GRAPHQL:
         break;
     }
 }

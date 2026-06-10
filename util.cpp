@@ -40,6 +40,10 @@ QueryType Util::getQueryType(QString typeString)
         return QueryType::GRPC;
     }
 
+    if (typeString == "GRAPHQL") {
+        return QueryType::GRAPHQL;
+    }
+
     return QueryType::GET;
 }
 
@@ -83,6 +87,8 @@ QString Util::getQueryTypeString(QueryType type)
         return "WS";
     case QueryType::GRPC:
         return "GRPC";
+    case QueryType::GRAPHQL:
+        return "GRAPHQL";
     default:
         return "GET";
     }
@@ -129,6 +135,58 @@ QString Util::beautify(QString body, BodyType bodyType)
         }
 
         return formatted;
+    }
+
+    if (bodyType == BodyType::GRAPHQL) {
+        QString simplified = body;
+        simplified.replace(QRegularExpression("[\\n\\r\\t]+"), " ");
+        simplified.replace(QRegularExpression("\\s+"), " ");
+        simplified = simplified.trimmed();
+
+        QString formatted;
+        int indentLevel = 0;
+        bool inString = false;
+
+        for (int i = 0; i < simplified.length(); ++i) {
+            QChar c = simplified[i];
+
+            if (c == '"') {
+                inString = !inString;
+                formatted += c;
+                continue;
+            }
+            if (inString) {
+                formatted += c;
+                continue;
+            }
+
+            if (c == '{') {
+                if (formatted.endsWith(' ')) {
+                    formatted.chop(1);
+                }
+
+                formatted += " {\n";
+                indentLevel++;
+                formatted += QString(indentLevel * 2, ' ');
+            }
+            else if (c == '}') {
+                formatted += "\n";
+                indentLevel = qMax(0, indentLevel - 1);
+                formatted += QString(indentLevel * 2, ' ') + "}";
+
+                if (i + 1 < simplified.length() && simplified[i + 1] != '}') {
+                    formatted += "\n" + QString(indentLevel * 2, ' ');
+                }
+                else {
+                    formatted += "\n";
+                }
+            }
+            else {
+                formatted += c;
+            }
+        }
+
+        return formatted.trimmed();
     }
 
     return body;

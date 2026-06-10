@@ -24,6 +24,7 @@
 #include "../app_data/workspace.h"
 #include "../importer.h"
 #include "../parsers/curl_parser.h"
+#include "../parsers/graphql_parser.h"
 #include "../saver.h"
 #include "../settings.h"
 
@@ -84,6 +85,7 @@ signals:
     void queryRemoved(const QString&);
     void setQuery(Query*);
     void setGrpcQuery(GrpcQuery*);
+    void setGraphqlQuery(GraphqlQuery*);
     void treeLoaded();
     void treeChanged(std::shared_ptr<Workspace>);
     void moderError(QString);

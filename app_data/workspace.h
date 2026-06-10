@@ -18,6 +18,7 @@
 #include "folder.h"
 #include "query.h"
 #include "grpc_query.h"
+#include "graphql_query.h"
 
 class Workspace : public TreeNode
 {
@@ -31,13 +32,12 @@ class Workspace : public TreeNode
 
 public:
     explicit Workspace(TreeNode* parent = nullptr);
-    virtual ~Workspace() = default;
+    ~Workspace() override = default;
 
     void fromJson(const QJsonObject& json);
     void fromJsonShort(const QJsonObject& json) noexcept;
     void createDefault();
     void reloadVariables() noexcept;
-    void setEnv(const QString& env) noexcept;
     QString getFileName() const;
     QList<TreeNode*> getAllFolders(TreeNode* node = nullptr);
     TreeNode* getByUuid(QString uuid) noexcept;
@@ -60,6 +60,7 @@ public:
     void setVariables(const QVariantMap& newVariables);
 
     QString env() const;
+    void setEnv(const QString& env) noexcept;
 
     QStringList pins() const;
     void setPins(const QStringList& newPins);
@@ -87,6 +88,7 @@ private:
     QJsonObject serializeFolder(Folder* node) const;
     QJsonObject serializeQuery(Query* node) const;
     QJsonObject serializeGrpcQuery(GrpcQuery* node) const;
+    QJsonObject serializeGraphqlQuery(GraphqlQuery* node) const;
     QJsonObject serializeAnswer(HttpAnswer* node) const;
     TreeNode* getByUuid(QString uuid, TreeNode* node) const noexcept;
     TreeNode* getQueryByUuid(QString uuid, TreeNode* node) const noexcept;

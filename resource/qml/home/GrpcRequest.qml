@@ -33,7 +33,7 @@ Item {
 
         RowLayout {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.topMargin: 8
+            Layout.topMargin: grpcView.consts.space
             Layout.bottomMargin: 5
             Layout.preferredWidth: parent.width
 
@@ -41,7 +41,7 @@ Item {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.leftMargin: 8 // TODO: to const
+                Layout.leftMargin: grpcView.consts.space
                 Layout.preferredHeight: grpcView.consts.bottomButtonHeight
 
                 border.width: 1
@@ -63,7 +63,7 @@ Item {
                 }
             }
             Rectangle {
-                Layout.rightMargin: 8
+                Layout.rightMargin: grpcView.consts.space
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: grpcView.consts.bottomButtonHeight
 
@@ -81,11 +81,11 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: grpcView.consts.bottomButtonHeight
 
-            spacing: 8
+            spacing: grpcView.consts.space
 
             // upload btn
             Button {
-                Layout.leftMargin: 8
+                Layout.leftMargin: grpcView.consts.space
                 Layout.preferredHeight: grpcView.consts.bottomButtonHeight
 
                 ToolTip.text: qsTr("Reload from filesystem")
@@ -121,7 +121,7 @@ Item {
             // list of rpc
             Rectangle {
                 Layout.fillWidth: true
-                Layout.rightMargin: 8
+                Layout.rightMargin: grpcView.consts.space
                 Layout.preferredWidth: parent.width / 2
                 Layout.preferredHeight: grpcView.consts.bottomButtonHeight
 
@@ -153,8 +153,8 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.rightMargin: 8
-            Layout.leftMargin: 8
+            Layout.rightMargin: grpcView.consts.space
+            Layout.leftMargin: grpcView.consts.space
 
             Button {
                 Layout.fillWidth: true
@@ -189,8 +189,8 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.rightMargin: 8
-            Layout.leftMargin: 8
+            Layout.rightMargin: grpcView.consts.space
+            Layout.leftMargin: grpcView.consts.space
 
             Loader {
                 id: loader
@@ -240,7 +240,7 @@ Item {
         loader.setSource(path);
     }
 
-    function isEmptyQuery(): void {
+    function isEmptyQuery(): bool {
         let srv = App.grpcQuery.availableSrv;
         let rpc = App.grpcQuery.availableRpc;
 

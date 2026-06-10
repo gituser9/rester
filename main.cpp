@@ -10,6 +10,7 @@
 #include "clients/grpc_client.h"
 #include "highliters/html_syntax_highlighter.h"
 #include "highliters/json_syntax_highlighter.h"
+#include "highliters/graphql_syntax_highlighter.h"
 #include "highliters/var_syntax_highlighter.h"
 #include "highliters/url_highlighter.h"
 #include "models/pin_model.h"
@@ -33,6 +34,7 @@ int main(int argc, char* argv[])
     auto pinModel = std::make_shared<PinModel>();
     auto httpClient = std::make_shared<HttpClient>();
     auto grpcClient = std::make_shared<GrpcClient>();
+    auto graphqlClient = std::make_shared<GraphqlClient>();
 
     App* core = new App(&app);
     core->setRoutesModel(routesModel);
@@ -40,6 +42,7 @@ int main(int argc, char* argv[])
     core->setPinModel(pinModel);
     core->setHttpClient(httpClient);
     core->setGrpcClient(grpcClient);
+    core->setGraphqlClient(graphqlClient);
     core->setup();
 
     QQmlEngine::setObjectOwnership(core, QQmlEngine::CppOwnership);
@@ -48,6 +51,7 @@ int main(int argc, char* argv[])
     qmlRegisterSingletonInstance<Util>("io.rester", 1, 0, "Util", util.get());
     qmlRegisterType<HtmlSyntaxHighlighter>("io.rester", 1, 0, "HtmlSyntaxHighlighter");
     qmlRegisterType<JsonSyntaxHighlighter>("io.rester", 1, 0, "JsonSyntaxHighlighter");
+    qmlRegisterType<GraphqlSyntaxHighlighter>("io.rester", 1, 0, "GraphqlSyntaxHighlighter");
     qmlRegisterType<VarSyntaxHighlighter>("io.rester", 1, 0, "VarSyntaxHighlighter");
     qmlRegisterType<UrlHighlighter>("io.rester", 1, 0, "UrlHighlighter");
     qmlRegisterType<SearchEngine>("io.rester", 1, 0, "SearchEngine");

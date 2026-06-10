@@ -12,6 +12,7 @@ App::App(QObject* parent) : QObject{parent}
     _isActiveSocketConnect = false;
     _query = nullptr;
     _grpcQuery = nullptr;
+    _graphqlQuery = nullptr;
     _workspace = nullptr;
     _settings = nullptr;
 
@@ -70,13 +71,14 @@ void App::setWorkspace(shared_ptr<Workspace> workspace)
 
     _query = nullptr;
     _grpcQuery = nullptr;
+    _graphqlQuery = nullptr;
 
     _workspace = workspace;
     _workspace->setLastUsageAt(QDateTime::currentMSecsSinceEpoch());
     _settings->setLastWorkspace(workspace->getFileName());
 
     emit wsReload(_workspace);
-    emit queryChanged();
+    emit queryChanged(); // TODO: check
     emit wsChanged(_workspace);
     emit settingsChanged(_settings);
 
@@ -87,6 +89,7 @@ void App::setWorkspace(shared_ptr<Workspace> workspace)
     auto currentVars = _vars[_workspace->env()].toList();
     _httpClient->setVars(currentVars);
     _grpcClient->setVars(currentVars);
+    _graphqlClient->setVars(currentVars);
 
     connect(_workspace.get(), &Workspace::pinsChanged, this, &App::queryUpdated);
     connect(_routesModel.get(), &RoutesModel::queryRemoved, _pinModel.get(), &PinModel::remove);
@@ -119,6 +122,13 @@ void App::setGrpcClient(const std::shared_ptr<GrpcClient> newGrpcClient)
     connect(_grpcClient.get(), &GrpcClient::requestFinished, this, &App::setGrpcAnswer, Qt::QueuedConnection);
 }
 
+void App::setGraphqlClient(const std::shared_ptr<GraphqlClient> newHttpClient)
+{
+    _graphqlClient = newHttpClient;
+
+    connect(_graphqlClient.get(), &GraphqlClient::finished, this, &App::setGraphqlAnswer, Qt::QueuedConnection);
+}
+
 void App::setWorkspaceModel(const std::shared_ptr<WorkspaceModel>& newWorkspaceModel)
 {
     _workspaceModel = newWorkspaceModel;
@@ -140,6 +150,7 @@ void App::setRoutesModel(const std::shared_ptr<RoutesModel>& newRoutesModel)
     connect(_routesModel.get(), &RoutesModel::treeChanged, _saver.get(), &Saver::saveWorkspace, Qt::QueuedConnection);
     connect(_routesModel.get(), &RoutesModel::setQuery, this, &App::setQuery);
     connect(_routesModel.get(), &RoutesModel::setGrpcQuery, this, &App::setGrpcQuery);
+    connect(_routesModel.get(), &RoutesModel::setGraphqlQuery, this, &App::setGraphqlQuery);
     connect(_routesModel.get(), &RoutesModel::error, this, &App::showError);
 
     connect(this, &App::wsReload, _routesModel.get(), &RoutesModel::loadTree, Qt::QueuedConnection);
@@ -190,6 +201,7 @@ void App::setEnv(const QString& env)
     auto currentVars = _workspace->variables()[env].toList();
     _httpClient->setVars(currentVars);
     _grpcClient->setVars(currentVars);
+    _graphqlClient->setVars(currentVars);
 }
 
 void App::send()
@@ -200,6 +212,11 @@ void App::send()
 void App::callGrpc()
 {
     _grpcClient->call(_grpcQuery);
+}
+
+void App::sendGraphql()
+{
+    _graphqlClient->makeRequest(_graphqlQuery);
 }
 
 void App::setQueryByUuid(const QString& uuid)
@@ -216,6 +233,7 @@ void App::setQueryByUuid(const QString& uuid)
         auto qry = static_cast<Query*>(node);
         _query = qry;
         _grpcQuery = nullptr;
+        _graphqlQuery = nullptr;
 
         emit queryChanged();
 
@@ -226,10 +244,22 @@ void App::setQueryByUuid(const QString& uuid)
         auto qry = static_cast<GrpcQuery*>(node);
         _grpcQuery = qry;
         _query = nullptr;
+        _graphqlQuery = nullptr;
 
         emit grpcQueryChanged();
 
         connect(_grpcQuery, &GrpcQuery::dataChanged, this, &App::queryUpdated);
+    }
+
+    if (node->nodeType() == NodeType::GraphqlQueryNode) {
+        auto qry = static_cast<GraphqlQuery*>(node);
+        _graphqlQuery = qry;
+        _query = nullptr;
+        _grpcQuery = nullptr;
+
+        emit graphqlQueryChanged();
+
+        connect(_graphqlQuery, &GraphqlQuery::dataChanged, this, &App::queryUpdated);
     }
 }
 
@@ -299,6 +329,7 @@ void App::resetQuery()
 
     _query = nullptr;
     _grpcQuery = nullptr;
+    _graphqlQuery = nullptr;
 }
 
 Query* App::query() const
@@ -321,6 +352,7 @@ void App::setQuery(Query* query)
 
     _query = query;
     _grpcQuery = nullptr;
+    _graphqlQuery = nullptr;
 
     emit queryChanged();
 
@@ -339,11 +371,31 @@ void App::setGrpcQuery(GrpcQuery* query)
 
     _grpcQuery = query;
     _query = nullptr;
+    _graphqlQuery = nullptr;
 
     emit grpcQueryChanged();
 
     if (_grpcQuery) {
         connect(_grpcQuery, &GrpcQuery::dataChanged, this, &App::queryUpdated);
+    }
+}
+
+void App::setGraphqlQuery(GraphqlQuery* query)
+{
+    if (_graphqlQuery == query) {
+        return;
+    }
+
+    disconnectQueries();
+
+    _graphqlQuery = query;
+    _grpcQuery = nullptr;
+    _query = nullptr;
+
+    emit graphqlQueryChanged();
+
+    if (_graphqlQuery) {
+        connect(_graphqlQuery, &GraphqlQuery::dataChanged, this, &App::queryUpdated);
     }
 }
 
@@ -357,6 +409,12 @@ void App::setGrpcAnswer(QSharedPointer<HttpAnswer> answer)
 {
     _grpcQuery->setAnswer(answer);
     _grpcClient->setIsRequestWork(false);
+}
+
+void App::setGraphqlAnswer(QSharedPointer<HttpAnswer> answer)
+{
+    _graphqlQuery->setLastAnswer(answer);
+    _graphqlClient->setIsRequestWork(false);
 }
 
 void App::wsUpdate(shared_ptr<Workspace> ws)
@@ -424,6 +482,10 @@ void App::disconnectQueries() noexcept
     if (_grpcQuery != nullptr) {
         _grpcQuery->disconnect();
     }
+
+    if (_graphqlQuery != nullptr) {
+        _graphqlQuery->disconnect();
+    }
 }
 
 void App::updateEnvVars(const QVariantMap& vars)
@@ -434,6 +496,7 @@ void App::updateEnvVars(const QVariantMap& vars)
     auto currentVars = vars[_workspace->env()].toList();
     _httpClient->setVars(currentVars);
     _grpcClient->setVars(currentVars);
+    _graphqlClient->setVars(currentVars);
 
     emit wsChanged(_workspace);
     emit workspaceChanged();
@@ -483,4 +546,14 @@ HttpClient* App::httpClient() const
 GrpcClient* App::grpcClient() const
 {
     return _grpcClient.get();
+}
+
+GraphqlQuery* App::graphqlQuery() const
+{
+    return _graphqlQuery;
+}
+
+GraphqlClient* App::graphqlClient() const
+{
+    return _graphqlClient.get();
 }

@@ -3,22 +3,23 @@
 
 Workspace::Workspace(TreeNode* parent) : TreeNode(parent)
 {
-    QStringList cfgLocation =
-        QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
+    QStringList cfgLocation = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
     _workspacesPath = cfgLocation.first() + "/rester/workspaces/";
 }
 
 QJsonObject Workspace::toJson()
 {
-    QJsonObject json = {{"uuid", uuid()},
-                        {"name", name()},
-                        {"last_usage_at", _lastUsageAt},
-                        {"variables", QJsonObject::fromVariantMap(_variables)},
-                        {"pins", QJsonArray::fromStringList(_pins)}};
+    QJsonObject json = {
+        {"uuid", uuid()},
+        {"name", name()},
+        {"last_usage_at", _lastUsageAt},
+        {"variables", QJsonObject::fromVariantMap(_variables)},
+        {"pins", QJsonArray::fromStringList(_pins)} //
+    };
     QJsonArray items;
 
     for (TreeNode* node : nodes()) {
-        items << std::move(serializeNode(node));
+        items << serializeNode(node);
     }
 
     json["items"] = items;
@@ -170,6 +171,11 @@ void Workspace::buildTree(const QJsonObject& json, TreeNode* parent)
         qry->fromJson(json);
         parent->addNode(qry);
     } break;
+    case NodeType::GraphqlQueryNode: {
+        auto qry = new GraphqlQuery(parent);
+        qry->fromJson(json);
+        parent->addNode(qry);
+    } break;
     case NodeType::FolderNode:
         buildFolder(json, parent);
         break;
@@ -203,6 +209,12 @@ void Workspace::buildFolder(const QJsonObject& json, TreeNode* parent)
                 qry->fromJson(item.toObject());
                 folder->addNode(qry);
             }
+
+            if (typ == NodeType::GraphqlQueryNode) {
+                auto qry = new GraphqlQuery(folder);
+                qry->fromJson(item.toObject());
+                folder->addNode(qry);
+            }
         }
     }
 
@@ -227,6 +239,7 @@ QJsonObject Workspace::serializeNode(TreeNode* node) const
 {
     QJsonObject json;
 
+    // TODO: TreeNode virtual JSON methods
     switch (node->nodeType()) {
     case NodeType::FolderNode: {
         auto folder = static_cast<Folder*>(node);
@@ -239,6 +252,10 @@ QJsonObject Workspace::serializeNode(TreeNode* node) const
     case NodeType::GrpcQueryNode: {
         auto query = static_cast<GrpcQuery*>(node);
         json = serializeGrpcQuery(query);
+    } break;
+    case NodeType::GraphqlQueryNode: {
+        auto query = static_cast<GraphqlQuery*>(node);
+        json = serializeGraphqlQuery(query);
     } break;
     default:
         return {};
@@ -294,6 +311,15 @@ QJsonObject Workspace::serializeFolder(Folder* node) const
             arr << childJson;
             json["queries"] = arr;
         }
+
+        if (child->nodeType() == NodeType::GraphqlQueryNode) {
+            if (json.contains("queries")) {
+                arr = json["queries"].toArray();
+            }
+
+            arr << childJson;
+            json["queries"] = arr;
+        }
     }
 
     return json;
@@ -309,6 +335,15 @@ QJsonObject Workspace::serializeQuery(Query* node) const
 }
 
 QJsonObject Workspace::serializeGrpcQuery(GrpcQuery* node) const
+{
+    if (node == nullptr) {
+        return {};
+    }
+
+    return node->toJson();
+}
+
+QJsonObject Workspace::serializeGraphqlQuery(GraphqlQuery* node) const
 {
     if (node == nullptr) {
         return {};

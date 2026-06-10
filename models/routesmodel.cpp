@@ -36,9 +36,8 @@ QModelIndex RoutesModel::index(int row, int column, const QModelIndex& parent) c
     if (node != nullptr) {
         return createIndex(row, column, node);
     }
-    else {
-        return {};
-    }
+
+    return {};
 }
 
 QModelIndex RoutesModel::parent(const QModelIndex& index) const
@@ -88,7 +87,7 @@ int RoutesModel::columnCount(const QModelIndex& parent) const
     return 1;
 }
 
-Q_INVOKABLE bool RoutesModel::hasChildren(const QModelIndex& parent) const
+bool RoutesModel::hasChildren(const QModelIndex& parent) const
 {
     TreeNode* parentNode = getItem(parent);
 
@@ -135,7 +134,6 @@ bool RoutesModel::removeRows(int row, int count, const QModelIndex& parent)
     TreeNode* parentNode = getItem(parent);
 
     if (parentNode == nullptr || count <= 0) {
-        qDebug() << "EXIT: parent null or count <= 0";
         return false;
     }
 
@@ -233,6 +231,8 @@ bool RoutesModel::setData(const QModelIndex& index, const QVariant& value, int r
 
     switch (node->nodeType()) {
     case NodeType::QueryNode:
+    case NodeType::GrpcQueryNode:
+    case NodeType::GraphqlQueryNode:
         updateQuery(index, value, role);
         break;
     case NodeType::FolderNode:
@@ -282,7 +282,7 @@ void RoutesModel::addFolder(QString name, const QModelIndex& parentIdx)
     emit treeChanged(_currentWorkspace);
 }
 
-void RoutesModel::addQuery(QString name, const QModelIndex& parentIdx)
+void RoutesModel::addQuery(QString name, const QModelIndex& parentIdx) // TODO: remove?
 {
     TreeNode* parentNode = getItem(parentIdx);
     int row = parentNode->nodes().count();
@@ -313,6 +313,13 @@ void RoutesModel::addQuery(QString name, QString type, const QModelIndex& parent
     if (queryType == QueryType::GRPC) {
         auto newQuery = new GrpcQuery(parentNode);
         newQuery->setNodeType(NodeType::GrpcQueryNode);
+        newQuery->setUuid(Util::uuid());
+        newQuery->setName(name);
+        parentNode->addNode(newQuery);
+    }
+    else if (queryType == QueryType::GRAPHQL) {
+        auto newQuery = new GraphqlQuery(parentNode);
+        newQuery->setNodeType(NodeType::GraphqlQueryNode);
         newQuery->setUuid(Util::uuid());
         newQuery->setName(name);
         parentNode->addNode(newQuery);
@@ -415,6 +422,12 @@ void RoutesModel::setCurrentQuery(const QModelIndex& idx)
 
         emit setGrpcQuery(qry);
     }
+
+    if (node && node->nodeType() == NodeType::GraphqlQueryNode) {
+        auto qry = static_cast<GraphqlQuery*>(node);
+
+        emit setGraphqlQuery(qry);
+    }
 }
 
 TreeNode* RoutesModel::getItem(const QModelIndex& idx) const noexcept
@@ -461,6 +474,10 @@ QString RoutesModel::getQueryTypeFromNode(TreeNode* node) const noexcept
         return Util::getQueryTypeString(QueryType::GRPC);
     }
 
+    if (node->nodeType() == NodeType::GraphqlQueryNode) {
+        return Util::getQueryTypeString(QueryType::GRAPHQL);
+    }
+
     return Util::getQueryTypeString(QueryType::GET);
 }
 
@@ -477,21 +494,44 @@ bool RoutesModel::getExpandedFromNode(TreeNode* node) const noexcept
 
 QString RoutesModel::copyAsCurl(const QModelIndex& idx) const
 {
-    auto qry = static_cast<Query*>(idx.internalPointer());
 
-    if (qry == nullptr || qry->uuid() == "") {
-        return "";
+    TreeNode* node = getItem(idx);
+
+    if (node->nodeType() == NodeType::QueryNode) {
+        auto qry = dynamic_cast<Query*>(node);
+
+        if (qry == nullptr || qry->uuid().isEmpty()) {
+            return "";
+        }
+
+        auto curlParser = std::make_unique<CurlParser>();
+
+        return curlParser->generateCurl(qry);
     }
 
-    auto curlParser = std::make_unique<CurlParser>();
+    if (node->nodeType() == NodeType::GraphqlQueryNode) {
+        auto qry = dynamic_cast<GraphqlQuery*>(node);
 
-    return curlParser->generateCurl(qry);
+        if (qry == nullptr || qry->uuid().isEmpty()) {
+            return "";
+        }
+
+        return GraphqlParser::buildCurl(qry, _currentWorkspace->variables());
+    }
+
+    return "";
 }
 
 void RoutesModel::downloadBigAnswer(QString dirPath, Query const* qry) const noexcept
 {
+    if (!qry || !qry->lastAnswer()) {
+        return;
+    }
+
     QString fileName = qry->fileNameForAnswer();
     QFile answerFile(dirPath + "/" + fileName);
+
+    // TODO: check and delete
 
     if (!answerFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
         // signal

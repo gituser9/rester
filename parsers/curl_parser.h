@@ -16,7 +16,7 @@
 #include <QVariantMap>
 
 #include "../app_data/workspace.h"
-#include "../util.h"
+#include "curl_utils.h"
 
 class CurlParser
 {
@@ -45,9 +45,7 @@ private:
 
     QStringList split(std::string line = "") const noexcept;
     void extracted(Query*& query, QVariantList& envVars, QString& headerString) const;
-    QString generateCurlHeaders(Query* query, QVariantList envVars) const noexcept;
-    QString generateCurlBody(Query* query) const noexcept;
-    QString generateCurlUrl(Query* query, QVariantList envVars) const noexcept;
+    QString buildCurlBody(Query* query) const noexcept;
     QString excapeCurlBody(Query* query) const noexcept;
     QList<QueryParam> parseDataRaw(const QString& dataRaw) const noexcept;
 };

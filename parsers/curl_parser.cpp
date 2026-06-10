@@ -212,16 +212,17 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
     return query;
 }
 
-QString CurlParser::generateCurl(Query* query) const noexcept
+QString CurlParser::generateCurl(Query* query) const noexcept // TODO: can static ?
 {
     auto ws = Workspace::getByQuery(query);
     QVariantMap vars = ws->variables();
     QString currentEnv = vars.value("env", "").toString();
     QVariantList envVars = vars.value(currentEnv).toList();
 
-    QString url = "  --url '" + generateCurlUrl(query, envVars) + "' \\" + "\n";
+    QString url = "  --url '" + CurlUtils::buildUrl(query->url(), envVars) + "' \\" + "\n";
     QString method = " --request " + Util::getQueryTypeString(query->queryType()) + " \\" + "\n";
-    QString curlCommand = "curl" + method + url + generateCurlHeaders(query, envVars) + generateCurlBody(query);
+    QString headers = CurlUtils::buildHeaders(query->headerList(), envVars);
+    QString curlCommand = "curl" + method + url + headers + buildCurlBody(query);
 
     qsizetype pos = curlCommand.lastIndexOf("\\");
 
@@ -289,29 +290,12 @@ QStringList CurlParser::split(std::string line) const noexcept
     return words;
 }
 
-QString CurlParser::generateCurlHeaders(Query* query, QVariantList envVars) const noexcept
-{
-    QString headerString;
-
-    for (auto header : query->headerList()) {
-        if (!header.isEnabled()) {
-            continue;
-        }
-
-        QString value = Util::fillVars(header.value(), envVars, _varRegex);
-        headerString += "  --header '" + header.name() + ": " + value + "' \\" + "\n";
-    }
-
-    return headerString;
-}
-
-QString CurlParser::generateCurlBody(Query* query) const noexcept
+QString CurlParser::buildCurlBody(Query* query) const noexcept
 {
     BodyType bodyType = query->bodyType();
 
     if (bodyType == BodyType::JSON) {
-        // return "  --data '" + excapeCurlBody(query) + "' \\" + "'\n";
-        return "  --data '" + excapeCurlBody(query) + "' \\\n";
+        return "  --data '" + CurlUtils::escapeBody(query->body()) + "' \\\n";
     }
     else if (bodyType == BodyType::MULTIPART_FORM) {
         QVariantList formData = query->formData();
@@ -355,33 +339,6 @@ QString CurlParser::generateCurlBody(Query* query) const noexcept
     }
 
     return "";
-}
-
-QString CurlParser::generateCurlUrl(Query* query, QVariantList envVars) const noexcept
-{
-    QUrl url = Util::fillVars(query->url(), envVars, _varRegex);
-    QUrlQuery urlParams;
-
-    for (const QueryParam& param : query->paramList()) {
-        if (!param.isEnabled()) {
-            continue;
-        }
-
-        QString value = Util::fillVars(param.value(), envVars, _varRegex);
-        urlParams.addQueryItem(param.name(), value);
-    }
-
-    url.setQuery(urlParams.toString(QUrl::FullyEncoded));
-
-    return url.toString();
-}
-
-QString CurlParser::excapeCurlBody(Query* query) const noexcept
-{
-    QString escapedBody = query->body();
-    escapedBody.replace("'", "'\\''");
-
-    return escapedBody;
 }
 
 QList<QueryParam> CurlParser::parseDataRaw(const QString& dataRaw) const noexcept

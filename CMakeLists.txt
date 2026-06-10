@@ -28,7 +28,7 @@ find_package(Brotli CONFIG REQUIRED)
 ##################################################################
 # Sources
 ##################################################################
-file(GLOB PROJECT_SOURCES
+file(GLOB PROJECT_SOURCES CONFIGURE_DEPENDS
     *.cpp
     *.h
     models/*.h
@@ -63,6 +63,7 @@ qt_add_qml_module(
     VERSION 1.0
     RESOURCE_PREFIX /qt/qml
     QML_FILES
+        # General
         Main.qml
         resource/qml/Constants.qml
         resource/qml/colors/Colors.qml
@@ -70,15 +71,40 @@ qt_add_qml_module(
         resource/qml/common/components/FlickableEdit.qml
         resource/qml/common/components/Toast.qml
         resource/qml/common/components/ToastManager.qml
-        resource/qml/home/Answer.qml
+        resource/qml/home/modal/CreateRequestDialog.qml
+        resource/qml/home/modal/InputDialog.qml
+        resource/qml/home/modal/UpdateNodeDialog.qml
+
+        # Containers
         resource/qml/home/GrpcAnswer.qml
+        resource/qml/home/GrpcRequest.qml
+        resource/qml/home/GraphqlRequest.qml
+        resource/qml/home/GraphqlAnswer.qml
+        resource/qml/home/Answer.qml
         resource/qml/home/Request.qml
         resource/qml/home/Routes.qml
         resource/qml/home/WsRequest.qml
-        resource/qml/home/GrpcRequest.qml
         resource/qml/home/components/RoutesFolderNode.qml
         resource/qml/home/components/RoutesQueryNode.qml
+
+        # Pins
         resource/qml/home/components/Pins.qml
+
+        # GraphQL
+        resource/qml/home/components/request/GraphqlQueryBody.qml
+        resource/qml/home/components/request/GraphqlQueryVariables.qml
+        resource/qml/home/components/answer/GraphqlAnswerBody.qml
+        resource/qml/home/components/answer/GraphqlAnswerHeaders.qml
+        resource/qml/home/components/answer/GraphqlAnswerCookies.qml
+
+        # gRPC
+        resource/qml/home/components/request/GrpcEmpty.qml
+        resource/qml/home/components/request/GrpcQueryBody.qml
+        resource/qml/home/components/request/GrpcQueryMeta.qml
+        resource/qml/home/components/request/GrpcQueryTextBody.qml
+        resource/qml/home/components/answer/GrpcAnswerBody.qml
+
+        # HTTP
         resource/qml/home/components/answer/AnswerBigBody.qml
         resource/qml/home/components/answer/AnswerBody.qml
         resource/qml/home/components/answer/AnswerCookies.qml
@@ -86,22 +112,18 @@ qt_add_qml_module(
         resource/qml/home/components/answer/AnswerHeaders.qml
         resource/qml/home/components/answer/AnswerPreview.qml
         resource/qml/home/components/answer/AnswerWait.qml
-        resource/qml/home/components/answer/GrpcAnswerBody.qml
-        resource/qml/home/components/request/GrpcEmpty.qml
-        resource/qml/home/components/request/GrpcQueryBody.qml
-        resource/qml/home/components/request/GrpcQueryMeta.qml
-        resource/qml/home/components/request/GrpcQueryTextBody.qml
         resource/qml/home/components/request/QueryBody.qml
         resource/qml/home/components/request/QueryFormBody.qml
         resource/qml/home/components/request/QueryHeaders.qml
         resource/qml/home/components/request/QueryParams.qml
         resource/qml/home/components/request/QueryTextBody.qml
-        resource/qml/home/modal/CreateRequestDialog.qml
-        resource/qml/home/modal/InputDialog.qml
-        resource/qml/home/modal/UpdateNodeDialog.qml
-        resource/qml/settings/Settings.qml
+
+        # Workspace
         resource/qml/workspace/WorkspaceList.qml
         resource/qml/workspace/WorkspaceVariables.qml
+
+        # Settings
+        resource/qml/settings/Settings.qml
     SOURCES
         ${PROJECT_SOURCES}
     RESOURCES
@@ -128,6 +150,7 @@ qt_add_qml_module(
         "resource/images/send.svg"
         "resource/images/sound-module-line.svg"
         "resource/images/upload.svg"
+        "resource/images/indent-increase.svg"
 
 
     DEPENDENCIES

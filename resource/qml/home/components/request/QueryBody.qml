@@ -103,7 +103,7 @@ Item {
                 implicitWidth: 100
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Beautify")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/sound-module-line.svg"
+                icon.source: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
                 flat: true
                 onClicked: {
                     App.query.beautify();

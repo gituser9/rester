@@ -200,46 +200,18 @@ void Query::fromJson(QJsonObject json)
         _paramList << param;
     }
 
-    if (json.value("form_data").isObject()) {
-        auto paramsObj = json.value("form_data").toObject().toVariantMap();
+    auto formArr = json.value("form_data").toArray();
 
-        QMapIterator iter(paramsObj);
-
-        while (iter.hasNext()) {
-            iter.next();
-
-            QueryParam param(iter.key(), iter.value().toString());
-            _formDataList << param;
-        }
-    }
-    else if (json.value("form_data").isArray()) {
-        auto paramsArr = json.value("form_data").toArray();
-
-        for (QJsonValueRef item : paramsArr) {
-            QueryParam param(item.toObject());
-            _formDataList << param;
-        }
+    for (QJsonValueRef item : formArr) {
+        QueryParam param(item.toObject());
+        _formDataList << param;
     }
 
-    if (json.value("headers").isObject()) {
-        auto paramsObj = json.value("headers").toObject().toVariantMap();
+    auto headersArr = json.value("headers").toArray();
 
-        QMapIterator iter(paramsObj);
-
-        while (iter.hasNext()) {
-            iter.next();
-
-            QueryParam param(iter.key(), iter.value().toString());
-            _headers << param;
-        }
-    }
-    else if (json.value("headers").isArray()) {
-        auto paramsArr = json.value("headers").toArray();
-
-        for (QJsonValueRef item : paramsArr) {
-            QueryParam param(item.toObject());
-            _headers << param;
-        }
+    for (QJsonValueRef item : headersArr) {
+        QueryParam param(item.toObject());
+        _headers << param;
     }
 }
 

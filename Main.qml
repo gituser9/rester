@@ -137,7 +137,7 @@ Window {
 
             Rectangle {
                 implicitWidth: root.width / 3
-                visible: App.query || App.grpcQuery
+                visible: App.query || App.grpcQuery || App.graphqlQuery
 
                 Loader {
                     id: ldrQuery
@@ -147,7 +147,7 @@ Window {
             }
 
             Rectangle {
-                visible: !App.query && !App.grpcQuery
+                visible: !App.query && !App.grpcQuery && !App.graphqlQuery
                 implicitWidth: root.width / 3
             }
 
@@ -184,6 +184,15 @@ Window {
             root.setAnswerSource(App.grpcQuery.queryType);
         }
 
+        function onGraphqlQueryChanged(): void {
+            if (!App.graphqlQuery) {
+                return;
+            }
+
+            root.setSource(App.graphqlQuery.queryType);
+            root.setAnswerSource(App.graphqlQuery.queryType);
+        }
+
         function onShowError(txt): void {
             toastManager.show(txt);
         }
@@ -209,6 +218,7 @@ Window {
         width: parent.width / 2
         modal: true
         popupType: Popup.Item
+        // popupType: Popup.Window
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         onClosed: {
             wsLoader.active = false;
@@ -257,6 +267,9 @@ Window {
         case 'GRPC':
             view = 'GrpcRequest.qml';
             break;
+        case 'GRAPHQL':
+            view = 'GraphqlRequest.qml';
+            break;
         default:
             view = 'Request.qml';
         }
@@ -282,6 +295,9 @@ Window {
         case 'GRPC':
             view = 'GrpcAnswer.qml';
             break;
+        case 'GRAPHQL':
+            view = 'GraphqlAnswer.qml';
+            break;
         default:
             view = 'Answer.qml';
         }
@@ -296,11 +312,15 @@ Window {
     }
 
     function isAnswerVisible(): bool {
-        if (!App.query && !App.grpcQuery) {
+        if (!App.query && !App.grpcQuery && !App.graphqlQuery) {
             return false;
         }
 
         if (App.grpcQuery) {
+            return true;
+        }
+
+        if (App.graphqlQuery) {
             return true;
         }
 

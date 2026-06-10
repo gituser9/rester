@@ -65,6 +65,10 @@ Rectangle {
         if (App.grpcQuery) {
             setState(App.grpcQuery.uuid);
         }
+
+        if (App.graphqlQuery) {
+            setState(App.graphqlQuery.uuid);
+        }
     }
 
     required property string name
@@ -117,7 +121,7 @@ Rectangle {
             font.bold: true
             color: requestNode.getTypeColor(requestNode.queryType)
 
-            Layout.leftMargin: nodePadding
+            Layout.leftMargin: requestNode.nodePadding
         }
         Text {
             id: txtName
@@ -125,7 +129,7 @@ Rectangle {
             wrapMode: Text.WordWrap
             text: requestNode.name
 
-            Layout.maximumWidth: parent.width - txtQueryType.width - nodePadding - 16
+            Layout.maximumWidth: parent.width - txtQueryType.width - requestNode.nodePadding - 16
         }
         Item {
             Layout.fillWidth: true
@@ -210,7 +214,7 @@ Rectangle {
     Drag.hotSpot.y: requestNode.height / 2
     Drag.dragType: Drag.Internal
 
-    // move to root (создается на каждый запрос)
+    // TODO: move to root (создается на каждый запрос)
     UpdateNodeDialog {
         id: popUpdate
         itemName: requestNode.name
@@ -241,6 +245,26 @@ Rectangle {
         function onSetGrpcQuery(qry: GrpcQuery): void {
             requestNode.setState(qry.uuid);
         }
+
+        function onSetGraphqlQuery(qry: var): void {
+            requestNode.setState(qry.uuid);
+        }
+    }
+
+    Connections {
+        target: App
+
+        function onQueryChanged(): void {
+            requestNode.setState(App.query.uuid);
+        }
+
+        function onGrpcQueryChanged(): void {
+            requestNode.setState(App.grpcQuery.uuid);
+        }
+
+        function onGraphqlQueryChanged(): void {
+            requestNode.setState(App.graphqlQuery.uuid);
+        }
     }
 
     function getTypeColor(qType: string): string {
@@ -261,16 +285,26 @@ Rectangle {
             return '#FFA500';
         case 'GRPC':
             return '#a855ff';
+        case 'GRAPHQL':
+            return '#E10098';
         default:
             return '#000000';
         }
     }
 
     function setState(uuid: string): void {
+        let newState = "";
+
         if (uuid === requestNode.uuid) {
-            requestNode.state = "selected";
+            newState = "selected";
         } else {
-            requestNode.state = "";
+            newState = "";
         }
+
+        if (requestNode.state === newState) {
+            return;
+        }
+
+        requestNode.state = newState;
     }
 }
