@@ -44,7 +44,7 @@ public:
     Q_INVOKABLE void loadWorkspaces();
     Q_INVOKABLE void exportCollection(const QString& folderPath, int index, int type) const;
     Q_INVOKABLE void clean() noexcept;
-    Q_INVOKABLE void importFrom(const QString& filePath, ImportType type);
+    Q_INVOKABLE void importFrom(const QString& filePath, RstEnums::ImportType type);
     Q_INVOKABLE void exportTo(const QString& exportPath) const noexcept;
     Q_INVOKABLE void setVars(const QString& uuid, const QString& name, const QVariantMap& vars) noexcept;
     Q_INVOKABLE QVariantMap getVars(const QString& uuid, const QString& name) const noexcept;

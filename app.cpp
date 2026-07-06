@@ -73,12 +73,13 @@ void App::setWorkspace(shared_ptr<Workspace> workspace)
     _grpcQuery = nullptr;
     _graphqlQuery = nullptr;
 
+    emit queryChanged(); // reset query views
+
     _workspace = workspace;
     _workspace->setLastUsageAt(QDateTime::currentMSecsSinceEpoch());
     _settings->setLastWorkspace(workspace->getFileName());
 
     emit wsReload(_workspace);
-    emit queryChanged(); // TODO: check
     emit wsChanged(_workspace);
     emit settingsChanged(_settings);
 
@@ -229,7 +230,7 @@ void App::setQueryByUuid(const QString& uuid)
 
     disconnectQueries();
 
-    if (node->nodeType() == NodeType::QueryNode) {
+    if (node->nodeType() == RstEnums::NodeType::QueryNode) {
         auto qry = static_cast<Query*>(node);
         _query = qry;
         _grpcQuery = nullptr;
@@ -240,7 +241,7 @@ void App::setQueryByUuid(const QString& uuid)
         connect(_query, &Query::dataChanged, this, &App::queryUpdated);
     }
 
-    if (node->nodeType() == NodeType::GrpcQueryNode) {
+    if (node->nodeType() == RstEnums::NodeType::GrpcQueryNode) {
         auto qry = static_cast<GrpcQuery*>(node);
         _grpcQuery = qry;
         _query = nullptr;
@@ -251,7 +252,7 @@ void App::setQueryByUuid(const QString& uuid)
         connect(_grpcQuery, &GrpcQuery::dataChanged, this, &App::queryUpdated);
     }
 
-    if (node->nodeType() == NodeType::GraphqlQueryNode) {
+    if (node->nodeType() == RstEnums::NodeType::GraphqlQueryNode) {
         auto qry = static_cast<GraphqlQuery*>(node);
         _graphqlQuery = qry;
         _query = nullptr;

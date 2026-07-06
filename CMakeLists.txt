@@ -17,7 +17,7 @@ endif()
 # Libs
 ##################################################################
 find_package(Qt6 REQUIRED COMPONENTS Core Quick Qml QuickControls2 Gui WebSockets Concurrent)
-qt_standard_project_setup(REQUIRES 6.10)
+qt_standard_project_setup(REQUIRES 6.11)
 
 find_package(ZLIB)
 find_package(gRPC CONFIG REQUIRED)
@@ -124,8 +124,10 @@ qt_add_qml_module(
 
         # Settings
         resource/qml/settings/Settings.qml
+
     SOURCES
         ${PROJECT_SOURCES}
+
     RESOURCES
         "resource/images/add.svg"
         "resource/images/arrow-down-s.svg"
@@ -151,7 +153,6 @@ qt_add_qml_module(
         "resource/images/sound-module-line.svg"
         "resource/images/upload.svg"
         "resource/images/indent-increase.svg"
-
 
     DEPENDENCIES
         QtQuick

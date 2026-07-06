@@ -33,7 +33,7 @@ private:
     QJsonArray _globalSecurity;
 
     QString extractBaseUrl(const QJsonObject& root);
-    BodyType detectBodyType(const QJsonObject& operation);
+    RstEnums::BodyType detectBodyType(const QJsonObject& operation);
     QByteArray getJson(const QString& path);
     void setSecurity(const QJsonObject& root, const QJsonObject& operation, Query* query);
     void setParams(const QJsonObject& operation, Query* query);

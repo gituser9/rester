@@ -6,10 +6,10 @@ Importer::Importer(QObject* parent) : QObject{parent}
 {
 }
 
-shared_ptr<Workspace> Importer::importWorkspace(const QString& filePath, ImportType type) noexcept
+shared_ptr<Workspace> Importer::importWorkspace(const QString& filePath, RstEnums::ImportType type) noexcept
 {
     switch (type) {
-    case ImportType::Rester:
+    case RstEnums::ImportType::Rester:
         return fromRester(filePath);
     default:
         return fromExternal(filePath, type);
@@ -32,22 +32,22 @@ void Importer::exportWorkspaces(const QString& folderPath, const QString& export
     }
 }
 
-void Importer::exportCollection(QSharedPointer<Workspace> workspace, const QString& exportPath, ImportType type)
+void Importer::exportCollection(QSharedPointer<Workspace> workspace, const QString& exportPath, RstEnums::ImportType type)
 {
     QString dateString = QDateTime::currentDateTime().toString("dd_MM_yyyy");
     QString fileName = workspace->name() + "_" + dateString + "_";
 
     switch (type) {
-    case ImportType::InsomniaV5:
+    case RstEnums::ImportType::InsomniaV5:
         fileName += "Insomnia_v5.yaml";
         break;
-    case ImportType::Postman:
+    case RstEnums::ImportType::Postman:
         fileName += "Postman.json";
         break;
-    case ImportType::Rester:
+    case RstEnums::ImportType::Rester:
         fileName += "Rester.json";
         break;
-    case ImportType::Har:
+    case RstEnums::ImportType::Har:
         fileName += "HAR.har";
         break;
     default:
@@ -58,16 +58,16 @@ void Importer::exportCollection(QSharedPointer<Workspace> workspace, const QStri
     QString filePath = exportPath + "/" + fileName;
 
     switch (type) {
-    case ImportType::Postman:
+    case RstEnums::ImportType::Postman:
         json = PostmanExporter::exportWorkspace(workspace);
         break;
-    case ImportType::Rester:
+    case RstEnums::ImportType::Rester:
         json = QJsonDocument(workspace->toJson()).toJson();
         break;
-    case ImportType::InsomniaV5:
+    case RstEnums::ImportType::InsomniaV5:
         json = InsomniaV5Exporter::exportWorkspace(workspace);
         break;
-    case ImportType::Har:
+    case RstEnums::ImportType::Har:
         json = HarExporter::exportWorkspace(workspace);
         break;
     default:
@@ -95,27 +95,27 @@ shared_ptr<Workspace> Importer::fromRester(const QString& filePath) const noexce
     return workspace;
 }
 
-shared_ptr<Workspace> Importer::fromExternal(const QString& filePath, ImportType type) noexcept
+shared_ptr<Workspace> Importer::fromExternal(const QString& filePath, RstEnums::ImportType type) noexcept
 {
-    if (type == ImportType::InsomniaV5) {
+    if (type == RstEnums::ImportType::InsomniaV5) {
         auto importer = std::make_unique<InsomniaV5Importer>();
 
         return importer->importWorkspace(filePath);
     }
 
-    if (type == ImportType::Swagger) {
+    if (type == RstEnums::ImportType::Swagger) {
         auto importer = std::make_unique<SwaggerImporter>();
 
         return importer->importWorkspace(filePath);
     }
 
-    if (type == ImportType::Postman) {
+    if (type == RstEnums::ImportType::Postman) {
         auto importer = std::make_unique<PostmanImporter>();
 
         return importer->importWorkspace(filePath);
     }
 
-    if (type == ImportType::Har) {
+    if (type == RstEnums::ImportType::Har) {
         auto importer = std::make_unique<HarImporter>();
 
         return importer->importWorkspace(filePath);

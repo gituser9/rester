@@ -29,7 +29,7 @@ private:
     static QJsonObject buildUrl(const QString& rawUrl, const QList<QueryParam>& params);
 
     // Строит объект body в зависимости от типа тела
-    static QJsonObject buildBody(BodyType type, const QString& bodyText);
+    static QJsonObject buildBody(RstEnums::BodyType type, const QString& bodyText);
 
     // Преобразует QMap в массив {key, value}
     static QJsonArray mapToKeyValueArray(const QList<QueryParam>& map);

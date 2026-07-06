@@ -34,7 +34,7 @@ private:
         Workspace* workspace,
         Folder* parentFolder //
     );
-    BodyType detectBodyType(const YAML::Node& bodyNode);
+    RstEnums::BodyType detectBodyType(const YAML::Node& bodyNode);
     void setHeaders(const YAML::Node& headersNode, Query* query);
     void setParameters(const YAML::Node& parametersNode, Query* query);
 };

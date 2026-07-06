@@ -2,11 +2,11 @@
 
 Query::Query(TreeNode* parent) : TreeNode(parent)
 {
-    _queryType = QueryType::GET;
-    _bodyType = BodyType::NONE;
+    _queryType = RstEnums::QueryType::GET;
+    _bodyType = RstEnums::BodyType::NONE;
     _lastAnswer = QSharedPointer<HttpAnswer>();
 
-    setNodeType(NodeType::QueryNode);
+    setNodeType(RstEnums::NodeType::QueryNode);
 }
 
 Query::~Query()
@@ -117,12 +117,12 @@ void Query::setParams(const QVariantList& newParams)
     emit dataChanged();
 }
 
-BodyType Query::bodyType() const
+RstEnums::BodyType Query::bodyType() const
 {
     return _bodyType;
 }
 
-void Query::setBodyType(BodyType newBodyType)
+void Query::setBodyType(RstEnums::BodyType newBodyType)
 {
     if (_bodyType == newBodyType) {
         return;
@@ -134,12 +134,12 @@ void Query::setBodyType(BodyType newBodyType)
     emit dataChanged();
 }
 
-QueryType Query::queryType() const
+RstEnums::QueryType Query::queryType() const
 {
     return _queryType;
 }
 
-void Query::setQueryType(QueryType newQueryType)
+void Query::setQueryType(RstEnums::QueryType newQueryType)
 {
     if (_queryType == newQueryType) {
         return;
@@ -177,7 +177,7 @@ void Query::fromJson(QJsonObject json)
 
     setUuid(json.value("uuid").toString(Util::uuid()));
     setName(json.value("name").toString(""));
-    setNodeType(NodeType::QueryNode);
+    setNodeType(RstEnums::NodeType::QueryNode);
 
     if (json.contains("last_answer")) {
         QJsonObject answerJson = json.value("last_answer").toObject();
@@ -221,7 +221,7 @@ QJsonObject Query::toJson() const
     json["url"] = _url;
     json["query_type"] = Util::getQueryTypeString(_queryType);
     json["body_type"] = Util::getBodyTypeString(_bodyType);
-    json["node_type"] = NodeType::QueryNode;
+    json["node_type"] = static_cast<int>(RstEnums::NodeType::QueryNode);
     json["body"] = _body;
     json["uuid"] = uuid();
     json["name"] = name();

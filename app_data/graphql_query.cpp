@@ -2,17 +2,17 @@
 
 GraphqlQuery::GraphqlQuery(TreeNode* parent) : TreeNode(parent)
 {
-    _queryType = QueryType::GRAPHQL;
+    _queryType = RstEnums::QueryType::GRAPHQL;
     _lastAnswer = QSharedPointer<HttpAnswer>();
 
-    setNodeType(NodeType::GraphqlQueryNode);
+    setNodeType(RstEnums::NodeType::GraphqlQueryNode);
 }
 
 GraphqlQuery::~GraphqlQuery()
 {
 }
 
-QueryType GraphqlQuery::queryType() const
+RstEnums::QueryType GraphqlQuery::queryType() const
 {
     return _queryType;
 }
@@ -277,13 +277,13 @@ void GraphqlQuery::removeVariable(const QString& name)
 
 void GraphqlQuery::fromJson(QJsonObject json)
 {
-    _queryType = QueryType::GRAPHQL;
+    _queryType = RstEnums::QueryType::GRAPHQL;
     _url = json.value("url").toString("");
     _body = json.value("body").toString("");
 
     setUuid(json.value("uuid").toString(Util::uuid()));
     setName(json.value("name").toString(""));
-    setNodeType(NodeType::GraphqlQueryNode);
+    setNodeType(RstEnums::NodeType::GraphqlQueryNode);
 
     if (json.contains("last_answer")) {
         QJsonObject answerJson = json.value("last_answer").toObject();
@@ -322,7 +322,7 @@ QJsonObject GraphqlQuery::toJson() const
     json["url"] = _url;
     json["body"] = _body;
     json["query_type"] = Util::getQueryTypeString(_queryType);
-    json["node_type"] = NodeType::GraphqlQueryNode;
+    json["node_type"] = static_cast<int>(RstEnums::NodeType::GraphqlQueryNode);
 
     if (!_lastAnswer.isNull()) {
         json["last_answer"] = _lastAnswer->toJson();

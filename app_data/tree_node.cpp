@@ -8,7 +8,7 @@ TreeNode::TreeNode(TreeNode* parent)
         _parent = parent;
     }
 
-    _nodeType = NodeType::QueryNode;
+    _nodeType = RstEnums::NodeType::QueryNode;
 }
 
 TreeNode::~TreeNode()
@@ -124,12 +124,12 @@ void TreeNode::setName(const QString& newName)
     emit nameChanged();
 }
 
-NodeType TreeNode::nodeType() const
+RstEnums::NodeType TreeNode::nodeType() const
 {
     return _nodeType;
 }
 
-void TreeNode::setNodeType(NodeType newNodeType)
+void TreeNode::setNodeType(RstEnums::NodeType newNodeType)
 {
     if (_nodeType == newNodeType) {
         return;

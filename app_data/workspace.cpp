@@ -95,7 +95,7 @@ QList<TreeNode*> Workspace::getAllFolders(TreeNode* node)
     }
 
     for (TreeNode* child : childs) {
-        if (child->nodeType() == NodeType::FolderNode) {
+        if (child->nodeType() == RstEnums::NodeType::FolderNode) {
             auto childNodes = getAllFolders(child);
             nodes << childNodes;
         }
@@ -109,7 +109,7 @@ TreeNode* Workspace::getByUuid(QString uuid) noexcept
     QList<TreeNode*> childs = nodes();
 
     for (TreeNode* child : childs) {
-        if (child->nodeType() != NodeType::FolderNode) {
+        if (child->nodeType() != RstEnums::NodeType::FolderNode) {
             continue;
         }
 
@@ -118,7 +118,7 @@ TreeNode* Workspace::getByUuid(QString uuid) noexcept
         }
 
         if (!child->nodes().isEmpty()) {
-            if (child->nodeType() != NodeType::FolderNode) {
+            if (child->nodeType() != RstEnums::NodeType::FolderNode) {
                 continue;
             }
 
@@ -160,23 +160,33 @@ void Workspace::buildTree(const QJsonObject& json, TreeNode* parent)
         return;
     }
 
-    switch (json.value("node_type").toInt(-1)) {
-    case NodeType::QueryNode: {
+    int typeInt = json.value("node_type").toInt(-1);
+
+    if (typeInt == -1) {
+        return;
+    }
+
+    auto nodeType = static_cast<RstEnums::NodeType>(typeInt);
+
+    // TODO: virtual parser
+
+    switch (nodeType) {
+    case RstEnums::NodeType::QueryNode: {
         auto qry = new Query(parent);
         qry->fromJson(json);
         parent->addNode(qry);
     } break;
-    case NodeType::GrpcQueryNode: {
+    case RstEnums::NodeType::GrpcQueryNode: {
         auto qry = new GrpcQuery(parent);
         qry->fromJson(json);
         parent->addNode(qry);
     } break;
-    case NodeType::GraphqlQueryNode: {
+    case RstEnums::NodeType::GraphqlQueryNode: {
         auto qry = new GraphqlQuery(parent);
         qry->fromJson(json);
         parent->addNode(qry);
     } break;
-    case NodeType::FolderNode:
+    case RstEnums::NodeType::FolderNode:
         buildFolder(json, parent);
         break;
     }
@@ -187,7 +197,7 @@ void Workspace::buildFolder(const QJsonObject& json, TreeNode* parent)
     auto folder = new Folder(parent);
     folder->setName(json.value("name").toString("folder"));
     folder->setUuid(json.value("uuid").toString(Util::uuid()));
-    folder->setNodeType(NodeType::FolderNode);
+    folder->setNodeType(RstEnums::NodeType::FolderNode);
     folder->setIsExpanded(json.value("is_expanded").toBool());
     parent->addNode(folder);
 
@@ -196,21 +206,28 @@ void Workspace::buildFolder(const QJsonObject& json, TreeNode* parent)
 
         for (QJsonValueRef&& item : queries) {
             auto obj = item.toObject();
-            auto typ = static_cast<NodeType>(obj.value("node_type").toInt(-1));
 
-            if (typ == NodeType::QueryNode) {
+            int typeInt = obj.value("node_type").toInt(-1);
+
+            if (typeInt == -1) {
+                continue; // TODO: emit error
+            }
+
+            auto typ = static_cast<RstEnums::NodeType>(typeInt);
+
+            if (typ == RstEnums::NodeType::QueryNode) {
                 auto qry = new Query(folder);
                 qry->fromJson(item.toObject());
                 folder->addNode(qry);
             }
 
-            if (typ == NodeType::GrpcQueryNode) {
+            if (typ == RstEnums::NodeType::GrpcQueryNode) {
                 auto qry = new GrpcQuery(folder);
                 qry->fromJson(item.toObject());
                 folder->addNode(qry);
             }
 
-            if (typ == NodeType::GraphqlQueryNode) {
+            if (typ == RstEnums::NodeType::GraphqlQueryNode) {
                 auto qry = new GraphqlQuery(folder);
                 qry->fromJson(item.toObject());
                 folder->addNode(qry);
@@ -241,19 +258,19 @@ QJsonObject Workspace::serializeNode(TreeNode* node) const
 
     // TODO: TreeNode virtual JSON methods
     switch (node->nodeType()) {
-    case NodeType::FolderNode: {
+    case RstEnums::NodeType::FolderNode: {
         auto folder = static_cast<Folder*>(node);
         json = serializeFolder(folder);
     } break;
-    case NodeType::QueryNode: {
+    case RstEnums::NodeType::QueryNode: {
         auto query = static_cast<Query*>(node);
         json = serializeQuery(query);
     } break;
-    case NodeType::GrpcQueryNode: {
+    case RstEnums::NodeType::GrpcQueryNode: {
         auto query = static_cast<GrpcQuery*>(node);
         json = serializeGrpcQuery(query);
     } break;
-    case NodeType::GraphqlQueryNode: {
+    case RstEnums::NodeType::GraphqlQueryNode: {
         auto query = static_cast<GraphqlQuery*>(node);
         json = serializeGraphqlQuery(query);
     } break;
@@ -273,7 +290,7 @@ QJsonObject Workspace::serializeFolder(Folder* node) const
     QJsonObject json = {
         {"uuid", node->uuid()},
         {"name", node->name()},
-        {"node_type", node->nodeType()},
+        {"node_type", static_cast<int>(node->nodeType())},
         {"is_expanded", node->isExpanded()},
     };
 
@@ -285,7 +302,7 @@ QJsonObject Workspace::serializeFolder(Folder* node) const
         QJsonObject childJson = serializeNode(child);
         QJsonArray arr;
 
-        if (child->nodeType() == NodeType::FolderNode) {
+        if (child->nodeType() == RstEnums::NodeType::FolderNode) {
             if (json.contains("folders")) {
                 arr = json["folders"].toArray();
             }
@@ -294,7 +311,7 @@ QJsonObject Workspace::serializeFolder(Folder* node) const
             json["folders"] = arr;
         }
 
-        if (child->nodeType() == NodeType::QueryNode) {
+        if (child->nodeType() == RstEnums::NodeType::QueryNode) {
             if (json.contains("queries")) {
                 arr = json["queries"].toArray();
             }
@@ -303,7 +320,7 @@ QJsonObject Workspace::serializeFolder(Folder* node) const
             json["queries"] = arr;
         }
 
-        if (child->nodeType() == NodeType::GrpcQueryNode) {
+        if (child->nodeType() == RstEnums::NodeType::GrpcQueryNode) {
             if (json.contains("queries")) {
                 arr = json["queries"].toArray();
             }
@@ -312,7 +329,7 @@ QJsonObject Workspace::serializeFolder(Folder* node) const
             json["queries"] = arr;
         }
 
-        if (child->nodeType() == NodeType::GraphqlQueryNode) {
+        if (child->nodeType() == RstEnums::NodeType::GraphqlQueryNode) {
             if (json.contains("queries")) {
                 arr = json["queries"].toArray();
             }
@@ -370,7 +387,7 @@ TreeNode* Workspace::getByUuid(QString uuid, TreeNode* node) const noexcept
     QList<TreeNode*> childs = node->nodes();
 
     for (TreeNode* child : childs) {
-        if (child->nodeType() != NodeType::FolderNode) {
+        if (child->nodeType() != RstEnums::NodeType::FolderNode) {
             continue;
         }
 
@@ -379,7 +396,7 @@ TreeNode* Workspace::getByUuid(QString uuid, TreeNode* node) const noexcept
         }
 
         if (!child->nodes().isEmpty()) {
-            if (child->nodeType() != NodeType::FolderNode) {
+            if (child->nodeType() != RstEnums::NodeType::FolderNode) {
                 continue;
             }
 

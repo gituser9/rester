@@ -6,120 +6,120 @@ Util::Util(QObject* parent) : QObject{parent}
 {
 }
 
-QueryType Util::getQueryType(QString typeString)
+RstEnums::QueryType Util::getQueryType(QString typeString)
 {
     if (typeString == "GET") {
-        return QueryType::GET;
+        return RstEnums::QueryType::GET;
     }
 
     if (typeString == "POST") {
-        return QueryType::POST;
+        return RstEnums::QueryType::POST;
     }
 
     if (typeString == "PUT") {
-        return QueryType::PUT;
+        return RstEnums::QueryType::PUT;
     }
 
     if (typeString == "PATCH") {
-        return QueryType::PATCH;
+        return RstEnums::QueryType::PATCH;
     }
 
     if (typeString == "DELETE") {
-        return QueryType::DELETE;
+        return RstEnums::QueryType::DELETE;
     }
 
     if (typeString == "HEAD") {
-        return QueryType::HEAD;
+        return RstEnums::QueryType::HEAD;
     }
 
     if (typeString == "WS") {
-        return QueryType::WS;
+        return RstEnums::QueryType::WS;
     }
 
     if (typeString == "GRPC") {
-        return QueryType::GRPC;
+        return RstEnums::QueryType::GRPC;
     }
 
     if (typeString == "GRAPHQL") {
-        return QueryType::GRAPHQL;
+        return RstEnums::QueryType::GRAPHQL;
     }
 
-    return QueryType::GET;
+    return RstEnums::QueryType::GET;
 }
 
-BodyType Util::getBodyType(QString typeString)
+RstEnums::BodyType Util::getBodyType(QString typeString)
 {
     if (typeString == "JSON") {
-        return BodyType::JSON;
+        return RstEnums::BodyType::JSON;
     }
 
     if (typeString == "XML") {
-        return BodyType::XML;
+        return RstEnums::BodyType::XML;
     }
 
     if (typeString == "MULTIPART_FORM") {
-        return BodyType::MULTIPART_FORM;
+        return RstEnums::BodyType::MULTIPART_FORM;
     }
 
     if (typeString == "URL_ENCODED_FORM") {
-        return BodyType::URL_ENCODED_FORM;
+        return RstEnums::BodyType::URL_ENCODED_FORM;
     }
 
-    return BodyType::NONE;
+    return RstEnums::BodyType::NONE;
 }
 
-QString Util::getQueryTypeString(QueryType type)
+QString Util::getQueryTypeString(RstEnums::QueryType type)
 {
     switch (type) {
-    case QueryType::GET:
+    case RstEnums::QueryType::GET:
         return "GET";
-    case QueryType::POST:
+    case RstEnums::QueryType::POST:
         return "POST";
-    case QueryType::PATCH:
+    case RstEnums::QueryType::PATCH:
         return "PATCH";
-    case QueryType::PUT:
+    case RstEnums::QueryType::PUT:
         return "PUT";
-    case QueryType::DELETE:
+    case RstEnums::QueryType::DELETE:
         return "DELETE";
-    case QueryType::HEAD:
+    case RstEnums::QueryType::HEAD:
         return "HEAD";
-    case QueryType::WS:
+    case RstEnums::QueryType::WS:
         return "WS";
-    case QueryType::GRPC:
+    case RstEnums::QueryType::GRPC:
         return "GRPC";
-    case QueryType::GRAPHQL:
+    case RstEnums::QueryType::GRAPHQL:
         return "GRAPHQL";
     default:
         return "GET";
     }
 }
 
-QString Util::getBodyTypeString(BodyType type)
+QString Util::getBodyTypeString(RstEnums::BodyType type)
 {
     switch (type) {
-    case BodyType::JSON:
+    case RstEnums::BodyType::JSON:
         return "JSON";
-    case BodyType::XML:
+    case RstEnums::BodyType::XML:
         return "XML";
-    case BodyType::MULTIPART_FORM:
+    case RstEnums::BodyType::MULTIPART_FORM:
         return "MULTIPART_FORM";
-    case BodyType::URL_ENCODED_FORM:
+    case RstEnums::BodyType::URL_ENCODED_FORM:
         return "URL_ENCODED_FORM";
     default:
         return "None";
     }
 }
 
-QString Util::beautify(QString body, BodyType bodyType)
+QString Util::beautify(QString body, RstEnums::BodyType bodyType)
 {
-    if (bodyType == BodyType::JSON) {
+    if (bodyType == RstEnums::BodyType::JSON) {
         body = body.replace("\\t", "");
         auto doc = QJsonDocument::fromJson(body.toUtf8());
 
         return QString(doc.toJson(QJsonDocument::JsonFormat::Indented));
     }
 
-    if (bodyType == BodyType::XML) {
+    if (bodyType == RstEnums::BodyType::XML) {
         QString formatted;
         QXmlStreamReader reader(body);
         QXmlStreamWriter writer(&formatted);
@@ -137,7 +137,7 @@ QString Util::beautify(QString body, BodyType bodyType)
         return formatted;
     }
 
-    if (bodyType == BodyType::GRAPHQL) {
+    if (bodyType == RstEnums::BodyType::GRAPHQL) {
         QString simplified = body;
         simplified.replace(QRegularExpression("[\\n\\r\\t]+"), " ");
         simplified.replace(QRegularExpression("\\s+"), " ");
@@ -336,7 +336,7 @@ QString Util::fillVars(const QString& str, const QVariantList& vars) noexcept
 
     QString replaced = str;
 
-    auto varRegex = QRegularExpression("{{\\s*(.*?)\\s*}}");
+    auto varRegex = QRegularExpression(RstConstant::varRegexPattern);
     QRegularExpressionMatchIterator iter = varRegex.globalMatch(replaced);
 
     while (iter.hasNext()) {

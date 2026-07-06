@@ -52,10 +52,10 @@ void PostmanImporter::parseItem(const QJsonObject& itemObj, TreeNode* parent, co
 
     // is folder
     if (itemObj.contains("item")) {
-        Folder* folder = new Folder(parent);
+        auto* folder = new Folder(parent);
         folder->setName(itemObj.value("name").toString("Folder"));
         folder->setUuid(Util::uuid());
-        folder->setNodeType(NodeType::FolderNode);
+        folder->setNodeType(RstEnums::NodeType::FolderNode);
 
         parent->addNode(folder);
 
@@ -185,17 +185,17 @@ void PostmanImporter::setBody(const QJsonObject& reqObj, Query* query)
                            .toString();
 
         if (lang == "json") {
-            query->setBodyType(BodyType::JSON);
+            query->setBodyType(RstEnums::BodyType::JSON);
         }
         else if (lang == "xml") {
-            query->setBodyType(BodyType::XML);
+            query->setBodyType(RstEnums::BodyType::XML);
         }
         else {
-            query->setBodyType(BodyType::NONE);
+            query->setBodyType(RstEnums::BodyType::NONE);
         }
     }
     else if (mode == "formdata") {
-        query->setBodyType(BodyType::MULTIPART_FORM);
+        query->setBodyType(RstEnums::BodyType::MULTIPART_FORM);
 
         QJsonArray formdata = bodyObj.value("formdata").toArray();
 
@@ -209,7 +209,7 @@ void PostmanImporter::setBody(const QJsonObject& reqObj, Query* query)
         }
     }
     else if (mode == "urlencoded") {
-        query->setBodyType(BodyType::URL_ENCODED_FORM);
+        query->setBodyType(RstEnums::BodyType::URL_ENCODED_FORM);
 
         QJsonArray urlencoded = bodyObj.value("urlencoded").toArray();
 
@@ -223,6 +223,6 @@ void PostmanImporter::setBody(const QJsonObject& reqObj, Query* query)
         }
     }
     else {
-        query->setBodyType(BodyType::NONE);
+        query->setBodyType(RstEnums::BodyType::NONE);
     }
 }

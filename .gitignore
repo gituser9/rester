@@ -103,3 +103,4 @@ rester
 .qmlls.ini
 .vscode/
 CMakeUserPresets.json
+.qtcreator

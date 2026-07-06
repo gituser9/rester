@@ -27,9 +27,9 @@ class Util : public QObject
 public:
     Util(QObject* parent = nullptr);
 
-    static QueryType getQueryType(QString typeString);
-    static BodyType getBodyType(QString typeString);
-    static QString getBodyTypeString(BodyType type);
+    static RstEnums::QueryType getQueryType(QString typeString);
+    static RstEnums::BodyType getBodyType(QString typeString);
+    static QString getBodyTypeString(RstEnums::BodyType type);
     static QString beautify(QString body, QVariantMap headers);
     static QString uuid() noexcept;
     static QString getHeaderValue(const QString& name, const QList<QueryParam>& headers) noexcept;
@@ -40,8 +40,8 @@ public:
     static void writeJsonToFile(const QString& path, const QJsonObject& json) noexcept;
     static void writeToFile(const QString& path, const QString& data) noexcept;
 
-    Q_INVOKABLE static QString beautify(QString body, BodyType bodyType);
-    Q_INVOKABLE static QString getQueryTypeString(QueryType type);
+    Q_INVOKABLE static QString beautify(QString body, RstEnums::BodyType bodyType);
+    Q_INVOKABLE static QString getQueryTypeString(RstEnums::QueryType type);
     Q_INVOKABLE static double round2digits(double num) noexcept;
     Q_INVOKABLE static QVariantMap getAnswerSize(qint64 bytesCount) noexcept;
     Q_INVOKABLE static QString getAnswerSizeString(qint64 bytesCount) noexcept;

@@ -6,12 +6,12 @@ RoutesModel::RoutesModel(QObject* parent) : QAbstractItemModel(parent)
 {
     _names = QAbstractItemModel::roleNames();
     _names.insert({
-        {NameRole, "nodeName"},
-        {NodeTypeRole, "nodeType"},
-        {QueryTypeRole, "nodeQueryType"},
-        {FolderExpandedRole, "isFolderExpanded"},
-        {UuidRole, "nodeUuid"},
-        {ParentUuidRole, "parentUuid"},
+        {static_cast<int>(RoleType::NameRole), "nodeName"},
+        {static_cast<int>(RoleType::NodeTypeRole), "nodeType"},
+        {static_cast<int>(RoleType::QueryTypeRole), "nodeQueryType"},
+        {static_cast<int>(RoleType::FolderExpandedRole), "isFolderExpanded"},
+        {static_cast<int>(RoleType::UuidRole), "nodeUuid"},
+        {static_cast<int>(RoleType::ParentUuidRole), "parentUuid"},
     });
 }
 
@@ -101,19 +101,20 @@ QVariant RoutesModel::data(const QModelIndex& index, int role) const
     }
 
     TreeNode* item = getItem(index);
+    auto roleType = static_cast<RoleType>(role);
 
-    switch (role) {
-    case NameRole:
+    switch (roleType) {
+    case RoleType::NameRole:
         return item->name();
-    case NodeTypeRole:
-        return item->nodeType();
-    case QueryTypeRole:
+    case RoleType::NodeTypeRole:
+        return static_cast<int>(item->nodeType());
+    case RoleType::QueryTypeRole:
         return getQueryTypeFromNode(item);
-    case FolderExpandedRole:
+    case RoleType::FolderExpandedRole:
         return getExpandedFromNode(item);
-    case UuidRole:
+    case RoleType::UuidRole:
         return item->uuid();
-    case ParentUuidRole: {
+    case RoleType::ParentUuidRole: {
         auto parentNode = static_cast<TreeNode*>(item->parent());
         return parentNode->uuid();
     } break;
@@ -180,7 +181,7 @@ bool RoutesModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int c
 
     TreeNode* movingNode = sourceParentNode->nodes().at(sourceRow);
 
-    if (destinationParentNode->nodeType() == NodeType::QueryNode) {
+    if (destinationParentNode->nodeType() == RstEnums::NodeType::QueryNode) {
         auto destParentNode = destinationParentNode->parent();
 
         if (!destParentNode) {
@@ -230,12 +231,12 @@ bool RoutesModel::setData(const QModelIndex& index, const QVariant& value, int r
     TreeNode* node = getItem(index);
 
     switch (node->nodeType()) {
-    case NodeType::QueryNode:
-    case NodeType::GrpcQueryNode:
-    case NodeType::GraphqlQueryNode:
+    case RstEnums::NodeType::QueryNode:
+    case RstEnums::NodeType::GrpcQueryNode:
+    case RstEnums::NodeType::GraphqlQueryNode:
         updateQuery(index, value, role);
         break;
-    case NodeType::FolderNode:
+    case RstEnums::NodeType::FolderNode:
         updateFolder(index, value, role);
         break;
     default:
@@ -274,28 +275,8 @@ void RoutesModel::addFolder(QString name, const QModelIndex& parentIdx)
     newFolder->setUuid(Util::uuid());
     newFolder->setName(name);
     newFolder->setIsExpanded(true);
-    newFolder->setNodeType(NodeType::FolderNode);
+    newFolder->setNodeType(RstEnums::NodeType::FolderNode);
     parentNode->addNode(newFolder);
-
-    endInsertRows();
-
-    emit treeChanged(_currentWorkspace);
-}
-
-void RoutesModel::addQuery(QString name, const QModelIndex& parentIdx) // TODO: remove?
-{
-    TreeNode* parentNode = getItem(parentIdx);
-    int row = parentNode->nodes().count();
-
-    beginInsertRows(parentIdx, row, row);
-
-    auto newQuery = new Query(parentNode);
-    newQuery->setNodeType(NodeType::QueryNode);
-    newQuery->setUuid(Util::uuid());
-    newQuery->setName(name);
-    newQuery->setQueryType(QueryType::GET);
-    newQuery->setBodyType(BodyType::NONE);
-    parentNode->addNode(newQuery);
 
     endInsertRows();
 
@@ -306,31 +287,31 @@ void RoutesModel::addQuery(QString name, QString type, const QModelIndex& parent
 {
     TreeNode* parentNode = getItem(parentIdx);
     int row = parentNode->nodes().count();
-    QueryType queryType = Util::getQueryType(type);
+    RstEnums::QueryType queryType = Util::getQueryType(type);
 
     beginInsertRows(parentIdx, row, row);
 
-    if (queryType == QueryType::GRPC) {
+    if (queryType == RstEnums::QueryType::GRPC) {
         auto newQuery = new GrpcQuery(parentNode);
-        newQuery->setNodeType(NodeType::GrpcQueryNode);
+        newQuery->setNodeType(RstEnums::NodeType::GrpcQueryNode);
         newQuery->setUuid(Util::uuid());
         newQuery->setName(name);
         parentNode->addNode(newQuery);
     }
-    else if (queryType == QueryType::GRAPHQL) {
+    else if (queryType == RstEnums::QueryType::GRAPHQL) {
         auto newQuery = new GraphqlQuery(parentNode);
-        newQuery->setNodeType(NodeType::GraphqlQueryNode);
+        newQuery->setNodeType(RstEnums::NodeType::GraphqlQueryNode);
         newQuery->setUuid(Util::uuid());
         newQuery->setName(name);
         parentNode->addNode(newQuery);
     }
     else {
         auto newQuery = new Query(parentNode);
-        newQuery->setNodeType(NodeType::QueryNode);
+        newQuery->setNodeType(RstEnums::NodeType::QueryNode);
         newQuery->setUuid(Util::uuid());
         newQuery->setName(name);
-        newQuery->setQueryType(QueryType::GET);
-        newQuery->setBodyType(BodyType::NONE);
+        newQuery->setQueryType(RstEnums::QueryType::GET);
+        newQuery->setBodyType(RstEnums::BodyType::NONE);
         newQuery->setQueryType(queryType);
         parentNode->addNode(newQuery);
     }
@@ -344,14 +325,15 @@ void RoutesModel::updateFolder(const QModelIndex& index, const QVariant& value, 
 {
     TreeNode* node = getItem(index);
     QString data = value.toString();
+    auto roleType = static_cast<RoleType>(role);
 
-    if (role == RoleType::NameRole && node->name() != data) {
+    if (roleType == RoleType::NameRole && node->name() != data) {
         node->setName(data);
 
         emit treeChanged(_currentWorkspace);
     }
 
-    if (role == RoleType::ParentUuidRole) {
+    if (roleType == RoleType::ParentUuidRole) {
         TreeNode* parent = node->parent();
 
         if (parent->uuid() != data) {
@@ -378,7 +360,9 @@ void RoutesModel::toggleFolderExpanded(const QModelIndex& idx)
     auto fldr = static_cast<Folder*>(idx.internalPointer());
     fldr->setIsExpanded(!fldr->isExpanded());
 
-    emit dataChanged(idx, idx, {FolderExpandedRole});
+    auto roleInt = static_cast<int>(RoleType::FolderExpandedRole);
+
+    emit dataChanged(idx, idx, {roleInt});
     emit treeChanged(_currentWorkspace);
 }
 
@@ -411,19 +395,19 @@ void RoutesModel::setCurrentQuery(const QModelIndex& idx)
 {
     TreeNode* node = getItem(idx);
 
-    if (node && node->nodeType() == NodeType::QueryNode) {
+    if (node && node->nodeType() == RstEnums::NodeType::QueryNode) {
         auto qry = static_cast<Query*>(node);
 
         emit setQuery(qry);
     }
 
-    if (node && node->nodeType() == NodeType::GrpcQueryNode) {
+    if (node && node->nodeType() == RstEnums::NodeType::GrpcQueryNode) {
         auto qry = static_cast<GrpcQuery*>(node);
 
         emit setGrpcQuery(qry);
     }
 
-    if (node && node->nodeType() == NodeType::GraphqlQueryNode) {
+    if (node && node->nodeType() == RstEnums::NodeType::GraphqlQueryNode) {
         auto qry = static_cast<GraphqlQuery*>(node);
 
         emit setGraphqlQuery(qry);
@@ -456,34 +440,34 @@ void RoutesModel::loadTree(shared_ptr<Workspace> workspace) noexcept
 
 QString RoutesModel::getQueryTypeFromNode(TreeNode* node) const noexcept
 {
-    if (node->nodeType() == NodeType::FolderNode) {
+    if (node->nodeType() == RstEnums::NodeType::FolderNode) {
         return "";
     }
 
-    if (node->nodeType() == NodeType::QueryNode) {
+    if (node->nodeType() == RstEnums::NodeType::QueryNode) {
         auto qry = static_cast<Query*>(node);
 
         if (qry == nullptr) {
-            return Util::getQueryTypeString(QueryType::GET);
+            return Util::getQueryTypeString(RstEnums::QueryType::GET);
         }
 
         return Util::getQueryTypeString(qry->queryType());
     }
 
-    if (node->nodeType() == NodeType::GrpcQueryNode) {
-        return Util::getQueryTypeString(QueryType::GRPC);
+    if (node->nodeType() == RstEnums::NodeType::GrpcQueryNode) {
+        return Util::getQueryTypeString(RstEnums::QueryType::GRPC);
     }
 
-    if (node->nodeType() == NodeType::GraphqlQueryNode) {
-        return Util::getQueryTypeString(QueryType::GRAPHQL);
+    if (node->nodeType() == RstEnums::NodeType::GraphqlQueryNode) {
+        return Util::getQueryTypeString(RstEnums::QueryType::GRAPHQL);
     }
 
-    return Util::getQueryTypeString(QueryType::GET);
+    return Util::getQueryTypeString(RstEnums::QueryType::GET);
 }
 
 bool RoutesModel::getExpandedFromNode(TreeNode* node) const noexcept
 {
-    const Folder* fldr = static_cast<Folder*>(node);
+    const Folder* fldr = dynamic_cast<Folder*>(node);
 
     if (fldr == nullptr) {
         return false;
@@ -497,7 +481,7 @@ QString RoutesModel::copyAsCurl(const QModelIndex& idx) const
 
     TreeNode* node = getItem(idx);
 
-    if (node->nodeType() == NodeType::QueryNode) {
+    if (node->nodeType() == RstEnums::NodeType::QueryNode) {
         auto qry = dynamic_cast<Query*>(node);
 
         if (qry == nullptr || qry->uuid().isEmpty()) {
@@ -509,7 +493,7 @@ QString RoutesModel::copyAsCurl(const QModelIndex& idx) const
         return curlParser->generateCurl(qry);
     }
 
-    if (node->nodeType() == NodeType::GraphqlQueryNode) {
+    if (node->nodeType() == RstEnums::NodeType::GraphqlQueryNode) {
         auto qry = dynamic_cast<GraphqlQuery*>(node);
 
         if (qry == nullptr || qry->uuid().isEmpty()) {
@@ -522,19 +506,23 @@ QString RoutesModel::copyAsCurl(const QModelIndex& idx) const
     return "";
 }
 
-void RoutesModel::downloadBigAnswer(QString dirPath, Query const* qry) const noexcept
+void RoutesModel::downloadBigAnswer(QString dirPath, Query const* qry)
 {
     if (!qry || !qry->lastAnswer()) {
         return;
     }
 
     QString fileName = qry->fileNameForAnswer();
+    QString fullName = QDir(dirPath).filePath(fileName);
+
+    if (QFile::exists(fullName)) {
+        QFile::remove(fullName);
+    }
+
     QFile answerFile(dirPath + "/" + fileName);
 
-    // TODO: check and delete
-
     if (!answerFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        // signal
+        emit error("Save to file error");
         return;
     }
 
@@ -548,7 +536,7 @@ void RoutesModel::importFromHar(const QModelIndex& parentIdx, const QString& fil
 {
     TreeNode* parentNode = getItem(parentIdx);
     auto importer = std::make_unique<Importer>();
-    auto ws = importer->importWorkspace(filePath, ImportType::Har);
+    auto ws = importer->importWorkspace(filePath, RstEnums::ImportType::Har);
 
     //    beginInsertRows(parentIdx, row, row);
 

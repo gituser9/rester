@@ -78,7 +78,7 @@ void InsomniaV5Importer::processFolder(
     auto folder = new Folder(parentFolder ? static_cast<TreeNode*>(parentFolder) : static_cast<TreeNode*>(workspace));
     folder->setName(QString::fromStdString(node["name"].as<std::string>("Unnamed Folder")));
     folder->setUuid(Util::uuid());
-    folder->setNodeType(NodeType::FolderNode);
+    folder->setNodeType(RstEnums::NodeType::FolderNode);
 
     if (parentFolder) {
         parentFolder->addNode(folder);
@@ -105,7 +105,7 @@ void InsomniaV5Importer::processRequest(
 {
     auto query = new Query();
     query->setUuid(Util::uuid());
-    query->setNodeType(NodeType::QueryNode);
+    query->setNodeType(RstEnums::NodeType::QueryNode);
 
     auto reqName = node["name"].as<std::string>("Unnamed Request");
     query->setName(QString::fromStdString(reqName));
@@ -126,14 +126,14 @@ void InsomniaV5Importer::processRequest(
 
     if (node["body"]) {
         const YAML::Node& body = node["body"];
-        BodyType bodyType = detectBodyType(body);
+        RstEnums::BodyType bodyType = detectBodyType(body);
         query->setBodyType(bodyType);
 
-        if (bodyType == BodyType::JSON) {
+        if (bodyType == RstEnums::BodyType::JSON) {
             auto text = body["text"].as<std::string>("{}");
             query->setBody(QString::fromStdString(text));
         }
-        else if (bodyType == BodyType::MULTIPART_FORM) {
+        else if (bodyType == RstEnums::BodyType::MULTIPART_FORM) {
             const YAML::Node& paramsNode = body["params"];
 
             for (const auto& node : paramsNode) {
@@ -170,35 +170,35 @@ void InsomniaV5Importer::processRequest(
     }
 }
 
-BodyType InsomniaV5Importer::detectBodyType(const YAML::Node& bodyNode)
+RstEnums::BodyType InsomniaV5Importer::detectBodyType(const YAML::Node& bodyNode)
 {
     if (!bodyNode || !bodyNode.IsMap()) {
-        return BodyType::NONE;
+        return RstEnums::BodyType::NONE;
     }
 
     auto mimeType = bodyNode["mimeType"].as<std::string>("");
 
     if (mimeType.empty()) {
-        return BodyType::NONE;
+        return RstEnums::BodyType::NONE;
     }
 
     if (mimeType.find("json") != std::string::npos) {
-        return BodyType::JSON;
+        return RstEnums::BodyType::JSON;
     }
 
     if (mimeType.find("multipart/form-data") != std::string::npos) {
-        return BodyType::MULTIPART_FORM;
+        return RstEnums::BodyType::MULTIPART_FORM;
     }
 
     if (mimeType.find("x-www-form-urlencoded") != std::string::npos) {
-        return BodyType::URL_ENCODED_FORM;
+        return RstEnums::BodyType::URL_ENCODED_FORM;
     }
 
     if (mimeType.find("xml") != std::string::npos) {
-        return BodyType::XML;
+        return RstEnums::BodyType::XML;
     }
 
-    return BodyType::NONE;
+    return RstEnums::BodyType::NONE;
 }
 
 void InsomniaV5Importer::setHeaders(const YAML::Node& headersNode, Query* query)

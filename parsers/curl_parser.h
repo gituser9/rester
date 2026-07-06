@@ -15,6 +15,7 @@
 #include <QUrlQuery>
 #include <QVariantMap>
 
+#include "../app_data/constant.h"
 #include "../app_data/workspace.h"
 #include "curl_utils.h"
 

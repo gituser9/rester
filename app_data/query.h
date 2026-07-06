@@ -23,8 +23,8 @@ class Query : public TreeNode
     QML_ELEMENT
 
     Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(QueryType queryType READ queryType WRITE setQueryType NOTIFY queryTypeChanged)
-    Q_PROPERTY(BodyType bodyType READ bodyType WRITE setBodyType NOTIFY bodyTypeChanged)
+    Q_PROPERTY(RstEnums::QueryType queryType READ queryType WRITE setQueryType NOTIFY queryTypeChanged)
+    Q_PROPERTY(RstEnums::BodyType bodyType READ bodyType WRITE setBodyType NOTIFY bodyTypeChanged)
     Q_PROPERTY(QVariantList params READ params WRITE setParams NOTIFY paramsChanged)
     Q_PROPERTY(QVariantList headers READ headers WRITE setHeaders NOTIFY headersChanged)
     Q_PROPERTY(QString body READ body WRITE setBody NOTIFY bodyChanged)
@@ -39,11 +39,11 @@ public:
     QString url() const;
     void setUrl(const QString& newUrl);
 
-    QueryType queryType() const;
-    void setQueryType(QueryType newQueryType);
+    RstEnums::QueryType queryType() const;
+    void setQueryType(RstEnums::QueryType newQueryType);
 
-    BodyType bodyType() const;
-    void setBodyType(BodyType newBodyType);
+    RstEnums::BodyType bodyType() const;
+    void setBodyType(RstEnums::BodyType newBodyType);
 
     QVariantList params() const;
     void setParams(const QVariantList& newParams);
@@ -104,8 +104,8 @@ signals:
 
 private:
     QString _url;
-    QueryType _queryType;
-    BodyType _bodyType;
+    RstEnums::QueryType _queryType;
+    RstEnums::BodyType _bodyType;
     QList<QueryParam> _headers;
     QString _body;
     QSharedPointer<HttpAnswer> _lastAnswer;

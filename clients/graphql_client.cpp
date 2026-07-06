@@ -2,7 +2,7 @@
 
 GraphqlClient::GraphqlClient(QObject* parent) :
     QObject{parent},
-    _varRegex("{{\\s*(.*?)\\s*}}") // TODO: to const
+    _varRegex(RstConstant::varRegexPattern)
 {
     _manager = new QNetworkAccessManager(this);
     _reply = nullptr;

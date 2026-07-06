@@ -7,6 +7,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
+#include "../app_data/constant.h"
 #include "../app_data/http_answer.h"
 #include "../app_data/graphql_query.h"
 #include "../parsers/graphql_parser.h"

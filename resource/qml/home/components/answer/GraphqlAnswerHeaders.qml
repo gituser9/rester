@@ -125,7 +125,7 @@ Rectangle {
         target: App.httpClient
 
         // TODO: type
-        function onFinished(answer: var): void {
+        function onFinished(answer: HttpAnswer): void {
             answerHeadersView.fillHeaders(answer.headers);
         }
     }

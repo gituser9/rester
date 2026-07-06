@@ -4,6 +4,7 @@
 #include <QSyntaxHighlighter>
 #include <QQuickTextDocument>
 
+#include "../app_data/constant.h"
 #include "../app_data/highlighting_rule.h"
 
 class VarSyntaxHighlighter : public QSyntaxHighlighter

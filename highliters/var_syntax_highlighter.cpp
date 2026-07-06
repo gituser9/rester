@@ -7,7 +7,7 @@ VarSyntaxHighlighter::VarSyntaxHighlighter(QQuickTextDocument* parent) : QSyntax
     varFormat.setFontWeight(QFont::DemiBold);
 
     HighlightingRule varRule;
-    varRule.pattern = QRegularExpression("{{\\s*(.*?)\\s*}}");
+    varRule.pattern = QRegularExpression(RstConstant::varRegexPattern);
     varRule.pattern.optimize();
     varRule.format = varFormat;
 

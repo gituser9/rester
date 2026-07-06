@@ -30,7 +30,7 @@ std::shared_ptr<Workspace> HarImporter::importWorkspace(const QString& path)
 
         auto query = new Query();
         query->setUuid(Util::uuid());
-        query->setNodeType(NodeType::QueryNode);
+        query->setNodeType(RstEnums::NodeType::QueryNode);
         query->setParent(workspace.get());
         workspace->addNode(query);
 
@@ -76,14 +76,14 @@ std::shared_ptr<Workspace> HarImporter::importWorkspace(const QString& path)
 
         if (!postData.isEmpty()) {
             QString mimeType = postData.value("mimeType").toString();
-            BodyType bodyType = detectBodyType(mimeType);
+            RstEnums::BodyType bodyType = detectBodyType(mimeType);
             query->setBodyType(bodyType);
 
-            if (bodyType == BodyType::JSON || bodyType == BodyType::XML) {
+            if (bodyType == RstEnums::BodyType::JSON || bodyType == RstEnums::BodyType::XML) {
                 QString text = postData.value("text").toString();
                 query->setBody(text);
             }
-            else if (bodyType == BodyType::MULTIPART_FORM) {
+            else if (bodyType == RstEnums::BodyType::MULTIPART_FORM) {
                 QJsonArray paramsArr = postData.value("params").toArray();
 
                 for (const QJsonValue& pVal : paramsArr) {
@@ -94,7 +94,7 @@ std::shared_ptr<Workspace> HarImporter::importWorkspace(const QString& path)
                     query->addFormData(key, val);
                 }
             }
-            else if (bodyType == BodyType::URL_ENCODED_FORM) {
+            else if (bodyType == RstEnums::BodyType::URL_ENCODED_FORM) {
                 QJsonArray paramsArr = postData.value("params").toArray();
 
                 if (!paramsArr.isEmpty()) {
@@ -129,25 +129,25 @@ std::shared_ptr<Workspace> HarImporter::importWorkspace(const QString& path)
     return workspace;
 }
 
-BodyType HarImporter::detectBodyType(const QString& mimeType)
+RstEnums::BodyType HarImporter::detectBodyType(const QString& mimeType)
 {
     if (mimeType.contains("json", Qt::CaseInsensitive)) {
-        return BodyType::JSON;
+        return RstEnums::BodyType::JSON;
     }
 
     if (mimeType.contains("xml", Qt::CaseInsensitive)) {
-        return BodyType::XML;
+        return RstEnums::BodyType::XML;
     }
 
     if (mimeType.contains("x-www-form-urlencoded", Qt::CaseInsensitive)) {
-        return BodyType::URL_ENCODED_FORM;
+        return RstEnums::BodyType::URL_ENCODED_FORM;
     }
 
     if (mimeType.contains("multipart/form-data", Qt::CaseInsensitive)) {
-        return BodyType::MULTIPART_FORM;
+        return RstEnums::BodyType::MULTIPART_FORM;
     }
 
-    return BodyType::NONE;
+    return RstEnums::BodyType::NONE;
 }
 
 QByteArray HarImporter::getJson(const QString& path)

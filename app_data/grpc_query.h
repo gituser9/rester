@@ -12,7 +12,7 @@ class GrpcQuery : public TreeNode
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(QueryType queryType READ queryType)
+    Q_PROPERTY(RstEnums::QueryType queryType READ queryType)
     Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QString rpc READ rpc WRITE setRpc NOTIFY rpcChanged)
     Q_PROPERTY(QStringList availableRpc READ availableRpc NOTIFY availableRpcChanged)
@@ -29,7 +29,7 @@ public:
     virtual ~GrpcQuery();
 
     // Properties
-    QueryType queryType() const;
+    RstEnums::QueryType queryType() const;
 
     QString url() const;
     void setUrl(const QString& newUrl);
@@ -87,7 +87,7 @@ signals:
     void lastAnswerChanged();
 
 private:
-    QueryType _queryType;
+    RstEnums::QueryType _queryType;
 
     QString _srv;
     QString _url;

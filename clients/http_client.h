@@ -21,8 +21,10 @@
 #include <zlib.h>
 #include <brotli/decode.h>
 
+#include "../app_data/constant.h"
 #include "../app_data/http_answer.h"
 #include "../app_data/query.h"
+#include "http_utils.h"
 
 enum class CompressAlg {
     None,
@@ -42,7 +44,7 @@ class HttpClient : public QObject
 public:
     explicit HttpClient(QObject* parent = nullptr);
 
-    Q_INVOKABLE void makeRequest(Query* query); // TODO: not invokable
+    void makeRequest(Query* query);
     Q_INVOKABLE void abortReply();
 
     bool isRequestWork() const;
@@ -66,14 +68,6 @@ private:
     void sendFormUrlEncoded(Query* query, QNetworkRequest request);
     void send(Query* query, QNetworkRequest& request);
     void send(Query* query, QNetworkRequest& request, QHttpMultiPart* form);
-    CompressAlg isCompressed(const QVariantMap& headers) const noexcept;
-    QString getErrorString(QNetworkReply* reply);
-    QUrl prepareUrl(Query* query) const noexcept;
-    QMap<QByteArray, QByteArray> prepareHeaders(Query* query) const noexcept;
-    QByteArray decompress(const QByteArray& compressed, CompressAlg alg) const noexcept;
-    QByteArray decompressGzip(const QByteArray& compressed) const noexcept;
-    QByteArray decompressDeflate(const QByteArray& compressed) const noexcept;
-    QByteArray decompressBrotli(const QByteArray& compressed) const noexcept;
 
 private slots:
     void slotFinished(QNetworkReply* reply);

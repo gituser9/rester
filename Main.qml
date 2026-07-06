@@ -53,7 +53,6 @@ Window {
                 DropdownButton {
                     id: dbEnvs
                     height: 50
-                    // implicitWidth: 50
                     currentEnv: App.workspace.env
 
                     Layout.rightMargin: 16
@@ -70,7 +69,7 @@ Window {
                     onClicked: {
                         popWorkspaces.open();
 
-                        wsLoader.setSource("./resource/qml/workspace/WorkspaceList.qml");
+                        wsLoader.sourceComponent = wsList;
                     }
                 }
                 Item {
@@ -207,6 +206,12 @@ Window {
         }
     }
 
+    Component {
+        id: wsList
+
+        WorkspaceList {}
+    }
+
     ToastManager {
         id: toastManager
     }
@@ -217,6 +222,7 @@ Window {
         height: parent.height / 1.5
         width: parent.width / 2
         modal: true
+        focus: true
         popupType: Popup.Item
         // popupType: Popup.Window
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside

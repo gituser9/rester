@@ -37,7 +37,7 @@ QJsonObject PostmanExporter::buildItem(TreeNode* node)
         return {};
     }
 
-    if (node->nodeType() == NodeType::FolderNode) {
+    if (node->nodeType() == RstEnums::NodeType::FolderNode) {
         auto folder = static_cast<Folder*>(node);
 
         QJsonObject folderJson;
@@ -54,7 +54,7 @@ QJsonObject PostmanExporter::buildItem(TreeNode* node)
 
         return folderJson;
     }
-    else if (node->nodeType() == NodeType::QueryNode) {
+    else if (node->nodeType() == RstEnums::NodeType::QueryNode) {
         auto query = static_cast<Query*>(node);
 
         QJsonObject requestJson;
@@ -138,12 +138,12 @@ QJsonObject PostmanExporter::buildUrl(const QString& rawUrl, const QList<QueryPa
     return urlObj;
 }
 
-QJsonObject PostmanExporter::buildBody(BodyType type, const QString& bodyText)
+QJsonObject PostmanExporter::buildBody(RstEnums::BodyType type, const QString& bodyText)
 {
     QJsonObject body;
 
     switch (type) {
-    case BodyType::JSON:
+    case RstEnums::BodyType::JSON:
         body["mode"] = QStringLiteral("raw");
         body["raw"] = bodyText.isEmpty() ? QStringLiteral("{}") : bodyText;
         {
@@ -154,7 +154,7 @@ QJsonObject PostmanExporter::buildBody(BodyType type, const QString& bodyText)
             body["options"] = options;
         }
         break;
-    case BodyType::XML:
+    case RstEnums::BodyType::XML:
         body["mode"] = QStringLiteral("raw");
         body["raw"] = bodyText;
         {
@@ -165,15 +165,15 @@ QJsonObject PostmanExporter::buildBody(BodyType type, const QString& bodyText)
             body["options"] = options;
         }
         break;
-    case BodyType::URL_ENCODED_FORM:
+    case RstEnums::BodyType::URL_ENCODED_FORM:
         body["mode"] = QStringLiteral("urlencoded");
         body["urlencoded"] = QJsonArray();
         break;
-    case BodyType::MULTIPART_FORM:
+    case RstEnums::BodyType::MULTIPART_FORM:
         body["mode"] = QStringLiteral("formdata");
         body["formdata"] = QJsonArray();
         break;
-    case BodyType::NONE:
+    case RstEnums::BodyType::NONE:
     default:
         body["mode"] = QStringLiteral("raw");
         body["raw"] = QString();

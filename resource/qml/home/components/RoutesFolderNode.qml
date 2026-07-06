@@ -55,14 +55,15 @@ Rectangle {
             Layout.fillWidth: true
         }
         // Button {
-        //     visible: isHover
+        //     z: 999
+        //     visible: folderNode.isHover
         //     flat: true
         //     icon.source: "qrc:/qt/qml/io/rester/resource/images/more-line.svg"
         //     icon.width: 20
         //     icon.height: 20
         //     icon.color: 'black'
         //     onClicked: {
-        //         contextMenu.popup()
+        //         contextMenu.popup();
         //     }
         // }
         Menu {
@@ -74,12 +75,12 @@ Rectangle {
                     popAddQuery.open();
                 }
             }
-            // MenuItem {
-            //     text: qsTr("Add Folder")
-            //     onTriggered: {
-            //         popAddFolder.open();
-            //     }
-            // }
+            MenuItem {
+                text: qsTr("Add Folder")
+                onTriggered: {
+                    popAddFolder.open();
+                }
+            }
             MenuItem {
                 text: qsTr("Import from HAR")
                 onTriggered: {
@@ -177,11 +178,11 @@ Rectangle {
     }
 
     function getIcon(): string {
-        if (!hasChildren) {
+        if (!folderNode.hasChildren) {
             return "qrc:/qt/qml/io/rester/resource/images/folder-empty.svg";
         }
 
-        if (isExpanded) {
+        if (folderNode.isExpanded) {
             return 'qrc:/qt/qml/io/rester/resource/images/folder-open.svg';
         }
 

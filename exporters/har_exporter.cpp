@@ -41,10 +41,10 @@ void HarExporter::collectQueries(TreeNode* node, QList<Query*>& list)
         return;
     }
 
-    if (node->nodeType() == NodeType::QueryNode) {
+    if (node->nodeType() == RstEnums::NodeType::QueryNode) {
         list.append(static_cast<Query*>(node));
     }
-    else if (node->nodeType() == NodeType::FolderNode) {
+    else if (node->nodeType() == RstEnums::NodeType::FolderNode) {
         auto folder = static_cast<Folder*>(node);
         const auto children = folder->nodes();
 
@@ -103,25 +103,25 @@ QJsonArray HarExporter::queryParamsToArray(const QList<QueryParam>& params)
 QJsonObject HarExporter::buildPostData(Query* query)
 {
     QJsonObject postData;
-    BodyType type = query->bodyType();
+    RstEnums::BodyType type = query->bodyType();
 
-    if (type == BodyType::NONE) {
+    if (type == RstEnums::BodyType::NONE) {
         return postData;
     }
 
     QString mimeType;
 
     switch (type) {
-    case BodyType::JSON:
+    case RstEnums::BodyType::JSON:
         mimeType = "application/json";
         break;
-    case BodyType::XML:
+    case RstEnums::BodyType::XML:
         mimeType = "application/xml";
         break;
-    case BodyType::URL_ENCODED_FORM:
+    case RstEnums::BodyType::URL_ENCODED_FORM:
         mimeType = "application/x-www-form-urlencoded";
         break;
-    case BodyType::MULTIPART_FORM:
+    case RstEnums::BodyType::MULTIPART_FORM:
         mimeType = "multipart/form-data";
         break;
     default:
@@ -130,10 +130,10 @@ QJsonObject HarExporter::buildPostData(Query* query)
 
     postData["mimeType"] = mimeType;
 
-    if (type == BodyType::JSON || type == BodyType::XML) {
+    if (type == RstEnums::BodyType::JSON || type == RstEnums::BodyType::XML) {
         postData["text"] = query->body().isEmpty() ? QString() : query->body();
     }
-    else if (type == BodyType::MULTIPART_FORM) {
+    else if (type == RstEnums::BodyType::MULTIPART_FORM) {
         QJsonArray paramsArr;
 
         for (const QueryParam& item : query->formDataList()) {
@@ -146,7 +146,7 @@ QJsonObject HarExporter::buildPostData(Query* query)
 
         postData["params"] = paramsArr;
     }
-    else if (type == BodyType::URL_ENCODED_FORM && !query->body().isEmpty()) {
+    else if (type == RstEnums::BodyType::URL_ENCODED_FORM && !query->body().isEmpty()) {
         QJsonArray paramsArr;
 
         QUrlQuery urlQuery;

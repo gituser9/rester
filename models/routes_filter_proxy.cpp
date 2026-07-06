@@ -122,7 +122,7 @@ bool RoutesFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourc
     }
 
     // URL (Query)
-    if (node->nodeType() == NodeType::QueryNode) {
+    if (node->nodeType() == RstEnums::NodeType::QueryNode) {
         auto qry = static_cast<Query*>(node);
 
         if (qry && qry->url().contains(_filterText, Qt::CaseInsensitive)) {

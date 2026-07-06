@@ -2,7 +2,7 @@
 
 HttpClient::HttpClient(QObject* parent) :
     QObject{parent},
-    _varRegex("{{\\s*(.*?)\\s*}}")
+    _varRegex(RstConstant::varRegexPattern)
 {
     _manager = new QNetworkAccessManager(this);
     // _manager->setRedirectPolicy(QNetworkRequest::SameOriginRedirectPolicy);
@@ -27,16 +27,16 @@ void HttpClient::makeRequest(Query* query)
 
     // set content-type
     switch (query->bodyType()) {
-    case BodyType::JSON:
+    case RstEnums::BodyType::JSON:
         request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json; charset=UTF-8");
         break;
-    case BodyType::XML:
+    case RstEnums::BodyType::XML:
         request.setHeader(QNetworkRequest::ContentTypeHeader, "application/xml; charset=UTF-8");
         break;
-    case BodyType::MULTIPART_FORM:
+    case RstEnums::BodyType::MULTIPART_FORM:
         // sets in method with boundary
         break;
-    case BodyType::URL_ENCODED_FORM:
+    case RstEnums::BodyType::URL_ENCODED_FORM:
         request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
         break;
     default:
@@ -45,21 +45,21 @@ void HttpClient::makeRequest(Query* query)
     }
 
     // set headers
-    auto preparedHeaders = prepareHeaders(query);
+    auto preparedHeaders = HttpUtils::prepareHeaders(_vars, _varRegex, query->headerList());
 
     for (auto& k : preparedHeaders.keys()) {
         request.setRawHeader(k, preparedHeaders[k]);
     }
 
     // set url
-    QUrl url = prepareUrl(query);
+    QUrl url = HttpUtils::prepareUrl(query->url(), _vars, _varRegex, query->paramList());
     request.setUrl(url);
 
     switch (query->bodyType()) {
-    case BodyType::MULTIPART_FORM:
+    case RstEnums::BodyType::MULTIPART_FORM:
         sendMultipartForm(query, request);
         return;
-    case BodyType::URL_ENCODED_FORM:
+    case RstEnums::BodyType::URL_ENCODED_FORM:
         sendFormUrlEncoded(query, request);
         return;
     default:
@@ -91,7 +91,7 @@ void HttpClient::slotFinished(QNetworkReply* reply)
         return;
     }
 
-    QString errorString = getErrorString(reply);
+    QString errorString = HttpUtils::getErrorString(reply);
 
     if (!errorString.isEmpty()) {
         emit httpError(errorString);
@@ -115,11 +115,7 @@ void HttpClient::slotFinished(QNetworkReply* reply)
     reply->deleteLater();
 
     // body
-    CompressAlg alg = isCompressed(headers);
-
-    if (alg != CompressAlg::None) {
-        body = decompress(body, alg);
-    }
+    body = HttpUtils::decompress(headers, body);
 
     // create answer
     auto answer = QSharedPointer<HttpAnswer>(new HttpAnswer);
@@ -244,27 +240,27 @@ void HttpClient::sendFormUrlEncoded(Query* query, QNetworkRequest request)
 void HttpClient::send(Query* query, QNetworkRequest& request)
 {
     switch (query->queryType()) {
-    case QueryType::GET:
+    case RstEnums::QueryType::GET:
         _reply = _manager->get(request);
         break;
-    case QueryType::POST:
+    case RstEnums::QueryType::POST:
         _reply = _manager->post(request, query->body().toUtf8());
         break;
-    case QueryType::PUT:
+    case RstEnums::QueryType::PUT:
         _reply = _manager->put(request, query->body().toUtf8());
         break;
-    case QueryType::PATCH:
+    case RstEnums::QueryType::PATCH:
         _reply = _manager->sendCustomRequest(request, "PATCH", query->body().toUtf8());
         break;
-    case QueryType::DELETE:
+    case RstEnums::QueryType::DELETE:
         _reply = _manager->deleteResource(request);
         break;
-    case QueryType::HEAD:
+    case RstEnums::QueryType::HEAD:
         _reply = _manager->head(request);
         break;
-    case QueryType::WS:
-    case QueryType::GRPC:
-    case QueryType::GRAPHQL:
+    case RstEnums::QueryType::WS:
+    case RstEnums::QueryType::GRPC:
+    case RstEnums::QueryType::GRAPHQL:
         break;
     }
 }
@@ -273,212 +269,4 @@ void HttpClient::send(Query* query, QNetworkRequest& request, QHttpMultiPart* fo
 {
     QString method = Util::getQueryTypeString(query->queryType());
     _reply = _manager->sendCustomRequest(request, method.toUtf8(), form);
-}
-
-CompressAlg HttpClient::isCompressed(const QVariantMap& headers) const noexcept
-{
-    QString compress = headers["Content-Encoding"].toString();
-
-    if (compress.isEmpty()) {
-        compress = headers["content-encoding"].toString();
-
-        if (compress.isEmpty()) {
-            return CompressAlg::None;
-        }
-    }
-
-    if (compress.contains("zip")) {
-        return CompressAlg::Gzip;
-    }
-
-    if (compress.contains("deflate")) {
-        return CompressAlg::Deflate;
-    }
-
-    if (compress.contains("br")) {
-        return CompressAlg::Brotli;
-    }
-
-    return CompressAlg::Unknown;
-}
-
-QString HttpClient::getErrorString(QNetworkReply* reply)
-{
-    auto error = reply->error();
-
-    switch (error) {
-    // network layer errors [relating to the destination server]
-    case QNetworkReply::NetworkError::ConnectionRefusedError:
-        return "Connection Refused Error";
-    case QNetworkReply::NetworkError::RemoteHostClosedError:
-        return "Remote Host Closed Error";
-    case QNetworkReply::NetworkError::HostNotFoundError:
-        return "Host Not Found Error";
-    case QNetworkReply::NetworkError::TimeoutError:
-        return "Timeout Error";
-    case QNetworkReply::NetworkError::OperationCanceledError:
-        return "Operation Canceled Error";
-    case QNetworkReply::NetworkError::SslHandshakeFailedError:
-        return "Ssl Handshake Failed Error";
-    case QNetworkReply::NetworkError::TemporaryNetworkFailureError:
-        return "Temporary Network Failure Error";
-    case QNetworkReply::NetworkError::NetworkSessionFailedError:
-        return "Network Session Failed Error";
-    case QNetworkReply::NetworkError::BackgroundRequestNotAllowedError:
-        return "Background Request Not Allowed Error";
-    case QNetworkReply::NetworkError::TooManyRedirectsError:
-        return "Too Many Redirects Error";
-    case QNetworkReply::NetworkError::InsecureRedirectError:
-        return "Insecure Redirect Error";
-    case QNetworkReply::NetworkError::UnknownNetworkError:
-        return "Unknown Network Error";
-
-    // proxy errors
-    case QNetworkReply::NetworkError::ProxyConnectionRefusedError:
-        return "Proxy Connection Refused Error";
-    case QNetworkReply::NetworkError::ProxyConnectionClosedError:
-        return "Proxy Connection Closed Error";
-    case QNetworkReply::NetworkError::ProxyNotFoundError:
-        return "Proxy Not Found Error";
-    case QNetworkReply::NetworkError::ProxyTimeoutError:
-        return "Proxy Timeout Error";
-    case QNetworkReply::NetworkError::ProxyAuthenticationRequiredError:
-        return "Proxy Authentication Required Error";
-    case QNetworkReply::NetworkError::UnknownProxyError:
-        return "Unknown Proxy Error";
-
-    // protocol errors
-    case QNetworkReply::NetworkError::ProtocolUnknownError:
-        return "Protocol Unknown Error";
-    case QNetworkReply::NetworkError::ProtocolFailure:
-        return "Protocol Failure";
-    default:
-        return "";
-    }
-}
-
-QUrl HttpClient::prepareUrl(Query* query) const noexcept
-{
-    QString urlString = Util::fillVars(query->url(), _vars, _varRegex);
-
-    if (urlString.startsWith("localhost")) {
-        urlString = urlString.replace("localhost", "http://127.0.0.1");
-    }
-
-    QUrl url = urlString;
-    QUrlQuery urlParams;
-
-    for (const QueryParam& param : query->paramList()) {
-        if (!param.isEnabled()) {
-            continue;
-        }
-
-        QString value = Util::fillVars(param.value(), _vars, _varRegex);
-        urlParams.addQueryItem(param.name(), value);
-    }
-
-    url.setQuery(urlParams.toString(QUrl::FullyEncoded));
-
-    return url;
-}
-
-QMap<QByteArray, QByteArray> HttpClient::prepareHeaders(Query* query) const noexcept
-{
-    auto headers = query->headerList();
-    QMap<QByteArray, QByteArray> result;
-
-    for (const QueryParam& header : headers) {
-        if (!header.isEnabled()) {
-            continue;
-        }
-
-        QString val = Util::fillVars(header.value(), _vars, _varRegex);
-        result[header.name().toUtf8()] = val.toUtf8();
-    }
-
-    return result;
-}
-
-QByteArray HttpClient::decompress(const QByteArray& compressed, CompressAlg alg) const noexcept
-{
-    switch (alg) {
-    case CompressAlg::Gzip:
-        return decompressGzip(compressed);
-    case CompressAlg::Deflate:
-        return decompressDeflate(compressed);
-    case CompressAlg::Brotli:
-        return compressed; // TODO: implement
-    default:
-        return compressed;
-    }
-
-    return compressed;
-}
-
-QByteArray HttpClient::decompressGzip(const QByteArray& compressed) const noexcept
-{
-    z_stream zs;
-    memset(&zs, 0, sizeof(zs));
-
-    if (inflateInit2(&zs, 47) != Z_OK) {
-        return compressed;
-    }
-
-    // create buffer for unpack data
-    QByteArray uncompressedData;
-    // uncompressedData.resize(16384);
-    uncompressedData.resize(compressed.size() * 60);
-
-    zs.avail_in = compressed.size();
-    zs.next_in = (Bytef*) (compressed.data());
-    zs.avail_out = uncompressedData.size();
-    zs.next_out = (Bytef*) (uncompressedData.data());
-
-    int status = inflate(&zs, Z_FINISH);
-
-    if (status != Z_STREAM_END) {
-        inflateEnd(&zs);
-
-        return compressed;
-    }
-
-    inflateEnd(&zs);
-
-    uncompressedData.resize(uncompressedData.size() - zs.avail_out);
-
-    return uncompressedData;
-}
-
-QByteArray HttpClient::decompressDeflate(const QByteArray& compressed) const noexcept
-{
-    // set zlib param for unpack deflate
-    z_stream zs;
-    memset(&zs, 0, sizeof(zs));
-
-    if (inflateInit(&zs) != Z_OK) {
-        return compressed;
-    }
-
-    // create buffer for unpack data
-    QByteArray uncompressedData;
-    uncompressedData.resize(16384); // begin size
-
-    zs.avail_in = compressed.size();
-    zs.next_in = (Bytef*) (compressed.data());
-    zs.avail_out = uncompressedData.size();
-    zs.next_out = (Bytef*) (uncompressedData.data());
-
-    int status = inflate(&zs, Z_FINISH);
-
-    if (status != Z_STREAM_END) {
-        inflateEnd(&zs);
-
-        return compressed;
-    }
-
-    inflateEnd(&zs);
-
-    uncompressedData.resize(uncompressedData.size() - zs.avail_out);
-
-    return uncompressedData;
 }

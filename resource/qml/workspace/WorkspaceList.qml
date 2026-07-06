@@ -13,14 +13,14 @@ import io.rester
 import "../home/modal"
 import "../common/components"
 
-Rectangle {
+Item {
     id: ws
+    anchors.fill: parent
 
     property string _currentUuid: ''
     property string folderDialogMode: ''
     property int currentIndex: -1
     property bool isLoading: true
-    anchors.fill: parent
 
     ColumnLayout {
         anchors.fill: parent
@@ -156,7 +156,7 @@ Rectangle {
         // WS
         ScrollView {
             id: scroller
-            clip: true
+            // clip: true
             contentHeight: grid.rows * 290
             contentWidth: ws.width
 
@@ -199,8 +199,23 @@ Rectangle {
                             id: wsRect
                             width: grid.elementWidth
                             height: grid.elementWidth
-                            border.color: App.workspace.uuid === wsCol.uuid ? 'blue' : 'lightgrey'
                             radius: 4
+                            border.color: App.workspace.uuid === wsCol.uuid ? '#6366F1' : '#E0E0E0'
+                            border.width: App.workspace.uuid === wsCol.uuid ? 2 : 1
+
+                            Rectangle {
+                                anchors.fill: parent
+                                color: 'transparent'
+                                visible: App.workspace.uuid === wsCol.uuid
+                                radius: parent.radius
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: '#6366F1'
+                                    opacity: 0.08
+                                    radius: parent.radius
+                                }
+                            }
 
                             Text {
                                 anchors.centerIn: parent
@@ -208,12 +223,34 @@ Rectangle {
                                 font.bold: true
                                 font.pointSize: 16
                             }
+                            Button {
+                                id: menuBtn
+                                z: 2
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                anchors.topMargin: 4
+                                anchors.rightMargin: 4
+                                visible: true
+                                flat: true
+                                icon.source: "qrc:/qt/qml/io/rester/resource/images/more-line.svg"
+                                icon.width: 18
+                                icon.height: 18
+                                icon.color: 'black'
+                                onClicked: {
+                                    ws.currentIndex = wsCol.index;
+                                    contextMenu.popup();
+                                }
+                            }
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 onClicked: mouse => {
                                     if (mouse.button === Qt.LeftButton) {
+                                        if (App.workspace.uuid === wsCol.uuid) {
+                                            return;
+                                        }
+
                                         App.workspaceModel.setWorkspace(wsCol.index);
                                     }
 
@@ -243,6 +280,7 @@ Rectangle {
                                         text: qsTr("Edit")
                                         onTriggered: {
                                             ws.currentIndex = wsCol.index;
+                                            mdlUpdWorkspace.currentText = wsCol.name;
                                             mdlUpdWorkspace.open();
                                         }
                                     }
@@ -525,46 +563,50 @@ Rectangle {
     ListModel {
         id: mdlImport
 
-        ListElement {
-            text: "Rester"
-            value: 0
-        }
-        ListElement {
-            text: "Postman"
-            value: 1
-        }
-        ListElement {
-            text: "Insomnia v5"
-            value: 2
-        }
-        ListElement {
-            text: "Swagger | OpenAPI"
-            value: 3
-        }
-        ListElement {
-            text: "HAR"
-            value: 4
+        Component.onCompleted: {
+            append({
+                text: "Rester",
+                value: RstEnums.ImportType.Rester
+            });
+            append({
+                text: "Postman",
+                value: RstEnums.ImportType.Postman
+            });
+            append({
+                text: "Insomnia v5",
+                value: RstEnums.ImportType.InsomniaV5
+            });
+            append({
+                text: "Swagger | OpenAPI",
+                value: RstEnums.ImportType.Swagger
+            });
+            append({
+                text: "HAR",
+                value: RstEnums.ImportType.Har
+            });
         }
     }
 
     ListModel {
         id: mdlExport
 
-        ListElement {
-            text: "Rester"
-            value: 0
-        }
-        ListElement {
-            text: "Postman"
-            value: 1
-        }
-        ListElement {
-            text: "Insomnia v5"
-            value: 2
-        }
-        ListElement {
-            text: "HAR"
-            value: 4
+        Component.onCompleted: {
+            append({
+                text: "Rester",
+                value: RstEnums.ImportType.Rester
+            });
+            append({
+                text: "Postman",
+                value: RstEnums.ImportType.Postman
+            });
+            append({
+                text: "Insomnia v5",
+                value: RstEnums.ImportType.InsomniaV5
+            });
+            append({
+                text: "HAR",
+                value: RstEnums.ImportType.Har
+            });
         }
     }
 

@@ -152,7 +152,7 @@ void WorkspaceModel::exportCollection(const QString& folderPath, int index, int 
     workspace->fromJson(json);
 
     auto importer = unique_ptr<Importer>();
-    auto enumValue = static_cast<ImportType>(type);
+    auto enumValue = static_cast<RstEnums::ImportType>(type);
 
     importer->exportCollection(workspace, folderPath, enumValue);
 }
@@ -163,7 +163,7 @@ void WorkspaceModel::clean() noexcept
     _allWorkspaces.clear();
 }
 
-void WorkspaceModel::importFrom(const QString& filePath, ImportType type)
+void WorkspaceModel::importFrom(const QString& filePath, RstEnums::ImportType type)
 {
     auto importer = std::make_unique<Importer>();
     shared_ptr<Workspace> workspace = importer->importWorkspace(filePath, type);

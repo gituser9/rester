@@ -15,7 +15,7 @@ class GraphqlQuery : public TreeNode
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(QueryType queryType READ queryType)
+    Q_PROPERTY(RstEnums::QueryType queryType READ queryType)
     Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QString body READ body WRITE setBody NOTIFY bodyChanged)
     Q_PROPERTY(QVariantList headers READ headers WRITE setHeaders NOTIFY headersChanged)
@@ -27,7 +27,7 @@ public:
     ~GraphqlQuery() override;
 
     // Properties
-    QueryType queryType() const;
+    RstEnums::QueryType queryType() const;
 
     QString url() const;
     void setUrl(const QString& newUrl);
@@ -76,7 +76,7 @@ signals:
     void dataChanged();
 
 private:
-    QueryType _queryType;
+    RstEnums::QueryType _queryType;
     QString _url;
     QString _body;
     QList<QueryParam> _headers;

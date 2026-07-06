@@ -40,7 +40,7 @@ Item {
                 id: statusContainer
                 Layout.preferredHeight: 40
                 Layout.preferredWidth: 100
-                color: answerView.getStatusColor(App.query)
+                color: answerView.getStatusColor(App.query?.lastAnswer?.status ?? 0)
                 radius: 4
 
                 Text {
@@ -81,7 +81,7 @@ Item {
                     font.pointSize: 12
                     font.weight: 700
                     padding: 8
-                    text: App.query && App.query?.lastAnswer ? answerView.getDurationString(App.query.lastAnswer.duration) : "0 ms"
+                    text: answerView.getDurationString(App.query?.lastAnswer?.duration ?? 0)
                 }
             }
             Item {
@@ -184,15 +184,6 @@ Item {
     }
 
     Connections {
-        target: App.query
-
-        function onLastAnswerChanged() {
-            statusContainer.color = answerView.getStatusColor(App.query);
-            txtSize.text = Util.getAnswerSizeString(App.query.lastAnswer?.byteCount ?? 0);
-        }
-    }
-
-    Connections {
         target: App.httpClient
 
         function onIsRequestWorkChanged(): void {
@@ -267,22 +258,22 @@ Item {
             return ms + ' ms';
         }
 
-        if ((ms / 1000) < 60) {
-            let secs = (ms / 1000);
-
+        let secs = ms / 1000;
+        if (secs < 60) {
             return Util.round2digits(secs) + ' sec';
         }
 
-        return ((ms / 1000) / 60) + 'm';
-    }
-
-    function getStatusColor(query: Query): string {
-        if (!query || !query.lastAnswer) {
-            return 'lightgrey';
+        let mins = secs / 60;
+        if (mins < 60) {
+            return Util.round2digits(mins) + ' min';
         }
 
-        let statusCode = query.lastAnswer.status;
+        let hours = mins / 60;
 
+        return Util.round2digits(hours) + ' h';
+    }
+
+    function getStatusColor(statusCode: int): string {
         if (statusCode >= 200 && statusCode <= 299) {
             return '#73965b';
         }

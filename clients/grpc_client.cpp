@@ -89,7 +89,7 @@ QString GrpcClient::generateBody(GrpcQuery* query)
         return "{}";
     }
 
-    return Util::beautify(QString::fromStdString(jsonResponseStr), BodyType::JSON);
+    return Util::beautify(QString::fromStdString(jsonResponseStr), RstEnums::BodyType::JSON);
 }
 
 void GrpcClient::call(GrpcQuery* query)
@@ -307,7 +307,7 @@ void GrpcClient::onCallFinished()
     if (result.success) {
         auto answer = QSharedPointer<HttpAnswer>(new HttpAnswer);
         answer->setDuration(ms);
-        answer->setBody(Util::beautify(result.data, BodyType::JSON));
+        answer->setBody(Util::beautify(result.data, RstEnums::BodyType::JSON));
         answer->setByteCount(result.data.size());
         answer->setStatus(result.status);
         answer->setHeaders(result.meta);

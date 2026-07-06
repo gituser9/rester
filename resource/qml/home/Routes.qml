@@ -97,6 +97,7 @@ Item {
             id: treeViewItem
             clip: true
             model: App.routesFilterModel
+            reuseItems: false
 
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -151,7 +152,7 @@ Item {
 
                     Loader {
                         id: nodeLoader
-                        sourceComponent: root.nodeType === 0 ? folderComponent : queryComponent
+                        sourceComponent: root.nodeType === RstEnums.NodeType.FolderNode ? folderComponent : queryComponent
                     }
                 }
                 Component {
@@ -163,26 +164,19 @@ Item {
                         dragParent: treeViewItem
                         height: root.height
                         imgPadding: (root.depth * root.indent)
-                        isExpanded: root.isFolderExpanded
+                        isExpanded: root.expanded
                         name: root.nodeName
                         parentUuid: parentUuid
                         width: root.width - (root.isTreeNode ? (root.depth + 1) * root.indent : 0) - 8
                         x: root.isTreeNode ? (root.depth + 1) * root.indent : 0
 
-                        // Qt.caller ?
-                        Timer {
-                            id: syncTimer
-                            interval: 0
-                            onTriggered: {
-                                if (root.isFolderExpanded && !root.expanded) {
-                                    root.treeView.expand(root.row);
-                                } else if (!root.isFolderExpanded && root.expanded) {
-                                    root.treeView.collapse(root.row);
-                                }
+                        Component.onCompleted: {
+                            if (root.isFolderExpanded) {
+                                root.treeView.expand(root.row);
+                            } else if (!root.isFolderExpanded) {
+                                root.treeView.collapse(root.row);
                             }
                         }
-
-                        Component.onCompleted: syncTimer.start()
 
                         onCreateDir: dirName => {
                             let parentIdx = root.treeView.index(root.row, root.column);

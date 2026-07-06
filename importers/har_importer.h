@@ -26,7 +26,7 @@ public:
 
 private:
     QByteArray getJson(const QString& path);
-    BodyType detectBodyType(const QString& mimeType);
+    RstEnums::BodyType detectBodyType(const QString& mimeType);
 };
 
 #endif // HAR_IMPORTER_H

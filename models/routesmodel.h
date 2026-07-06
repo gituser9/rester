@@ -57,18 +57,17 @@ public:
 
     // Custom QML:
     Q_INVOKABLE void addFolder(QString name, const QModelIndex& parentIdx);
-    Q_INVOKABLE void addQuery(QString name, const QModelIndex& parentIdx); // TODO: remove
     Q_INVOKABLE void addQuery(QString name, QString type, const QModelIndex& parentIdx);
     Q_INVOKABLE void updateFolder(const QModelIndex& index, const QVariant& value, int role);
     Q_INVOKABLE void toggleFolderExpanded(const QModelIndex& idx);
     Q_INVOKABLE bool isFolderExpanded(const QModelIndex& idx) const;
     Q_INVOKABLE void updateQuery(const QModelIndex& index, const QVariant& value, int role);
     Q_INVOKABLE void setCurrentQuery(const QModelIndex& idx);
-    Q_INVOKABLE void downloadBigAnswer(QString dirPath, Query const* qry) const noexcept;
+    Q_INVOKABLE void downloadBigAnswer(QString dirPath, Query const* qry);
     Q_INVOKABLE void importFromHar(const QModelIndex& parentIdx, const QString& filePath) noexcept;
     Q_INVOKABLE QString copyAsCurl(const QModelIndex& idx) const;
 
-    enum RoleType {
+    enum class RoleType {
         NameRole = Qt::UserRole + 1,
         NodeTypeRole,
         QueryTypeRole,

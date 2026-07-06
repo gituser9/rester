@@ -2,7 +2,7 @@
 
 CurlParser::CurlParser() :
     _urlRegex("^https?:\\/\\/"),
-    _varRegex("{{\\s*(.*?)\\s*}}")
+    _varRegex(RstConstant::varRegexPattern)
 {
 }
 
@@ -57,7 +57,7 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
         }
 
         if (arg == "-I" || arg == "--head") {
-            query->setQueryType(QueryType::HEAD);
+            query->setQueryType(RstEnums::QueryType::HEAD);
             continue;
         }
 
@@ -145,7 +145,7 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
         }
 
         if (state == ParseState::Method) {
-            QueryType type = Util::getQueryType(arg);
+            RstEnums::QueryType type = Util::getQueryType(arg);
             query->setQueryType(type);
 
             state = ParseState::None;
@@ -165,32 +165,32 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
 
     if (!contentType.isEmpty()) {
         if (contentType.contains("application/json")) {
-            query->setBodyType(BodyType::JSON);
+            query->setBodyType(RstEnums::BodyType::JSON);
         }
 
         if (contentType.contains("application/xml")) {
-            query->setBodyType(BodyType::XML);
+            query->setBodyType(RstEnums::BodyType::XML);
         }
 
         if (contentType.contains("application/x-www-form-urlencoded")) {
-            query->setBodyType(BodyType::URL_ENCODED_FORM);
+            query->setBodyType(RstEnums::BodyType::URL_ENCODED_FORM);
         }
 
         if (contentType.contains("multipart/form-data")) {
-            query->setBodyType(BodyType::MULTIPART_FORM);
+            query->setBodyType(RstEnums::BodyType::MULTIPART_FORM);
         }
     }
     else {
         if (!query->formData().isEmpty()) {
-            query->setBodyType(BodyType::MULTIPART_FORM);
+            query->setBodyType(RstEnums::BodyType::MULTIPART_FORM);
         }
         else if (!query->body().isEmpty()) {
-            query->setBodyType(BodyType::JSON);
+            query->setBodyType(RstEnums::BodyType::JSON);
         }
     }
 
     if (isDataRaw) {
-        if (query->bodyType() == BodyType::MULTIPART_FORM) {
+        if (query->bodyType() == RstEnums::BodyType::MULTIPART_FORM) {
             QList<QueryParam> formData = parseDataRaw(dataRaw);
 
             for (const QueryParam& item : formData) {
@@ -203,10 +203,11 @@ std::shared_ptr<Query> CurlParser::parse(QString command)
     }
 
     // chrome not set method if data-raw exists and method POST
-    bool isSetPost = (!query->formData().isEmpty() && query->queryType() == QueryType::GET) || (!query->body().isEmpty() && query->queryType() == QueryType::GET);
+    bool isSetPost = (!query->formData().isEmpty() && query->queryType() == RstEnums::QueryType::GET) ||
+                     (!query->body().isEmpty() && query->queryType() == RstEnums::QueryType::GET);
 
     if (isSetPost) {
-        query->setQueryType(QueryType::POST);
+        query->setQueryType(RstEnums::QueryType::POST);
     }
 
     return query;
@@ -292,12 +293,12 @@ QStringList CurlParser::split(std::string line) const noexcept
 
 QString CurlParser::buildCurlBody(Query* query) const noexcept
 {
-    BodyType bodyType = query->bodyType();
+    RstEnums::BodyType bodyType = query->bodyType();
 
-    if (bodyType == BodyType::JSON) {
+    if (bodyType == RstEnums::BodyType::JSON) {
         return "  --data '" + CurlUtils::escapeBody(query->body()) + "' \\\n";
     }
-    else if (bodyType == BodyType::MULTIPART_FORM) {
+    else if (bodyType == RstEnums::BodyType::MULTIPART_FORM) {
         QVariantList formData = query->formData();
         QString valuesString;
 
@@ -316,7 +317,7 @@ QString CurlParser::buildCurlBody(Query* query) const noexcept
 
         return valuesString;
     }
-    else if (bodyType == BodyType::URL_ENCODED_FORM) {
+    else if (bodyType == RstEnums::BodyType::URL_ENCODED_FORM) {
         QString valuesString;
         QVariantList formData = query->formData();
 

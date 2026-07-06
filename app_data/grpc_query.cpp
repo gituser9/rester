@@ -3,15 +3,15 @@
 GrpcQuery::GrpcQuery(TreeNode* parent) :
     TreeNode(parent)
 {
-    _queryType = QueryType::GRPC;
-    setNodeType(NodeType::GrpcQueryNode);
+    _queryType = RstEnums::QueryType::GRPC;
+    setNodeType(RstEnums::NodeType::GrpcQueryNode);
 }
 
 GrpcQuery::~GrpcQuery()
 {
 }
 
-QueryType GrpcQuery::queryType() const
+RstEnums::QueryType GrpcQuery::queryType() const
 {
     return _queryType;
 }
@@ -241,7 +241,7 @@ void GrpcQuery::addMetaItem(const QString& name, const QString& value)
 
 void GrpcQuery::fromJson(QJsonObject json)
 {
-    _queryType = QueryType::GRPC;
+    _queryType = RstEnums::QueryType::GRPC;
     _url = json.value("url").toString();
     _srv = json.value("srv").toString();
     _rpc = json.value("rpc").toString();
@@ -250,7 +250,7 @@ void GrpcQuery::fromJson(QJsonObject json)
 
     setUuid(json.value("uuid").toString(Util::uuid()));
     setName(json.value("name").toString(""));
-    setNodeType(NodeType::GrpcQueryNode);
+    setNodeType(RstEnums::NodeType::GrpcQueryNode);
 
     QJsonObject lastAnswerAvailable = json.value("available_last_answers").toObject();
 
@@ -262,7 +262,7 @@ void GrpcQuery::fromJson(QJsonObject json)
         }
 
         auto answer = QSharedPointer<HttpAnswer>(new HttpAnswer);
-        answer->fromJson(std::move(answRef.toObject()));
+        answer->fromJson(answRef.toObject());
         _availableLastAnswer[rpc] = answer;
     }
 
@@ -311,7 +311,7 @@ QJsonObject GrpcQuery::toJson() const
     json["uuid"] = uuid();
     json["name"] = name();
     json["query_type"] = Util::getQueryTypeString(_queryType);
-    json["node_type"] = NodeType::GrpcQueryNode;
+    json["node_type"] = static_cast<int>(RstEnums::NodeType::GrpcQueryNode);
     json["url"] = _url;
     json["srv"] = _srv;
     json["rpc"] = _rpc;

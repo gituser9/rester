@@ -186,7 +186,7 @@ Item {
     Connections {
         target: App.graphqlQuery
 
-        function onLastAnswerChanged() { // TODO: always 200
+        function onLastAnswerChanged() {
             statusContainer.color = answerView.getStatusColor(App.graphqlQuery);
             txtSize.text = Util.getAnswerSizeString(App.graphqlQuery.lastAnswer?.byteCount ?? 0);
         }

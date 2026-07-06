@@ -96,7 +96,7 @@ Item {
                 icon.source: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
                 flat: true
                 onClicked: {
-                    App.graphqlQuery.body = Util.beautify(App.graphqlQuery.body, 6); // TODO: enum
+                    App.graphqlQuery.body = Util.beautify(App.graphqlQuery.body, RstEnums.BodyType.GRAPHQL);
                 }
             }
         }

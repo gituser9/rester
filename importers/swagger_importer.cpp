@@ -50,7 +50,7 @@ std::shared_ptr<Workspace> SwaggerImporter::importWorkspace(const QString& path)
 
             auto query = new Query();
             query->setUuid(Util::uuid());
-            query->setNodeType(NodeType::QueryNode);
+            query->setNodeType(RstEnums::NodeType::QueryNode);
 
             if (tagName.isEmpty()) {
                 query->setParent(workspace.get());
@@ -61,7 +61,7 @@ std::shared_ptr<Workspace> SwaggerImporter::importWorkspace(const QString& path)
                     auto folder = new Folder(workspace.get());
                     folder->setName(tagName);
                     folder->setUuid(Util::uuid());
-                    folder->setNodeType(NodeType::FolderNode);
+                    folder->setNodeType(RstEnums::NodeType::FolderNode);
 
                     foldersMap.insert(tagName, folder);
                     workspace->addNode(folder);
@@ -84,7 +84,7 @@ std::shared_ptr<Workspace> SwaggerImporter::importWorkspace(const QString& path)
 
             query->setBodyType(detectBodyType(operation));
 
-            if (query->bodyType() == BodyType::JSON) {
+            if (query->bodyType() == RstEnums::BodyType::JSON) {
                 query->setBody("{}");
             }
         }
@@ -127,23 +127,23 @@ QString SwaggerImporter::extractBaseUrl(const QJsonObject& root)
     return baseUrl;
 }
 
-BodyType SwaggerImporter::detectBodyType(const QJsonObject& operation)
+RstEnums::BodyType SwaggerImporter::detectBodyType(const QJsonObject& operation)
 {
     // OpenAPI 3.0
     if (operation.contains("requestBody")) {
         QJsonObject content = operation.value("requestBody").toObject().value("content").toObject();
 
         if (content.contains("application/json")) {
-            return BodyType::JSON;
+            return RstEnums::BodyType::JSON;
         }
         else if (content.contains("multipart/form-data")) {
-            return BodyType::MULTIPART_FORM;
+            return RstEnums::BodyType::MULTIPART_FORM;
         }
         else if (content.contains("application/x-www-form-urlencoded")) {
-            return BodyType::URL_ENCODED_FORM;
+            return RstEnums::BodyType::URL_ENCODED_FORM;
         }
         else if (content.contains("application/xml")) {
-            return BodyType::XML;
+            return RstEnums::BodyType::XML;
         }
     }
 
@@ -155,24 +155,24 @@ BodyType SwaggerImporter::detectBodyType(const QJsonObject& operation)
             QString type = val.toString();
 
             if (type.contains("json")) {
-                return BodyType::JSON;
+                return RstEnums::BodyType::JSON;
             }
 
             if (type.contains("multipart/form-data")) {
-                return BodyType::MULTIPART_FORM;
+                return RstEnums::BodyType::MULTIPART_FORM;
             }
 
             if (type.contains("x-www-form-urlencoded")) {
-                return BodyType::URL_ENCODED_FORM;
+                return RstEnums::BodyType::URL_ENCODED_FORM;
             }
 
             if (type.contains("xml")) {
-                return BodyType::XML;
+                return RstEnums::BodyType::XML;
             }
         }
     }
 
-    return BodyType::NONE;
+    return RstEnums::BodyType::NONE;
 }
 
 QMap<QString, SecurityScheme> SwaggerImporter::extractSecurity(const QJsonObject& root)

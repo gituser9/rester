@@ -92,11 +92,11 @@ void InsomniaV5Exporter::emitItem(YAML::Emitter& emitter, TreeNode* node)
         return;
     }
 
-    if (node->nodeType() == NodeType::FolderNode) {
+    if (node->nodeType() == RstEnums::NodeType::FolderNode) {
         auto folder = static_cast<Folder*>(node);
         emitFolder(emitter, folder);
     }
-    else if (node->nodeType() == NodeType::QueryNode) {
+    else if (node->nodeType() == RstEnums::NodeType::QueryNode) {
         auto query = static_cast<Query*>(node);
         emitRequest(emitter, query);
     }
@@ -157,7 +157,7 @@ void InsomniaV5Exporter::emitRequest(YAML::Emitter& emitter, Query* query)
     }
 
     // body
-    if (query->bodyType() != BodyType::NONE) {
+    if (query->bodyType() != RstEnums::BodyType::NONE) {
         emitter << YAML::Key << "body";
         emitter << YAML::Value;
         emitBody(emitter, query);
@@ -235,20 +235,20 @@ void InsomniaV5Exporter::emitBody(YAML::Emitter& emitter, Query* query)
 {
     emitter << YAML::BeginMap;
 
-    const BodyType type = query->bodyType();
+    const RstEnums::BodyType type = query->bodyType();
     QString mimeType;
 
     switch (type) {
-    case BodyType::JSON:
+    case RstEnums::BodyType::JSON:
         mimeType = "application/json";
         break;
-    case BodyType::XML:
+    case RstEnums::BodyType::XML:
         mimeType = "application/xml";
         break;
-    case BodyType::URL_ENCODED_FORM:
+    case RstEnums::BodyType::URL_ENCODED_FORM:
         mimeType = "application/x-www-form-urlencoded";
         break;
-    case BodyType::MULTIPART_FORM:
+    case RstEnums::BodyType::MULTIPART_FORM:
         mimeType = "multipart/form-data";
         break;
     default:
@@ -259,7 +259,7 @@ void InsomniaV5Exporter::emitBody(YAML::Emitter& emitter, Query* query)
 
     const QString text = query->body();
 
-    if (type == BodyType::JSON || type == BodyType::XML || type == BodyType::URL_ENCODED_FORM) {
+    if (type == RstEnums::BodyType::JSON || type == RstEnums::BodyType::XML || type == RstEnums::BodyType::URL_ENCODED_FORM) {
         if (!text.isEmpty()) {
             emitter << YAML::Key << "text";
 
@@ -271,7 +271,7 @@ void InsomniaV5Exporter::emitBody(YAML::Emitter& emitter, Query* query)
             }
         }
     }
-    else if (type == BodyType::MULTIPART_FORM) {
+    else if (type == RstEnums::BodyType::MULTIPART_FORM) {
         auto formData = query->formDataList();
 
         if (!formData.isEmpty()) {

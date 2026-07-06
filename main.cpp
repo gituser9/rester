@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
     qmlRegisterType<VarSyntaxHighlighter>("io.rester", 1, 0, "VarSyntaxHighlighter");
     qmlRegisterType<UrlHighlighter>("io.rester", 1, 0, "UrlHighlighter");
     qmlRegisterType<SearchEngine>("io.rester", 1, 0, "SearchEngine");
+    qmlRegisterUncreatableType<RstEnums>("io.rester", 1, 0, "RstEnums", "RstEnums is an enum container");
 
     QQmlApplicationEngine engine;
 

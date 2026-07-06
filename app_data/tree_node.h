@@ -9,11 +9,12 @@
 
 #include "constant.h"
 
-class TreeNode : public QObject {
+class TreeNode : public QObject
+{
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(NodeType nodeType READ nodeType WRITE setNodeType NOTIFY nodeTypeChanged)
+    Q_PROPERTY(RstEnums::NodeType nodeType READ nodeType WRITE setNodeType NOTIFY nodeTypeChanged)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString uuid READ uuid WRITE setUuid NOTIFY uuidChanged)
 
@@ -21,8 +22,8 @@ public:
     explicit TreeNode(TreeNode* parent = nullptr);
     virtual ~TreeNode();
 
-    NodeType nodeType() const;
-    void setNodeType(NodeType newNodeType);
+    RstEnums::NodeType nodeType() const;
+    void setNodeType(RstEnums::NodeType newNodeType);
 
     QString name() const;
     void setName(const QString& newName);
@@ -48,7 +49,7 @@ signals:
     void uuidChanged();
 
 private:
-    NodeType _nodeType;
+    RstEnums::NodeType _nodeType;
     QString _name;
     QString _uuid;
     QList<TreeNode*> _nodes;
