@@ -222,14 +222,8 @@ Item {
                         wrapMode: TextEdit.WrapAnywhere
                     }
                 }
-                MenuSeparator {
+                RstDivider {
                     Layout.fillWidth: true
-
-                    contentItem: Rectangle {
-                        implicitWidth: parent.width
-                        implicitHeight: 1
-                        color: "#1E000000"
-                    }
                 }
             }
         }

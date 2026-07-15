@@ -21,12 +21,15 @@ Item {
     property string folderDialogMode: ''
     property int currentIndex: -1
     property bool isLoading: true
+    property Constants consts: Constants {}
 
     ColumnLayout {
         anchors.fill: parent
 
         // Control Buttons
         RowLayout {
+            spacing: ws.consts.space
+
             Layout.fillWidth: true
 
             Text {
@@ -37,57 +40,37 @@ Item {
             Item {
                 Layout.fillWidth: true
             }
-            Button {
-                Layout.rightMargin: 8
-
-                flat: true
+            RstButton {
+                size: RstButton.ButtonSize.Tool
                 text: qsTr("Open Folder")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/folder.svg"
-                icon.width: 20
-                icon.height: 20
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/folder.svg"
                 onClicked: {
                     let path = StandardPaths.standardLocations(StandardPaths.ConfigLocation)[0];
                     path += '/rester/workspaces';
                     Qt.openUrlExternally(path);
                 }
             }
-            Button {
-                Layout.rightMargin: 8
-
-                flat: true
+            RstButton {
+                size: RstButton.ButtonSize.Big
                 text: qsTr("Add")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
-                icon.width: 24
-                icon.height: 24
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/add.svg"
                 onClicked: {
                     mdlAddWorkspace.open();
                 }
             }
-            Button {
-                Layout.rightMargin: 8
-
-                flat: true
+            RstButton {
+                size: RstButton.ButtonSize.Tool
                 text: qsTr("Download")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/download.svg"
-                icon.width: 20
-                icon.height: 20
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/download.svg"
                 onClicked: {
                     ws.folderDialogMode = 'export';
                     folderDialog.open();
                 }
             }
-            Button {
-                Layout.rightMargin: 8
-
-                flat: true
+            RstButton {
+                size: RstButton.ButtonSize.Tool
                 text: qsTr("Upload")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
-                icon.width: 20
-                icon.height: 20
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
                 onClicked: {
                     dlgImport.open();
                 }
@@ -143,14 +126,8 @@ Item {
             Layout.fillWidth: true
             Layout.topMargin: 8
         }
-        MenuSeparator {
+        RstDivider {
             Layout.fillWidth: true
-
-            contentItem: Rectangle {
-                implicitWidth: parent.width
-                implicitHeight: 1
-                color: "#1E000000"
-            }
         }
 
         // WS
@@ -302,12 +279,9 @@ Item {
                             Layout.maximumWidth: grid.elementWidth + 20
                             Layout.preferredHeight: 30
 
-                            Button {
-                                flat: true
-                                icon.source: "qrc:/qt/qml/io/rester/resource/images/pencil.svg"
-                                icon.width: 16
-                                icon.height: 16
-                                icon.color: 'black'
+                            RstButton {
+                                size: RstButton.ButtonSize.Mini
+                                icon: "qrc:/qt/qml/io/rester/resource/images/pencil.svg"
                                 onClicked: {
                                     ws.currentIndex = wsCol.index;
                                     mdlUpdWorkspace.currentText = wsCol.name;
@@ -340,15 +314,12 @@ Item {
 
                                 visible: App.workspace.uuid === wsCol.uuid
                             }
-                            Button {
+                            RstButton {
                                 Layout.rightMargin: 17
 
                                 visible: App.workspace.uuid !== wsCol.uuid
-                                flat: true
-                                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                                icon.width: 16
-                                icon.height: 16
-                                icon.color: 'black'
+                                size: RstButton.ButtonSize.Mini
+                                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                                 onClicked: {
                                     ws.currentIndex = wsCol.index;
                                     dlgRemoveWs.open();
@@ -387,12 +358,8 @@ Item {
                     Layout.fillWidth: true
                     Layout.rightMargin: 10
                 }
-                Button {
-                    flat: true
-                    icon.source: "qrc:/qt/qml/io/rester/resource/images/folder.svg"
-                    icon.width: 22
-                    icon.height: 22
-                    icon.color: 'black'
+                RstButton {
+                    icon: "qrc:/qt/qml/io/rester/resource/images/folder.svg"
                     onClicked: {
                         ws.folderDialogMode = 'export_collection';
                         folderDialog.open();
@@ -402,13 +369,26 @@ Item {
             Text {
                 text: qsTr("set path for export's file")
             }
-            ComboBox {
+            RstDropdown {
                 id: cbExportType
+                placeholder: qsTr("Export Type")
+                currentText: mdlExport.get(cbExportType.index).text
                 model: mdlExport
-                textRole: "text"
-                valueRole: "value"
+                itemDelegate: Component {
+                    Item {
+                        id: exportDelegateLayout
+
+                        property var itemData: null
+                        property int itemIndex: 0
+
+                        Text {
+                            text: exportDelegateLayout.itemData.text
+                        }
+                    }
+                }
 
                 Layout.fillWidth: true
+                Layout.preferredHeight: ws.consts.bottomButtonHeight
             }
 
             Button {
@@ -421,7 +401,8 @@ Item {
                         return;
                     }
 
-                    App.workspaceModel.exportCollection(tfExportInput.text, ws.currentIndex, cbExportType.currentValue);
+                    let exportType = mdlExport.get(cbExportType.index);
+                    App.workspaceModel.exportCollection(tfExportInput.text, ws.currentIndex, exportType);
                     dlgExport.close();
                 }
             }
@@ -468,13 +449,28 @@ Item {
             Text {
                 text: qsTr(`set path to file`)
             }
-            ComboBox {
+            RstDropdown {
                 id: cbImportType
+                placeholder: qsTr("Import Type")
+                currentText: mdlImport.get(cbImportType.index).text
                 model: mdlImport
-                textRole: "text"
-                valueRole: "value"
+                itemDelegate: Component {
+                    id: importDelegate
+
+                    Item {
+                        id: delegateLayout
+
+                        property var itemData: null
+                        property int itemIndex: 0
+
+                        Text {
+                            text: delegateLayout.itemData.text
+                        }
+                    }
+                }
 
                 Layout.fillWidth: true
+                Layout.preferredHeight: ws.consts.bottomButtonHeight
             }
 
             Button {
@@ -488,7 +484,8 @@ Item {
                         return;
                     }
 
-                    App.workspaceModel.importFrom(tfInput.text, cbImportType.currentValue);
+                    let importType = mdlImport.get(cbImportType.index).value;
+                    App.workspaceModel.importFrom(tfInput.text, importType);
                     dlgImport.close();
                 }
             }

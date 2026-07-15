@@ -10,18 +10,20 @@ import io.rester
 
 import "../home/modal"
 import "../common/components"
+import "../common/components/uikit"
 
 Item {
     id: wsVars
+    anchors.fill: parent
 
     property var vars: ({})
     property int envIndex: -1
     property string env: ''
+    property Constants consts: Constants {}
 
     Component.onCompleted: {
         wsVars.fillData();
     }
-    anchors.fill: parent
 
     ColumnLayout {
         anchors.fill: parent
@@ -37,13 +39,9 @@ Item {
             Item {
                 Layout.fillWidth: true
             }
-            Button {
+            RstButton {
                 text: qsTr("Add Environment")
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
-                icon.width: 22
-                icon.height: 22
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/add.svg"
                 onClicked: {
                     mdlAddEnv.open();
                 }
@@ -54,7 +52,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 60
 
-            spacing: 8
+            spacing: wsVars.consts.space
             orientation: ListView.Horizontal
             model: modeModel
             delegate: Button {
@@ -102,62 +100,40 @@ Item {
                     spacing: 16
                     anchors.fill: parent
 
-                    Column {
+                    RstInput {
+                        tfWidth: varList.width / 2
+                        value: varDeleagate.name
+                        placeholder: qsTr("Name")
+
                         Layout.fillWidth: true
 
-                        FlickableEdit {
-                            id: tfVarName
-                            height: 20
-                            width: varList.width / 2
-                            value: varDeleagate.name
-                            onEditingFinish: txt => {
-                                wsVars.vars[wsVars.env][varDeleagate.index] = {
-                                    "name": txt,
-                                    "value": tfVarValue.text
-                                };
-                                App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
-                            }
-                        }
-                        MenuSeparator {
-                            width: parent.width
-                            contentItem: Rectangle {
-                                implicitWidth: parent.width
-                                implicitHeight: 1
-                                color: "#1E000000"
-                            }
+                        onTextChanged: txt => {
+                            let varr = wsVars.vars[wsVars.env][varDeleagate.index];
+                            wsVars.vars[wsVars.env][varDeleagate.index] = {
+                                "name": txt,
+                                "value": varr.value
+                            };
+                            App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                         }
                     }
-                    Column {
+                    RstInput {
+                        tfWidth: varList.width / 2
+                        value: varDeleagate.value
+                        placeholder: qsTr("Value")
+
                         Layout.fillWidth: true
 
-                        FlickableEdit {
-                            id: tfVarValue
-                            height: 20
-                            width: varList.width / 2
-                            value: varDeleagate.value
-                            onEditingFinish: txt => {
-                                wsVars.vars[wsVars.env][varDeleagate.index] = {
-                                    "name": tfVarName.text,
-                                    "value": txt
-                                };
-                                App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
-                            }
-                        }
-                        MenuSeparator {
-                            width: parent.width
-                            contentItem: Rectangle {
-                                implicitWidth: parent.width
-                                implicitHeight: 1
-                                color: "#1E000000"
-                            }
+                        onTextChanged: txt => {
+                            let varr = wsVars.vars[wsVars.env][varDeleagate.index];
+                            wsVars.vars[wsVars.env][varDeleagate.index] = {
+                                "name": varr.name,
+                                "value": txt
+                            };
+                            App.workspaceModel.setVars(App.workspace.uuid, App.workspace.name, wsVars.vars);
                         }
                     }
-                    Button {
-                        flat: true
-                        icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                        icon.width: 18
-                        icon.height: 18
-                        icon.color: 'black'
+                    RstButton {
+                        icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                         onClicked: {
                             wsVars.vars[wsVars.env].splice(varDeleagate.index, 1);
                             varModel.remove(varDeleagate.index);
@@ -171,20 +147,16 @@ Item {
     }
 
     RowLayout {
-        spacing: 8
+        spacing: wsVars.consts.space
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8
+        anchors.bottomMargin: wsVars.consts.space
         anchors.right: parent.right
         anchors.left: parent.left
         visible: wsVars.envIndex !== -1
 
-        Button {
+        RstButton {
             text: qsTr("Delete Environment")
-            flat: true
-            icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-            icon.width: 22
-            icon.height: 22
-            icon.color: 'black'
+            icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
             onClicked: {
                 delete wsVars.vars[wsVars.env];
 
@@ -199,13 +171,9 @@ Item {
         Item {
             Layout.fillWidth: true
         }
-        Button {
+        RstButton {
             text: qsTr("Add Variable")
-            flat: true
-            icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
-            icon.width: 22
-            icon.height: 22
-            icon.color: 'black'
+            icon: "qrc:/qt/qml/io/rester/resource/images/add.svg"
             onClicked: {
                 let data = {
                     "name": '',

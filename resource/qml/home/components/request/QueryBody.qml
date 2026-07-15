@@ -9,6 +9,7 @@ import QtQuick.Controls.Imagine
 import io.rester
 
 import "../../../../qml"
+import "../../../common/components/uikit"
 
 Item {
     id: queryBodyView
@@ -20,10 +21,6 @@ Item {
     signal copy
 
     Component.onCompleted: {
-        if (App.query) {
-            cbBodyType.currentIndex = App.query.bodyType;
-        }
-
         queryBodyView.checkIsForm();
     }
 
@@ -47,68 +44,85 @@ Item {
 
         // buttons
         RowLayout {
+            spacing: 8
+
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignRight
 
-            ComboBox {
+            RstDropdown {
                 id: cbBodyType
-                implicitHeight: queryBodyView.consts.bottomButtonHeight
-                model: ["None", "JSON", "Multipart Form", "Form URL Encoded", "XML"]
-                onActivated: {
-                    App.query.bodyType = cbBodyType.currentIndex;
+                currentText: Util.getHumanBodyTypeString(App.query.bodyType)
+                model: lstBodytype
 
-                    queryBodyView.checkIsForm();
-                    queryBodyView.setContentTypeHeader(cbBodyType.currentValue);
-                }
-
+                Layout.preferredWidth: 180
+                Layout.preferredHeight: 40
                 Layout.bottomMargin: 8
-                Layout.rightMargin: 8
-                Layout.fillWidth: true
-                Layout.preferredWidth: 80
+
+                onItemSelected: (idx, bodyType) => {
+                    App.query.bodyType = bodyType.value;
+                    queryBodyView.checkIsForm();
+                    queryBodyView.setContentTypeHeader(bodyType.value);
+                }
             }
 
-            Button {
-                Layout.bottomMargin: 8
-                Layout.rightMargin: 8
-
-                implicitWidth: 100
-                implicitHeight: queryBodyView.consts.bottomButtonHeight
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                flat: true
+            RstButton {
                 text: qsTr("Clear")
+                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 onClicked: {
                     queryBodyView.clear();
                 }
+
+                Layout.fillWidth: true
+                Layout.bottomMargin: 8
             }
 
-            Button {
-                Layout.bottomMargin: 8
-                Layout.rightMargin: 8
-
-                implicitWidth: 100
-                implicitHeight: queryBodyView.consts.bottomButtonHeight
+            RstButton {
                 text: qsTr("Copy")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 onClicked: {
                     queryBodyView.copy();
                 }
+
+                Layout.fillWidth: true
+                Layout.bottomMargin: 8
             }
 
-            Button {
-                Layout.bottomMargin: 8
-                Layout.alignment: Qt.AlignRight
-
-                visible: !queryBodyView.isForm
-                implicitWidth: 100
-                implicitHeight: queryBodyView.consts.bottomButtonHeight
+            RstButton {
                 text: qsTr("Beautify")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
                 onClicked: {
                     App.query.beautify();
                 }
+
+                Layout.fillWidth: true
+                Layout.bottomMargin: 8
             }
+        }
+    }
+
+    ListModel {
+        id: lstBodytype
+
+        Component.onCompleted: {
+            append({
+                name: "None",
+                value: RstEnums.BodyType.NONE
+            });
+            append({
+                name: "JSON",
+                value: RstEnums.BodyType.JSON
+            });
+            append({
+                name: "Multipart Form",
+                value: RstEnums.BodyType.MULTIPART_FORM
+            });
+            append({
+                name: "Form URL Encoded",
+                value: RstEnums.BodyType.URL_ENCODED_FORM
+            });
+            append({
+                name: "XML",
+                value: RstEnums.BodyType.XML
+            });
         }
     }
 
@@ -120,7 +134,6 @@ Item {
                 return;
             }
 
-            cbBodyType.currentIndex = App.query.bodyType;
             queryBodyView.checkIsForm();
         }
     }
@@ -158,27 +171,27 @@ Item {
         }
     }
 
-    function setContentTypeHeader(contentType: string): void {
+    function setContentTypeHeader(bodyType: int): void {
         let headers = App.query.headers;
 
-        switch (contentType) {
-        case "JSON":
+        switch (bodyType) {
+        case RstEnums.BodyType.JSON:
             App.query.setHeader("Content-Type", "application/json; charset=UTF-8");
 
             break;
-        case "XML":
+        case RstEnums.BodyType.XML:
             App.query.setHeader("Content-Type", "application/xml");
 
             break;
-        case "Multipart Form":
+        case RstEnums.BodyType.MULTIPART_FORM:
             App.query.setHeader("Content-Type", "multipart/form-data");
 
             break;
-        case "Form URL Encoded":
+        case RstEnums.BodyType.URL_ENCODED_FORM:
             App.query.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
             break;
-        case "None":
+        case RstEnums.BodyType.NONE:
             App.query.removeHeader("Content-Type");
 
             break;

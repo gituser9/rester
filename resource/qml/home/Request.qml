@@ -10,20 +10,13 @@ import io.rester
 
 import "./../"
 import "../common/components"
+import "../common/components/uikit"
 
 Item {
     id: requestView
 
     property Constants consts: Constants {}
     property int currentIndex: 0
-
-    Component.onCompleted: {
-        setSource(requestView.currentIndex);
-
-        if (App.query) {
-            cbQueryType.currentIndex = App.query.queryType;
-        }
-    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -37,23 +30,21 @@ Item {
 
             spacing: 8
 
-            Rectangle {
+            RstDropdown {
+                id: cbQueryType
+                currentText: Util.getQueryTypeString(App.query.queryType)
+                model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]
+
                 Layout.leftMargin: 8
                 Layout.preferredWidth: 100
                 Layout.preferredHeight: requestView.consts.bottomButtonHeight
 
-                ComboBox {
-                    id: cbQueryType
-                    height: requestView.consts.bottomButtonHeight
-                    model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]
-                    onActivated: {
-                        App.query.queryType = cbQueryType.currentIndex;
-                    }
+                onItemSelected: (idx, value) => {
+                    App.query.queryType = Util.getQueryType(value);
                 }
             }
             Rectangle {
                 Layout.fillWidth: true
-                Layout.leftMargin: 20
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: requestView.consts.bottomButtonHeight
 
@@ -63,14 +54,14 @@ Item {
 
                 FlickableEdit {
                     id: tfUrl
+                    anchors.fill: parent
+                    value: App.query?.url ?? ''
+                    onEditingFinish: txt => {
+                        App.query.url = txt;
+                    }
 
                     Component.onCompleted: {
                         varHilighter.setDocument(tfUrl.textDocument);
-                    }
-                    anchors.fill: parent
-                    value: App.query ? App.query.url : ''
-                    onEditingFinish: txt => {
-                        App.query.url = txt;
                     }
                 }
             }
@@ -93,67 +84,21 @@ Item {
                 }
             }
         }
-        MenuSeparator {
-            Layout.preferredWidth: parent.width
+        RstDivider {
+            Layout.fillWidth: true
+        }
 
-            contentItem: Rectangle {
-                implicitWidth: parent.width
-                implicitHeight: 1
-                color: "#1E000000"
+        RstTabGroup {
+            id: tabs
+            texts: [qsTr("Body"), qsTr("Query"), qsTr("Headers")]
+            onClicked: idx => {
+                requestView.setSource(idx);
             }
-        }
 
-        ButtonGroup {
-            id: tabGroup
-        }
-
-        RowLayout {
             Layout.fillWidth: true
             Layout.rightMargin: 8
             Layout.leftMargin: 8
-
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: requestView.width / 3
-
-                checkable: true
-                checked: requestView.currentIndex == 0
-                flat: true
-                text: qsTr("Body")
-                onClicked: {
-                    requestView.setSource(0);
-                }
-
-                ButtonGroup.group: tabGroup
-            }
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: requestView.width / 3
-
-                checkable: true
-                checked: requestView.currentIndex == 1
-                flat: true
-                text: qsTr("Query")
-                onClicked: {
-                    requestView.setSource(1);
-                }
-
-                ButtonGroup.group: tabGroup
-            }
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: requestView.width / 3
-
-                checkable: true
-                checked: requestView.currentIndex == 2
-                flat: true
-                text: qsTr("Headers")
-                onClicked: {
-                    requestView.setSource(2);
-                }
-
-                ButtonGroup.group: tabGroup
-            }
+            Layout.preferredHeight: requestView.consts.bottomButtonHeight
         }
 
         Rectangle {
@@ -175,16 +120,7 @@ Item {
         target: App
 
         function onQueryChanged(): void {
-            cbQueryType.currentIndex = App.query?.queryType ?? 0;
             tfUrl.value = App.query ? App.query.url : '';
-        }
-    }
-
-    Connections {
-        target: App.query
-
-        function onQueryTypeChanged(): void {
-            cbQueryType.currentIndex = App.query.queryType;
         }
     }
 

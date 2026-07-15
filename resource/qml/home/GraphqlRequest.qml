@@ -73,14 +73,8 @@ Item {
                 }
             }
         }
-        MenuSeparator {
-            Layout.preferredWidth: parent.width
-
-            contentItem: Rectangle {
-                implicitWidth: parent.width
-                implicitHeight: 1
-                color: "#1E000000"
-            }
+        RstDivider {
+            Layout.fillWidth: true
         }
 
         ButtonGroup {
@@ -137,19 +131,6 @@ Item {
             }
         }
     }
-
-    // Connections
-
-    // Connections {
-    //     target: App.graphqlQuery
-
-    //     function onDataChanged(): void {
-    //         if (graphqlView.currentIndex === -1) {
-    //             graphqlView.currentIndex = graphqlView.isEmptyQuery() ? -1 : 0;
-    //             graphqlView.setSource(graphqlView.currentIndex);
-    //         }
-    //     }
-    // }
 
     // Types
     VarSyntaxHighlighter {

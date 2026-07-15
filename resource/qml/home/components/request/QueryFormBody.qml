@@ -57,27 +57,15 @@ Item {
                     }
                 }
 
-                Column {
-                    Layout.fillWidth: true
-
-                    FlickableEdit {
-                        id: tfFormDataName
-                        width: itemRow.width / 3
-                        height: 20
-                        isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: formDelegate.name
-                        onEditingFinish: txt => {
-                            tfFormDataName.value = txt;
-                            App.query.setFormDataItem(formDelegate.index, txt, tfFormDataValue.value, true);
-                        }
-                    }
-                    MenuSeparator {
-                        width: parent.width
-                        contentItem: Rectangle {
-                            implicitWidth: parent.width
-                            implicitHeight: 1
-                            color: "#1E000000"
-                        }
+                RstInput {
+                    id: tfFormDataName
+                    isEnabled: cbEnabled.checkState === Qt.Checked
+                    tfWidth: itemRow.width / 3
+                    value: formDelegate.name
+                    onTextChanged: txt => {
+                        tfFormDataName.value = txt;
+                        formDataModel.setProperty(formDelegate.index, "name", txt);
+                        App.query.setFormDataItem(formDelegate.index, txt, tfFormDataValue.value, true);
                     }
                 }
 
@@ -132,14 +120,9 @@ Item {
                         }
                     }
 
-                    MenuSeparator {
+                    RstDivider {
+                        Layout.fillWidth: true
                         visible: formDelegate.value.indexOf("file://") === -1
-                        width: parent.width
-                        contentItem: Rectangle {
-                            implicitWidth: parent.width
-                            implicitHeight: 1
-                            color: "#1E000000"
-                        }
                     }
                 }
                 // file button

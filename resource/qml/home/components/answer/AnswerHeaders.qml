@@ -9,6 +9,7 @@ import QtQuick.Controls.Imagine
 import io.rester
 
 import "../../../common/components"
+import "../../../common/components/uikit"
 
 Rectangle {
     id: answerHeadersView
@@ -56,7 +57,7 @@ Rectangle {
 
                     Layout.fillWidth: true
 
-                    Flickable {
+                    Flickable { // TODO: FlickableEdit readonly
                         id: flick
                         anchors.fill: parent
                         clip: true
@@ -81,31 +82,17 @@ Rectangle {
                         }
                     }
                 }
-                Button {
+                RstButton {
                     id: copybtn
-
-                    property string tooltipText: qsTr("Copy value")
-
-                    flat: true
-                    icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
-                    icon.width: 18
-                    icon.height: 18
-                    icon.color: 'black'
+                    size: RstButton.ButtonSize.Small
+                    icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
+                    tooltip: qsTr("Copy value")
+                    tooltipAfter: qsTr("Copied")
                     onClicked: {
                         teCopy.text = headerDelegate.value;
                         teCopy.selectAll();
                         teCopy.copy();
                         teCopy.clear();
-
-                        copybtn.tooltipText = qsTr("Copied");
-                    }
-
-                    ToolTip.text: tooltipText
-                    ToolTip.visible: hovered
-                    ToolTip.toolTip.onVisibleChanged: {
-                        if (!hovered) {
-                            tooltipText = qsTr("Copy value");
-                        }
                     }
                 }
             }

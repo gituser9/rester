@@ -27,9 +27,10 @@ class Util : public QObject
 public:
     Util(QObject* parent = nullptr);
 
-    static RstEnums::QueryType getQueryType(QString typeString);
-    static RstEnums::BodyType getBodyType(QString typeString);
-    static QString getBodyTypeString(RstEnums::BodyType type);
+    Q_INVOKABLE static RstEnums::QueryType getQueryType(QString typeString);
+    Q_INVOKABLE static RstEnums::BodyType getBodyType(QString typeString);
+    Q_INVOKABLE static QString getBodyTypeString(RstEnums::BodyType type);
+    Q_INVOKABLE static QString getHumanBodyTypeString(RstEnums::BodyType type);
     static QString beautify(QString body, QVariantMap headers);
     static QString uuid() noexcept;
     static QString getHeaderValue(const QString& name, const QList<QueryParam>& headers) noexcept;

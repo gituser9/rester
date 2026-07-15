@@ -106,14 +106,8 @@ Item {
                     Layout.preferredHeight: 20
                     value: ''
                 }
-                MenuSeparator {
+                RstDivider {
                     Layout.fillWidth: true
-
-                    contentItem: Rectangle {
-                        implicitWidth: parent.width
-                        implicitHeight: 1
-                        color: "#1E000000"
-                    }
                 }
             }
 
@@ -177,47 +171,33 @@ Item {
                         text: wsMsgDelegate.message
                     }
                     // if JSON
-                    Button {
+                    RstButton {
                         id: btnBeautify
-                        Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                        ToolTip.text: qsTr("Beautify")
-                        ToolTip.visible: hovered
+                        size: RstButton.ButtonSize.Small
+                        tooltip: qsTr("Beautify")
                         visible: mouse.hovered && wsView.isJSON(txtWsMsg.text)
-                        flat: true
-                        icon.source: "qrc:/qt/qml/io/rester/resource/images/pencil.svg"
-                        icon.width: 18
-                        icon.height: 18
-                        icon.color: 'black'
+                        icon: "qrc:/qt/qml/io/rester/resource/images/pencil.svg"
                         onClicked: {
                             txtWsMsg.text = wsView.beautifyJSON(txtWsMsg.text);
                         }
-                    }
-                    Button {
-                        id: copyBtn
-                        property string tooltipText: qsTr("Copy value")
 
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-                        ToolTip.text: tooltipText
-                        ToolTip.visible: hovered
-                        ToolTip.toolTip.onVisibleChanged: {
-                            if (!hovered) {
-                                tooltipText = qsTr("Copy Message");
-                            }
-                        }
+                    }
+                    RstButton {
+                        id: copyBtn
                         visible: mouse.hovered
-                        flat: true
-                        icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
-                        icon.width: 18
-                        icon.height: 18
-                        icon.color: 'black'
+                        size: RstButton.ButtonSize.Small
+                        tooltip: qsTr("Copy Message")
+                        tooltipAfter: qsTr("Copied")
+                        icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                         onClicked: {
                             teCopy.text = txtWsMsg.text;
                             teCopy.selectAll();
                             teCopy.copy();
                             teCopy.clear();
-
-                            copyBtn.tooltipText = qsTr("Copied");
                         }
+
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
                     }
 
                     HoverHandler {

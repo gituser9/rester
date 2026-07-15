@@ -40,51 +40,49 @@ Item {
         // buttons
         RowLayout {
             Layout.fillWidth: true
-            Layout.bottomMargin: 8
+            Layout.bottomMargin: queryBodyView.consts.space
 
-            spacing: 8
+            spacing: queryBodyView.consts.space
 
-            Button {
-                Layout.fillWidth: true
+            RstButton {
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
                 text: qsTr("Upload")
-                icon.width: 18
-                icon.height: 18
                 onClicked: {
                     fileDialog.open();
                 }
-            }
-            Button {
+
                 Layout.fillWidth: true
+            }
+            RstButton {
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 text: qsTr("Clear")
                 onClicked: {
                     queryBodyView.clear();
                 }
-            }
-            Button {
+
                 Layout.fillWidth: true
+            }
+            RstButton {
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 onClicked: {
                     queryBodyView.copy();
                 }
-            }
-            Button {
+
                 Layout.fillWidth: true
+            }
+            RstButton {
                 implicitHeight: queryBodyView.consts.bottomButtonHeight
                 text: qsTr("Beautify")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
                 onClicked: {
                     App.grpcQuery.body = Util.beautify(App.grpcQuery.body, 1);
                 }
+
+                Layout.fillWidth: true
             }
         }
     }

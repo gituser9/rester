@@ -54,50 +54,48 @@ Item {
 
             spacing: graphqlBodyView.consts.space
 
-            Button {
-                Layout.fillWidth: true
-
+            RstButton {
                 visible: false
                 implicitHeight: graphqlBodyView.consts.bottomButtonHeight
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
-                flat: true
+                size: RstButton.ButtonSize.Small
                 text: qsTr("Upload")
-                icon.width: 18
-                icon.height: 18
+                icon: "qrc:/qt/qml/io/rester/resource/images/download.svg"
                 onClicked: {
                     fileDialog.open();
                 }
-            }
-            Button {
+
                 Layout.fillWidth: true
+            }
+            RstButton {
                 implicitHeight: graphqlBodyView.consts.bottomButtonHeight
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                flat: true
                 text: qsTr("Clear")
+                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 onClicked: {
                     taQueryBody.clear();
                 }
-            }
-            Button {
+
                 Layout.fillWidth: true
+            }
+            RstButton {
                 implicitHeight: graphqlBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 onClicked: {
                     taQueryBody.selectAll();
                     taQueryBody.copy();
                 }
-            }
-            Button {
+
                 Layout.fillWidth: true
+            }
+            RstButton {
                 implicitHeight: graphqlBodyView.consts.bottomButtonHeight
                 text: qsTr("Beautify")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/indent-increase.svg"
                 onClicked: {
                     App.graphqlQuery.body = Util.beautify(App.graphqlQuery.body, RstEnums.BodyType.GRAPHQL);
                 }
+
+                Layout.fillWidth: true
             }
         }
     }
@@ -108,7 +106,6 @@ Item {
         nameFilters: ["Proto files (*.graphql)"]
         onAccepted: () => {
             let path = selectedFile.toString().replace("file://", "");
-        // App.loadProto(path);
         }
     }
 

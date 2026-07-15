@@ -18,10 +18,7 @@ Item {
 
     property bool isBig: false
     property int currentIndex: 0
-
-    Component.onCompleted: {
-        answerView.setSource(0);
-    }
+    property Constants consts: Constants {}
 
     ColumnLayout {
         anchors.fill: parent
@@ -38,7 +35,7 @@ Item {
 
             Rectangle {
                 id: statusContainer
-                color: answerView.getStatusColor(App.grpcQuery)
+                color: answerView.getStatusColor(App.grpcQuery?.lastAnswer?.status)
                 radius: 4
 
                 Layout.preferredHeight: 40
@@ -90,71 +87,37 @@ Item {
 
                 visible: answerView.isBig
             }
-            Button {
+            RstButton {
                 visible: answerView.isBig
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/download.svg"
-                icon.width: 22
-                icon.height: 22
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/download.svg"
                 onClicked: {
                     folderDialog.open();
                 }
             }
         }
-        MenuSeparator {
-            Layout.preferredWidth: parent.width
-
-            contentItem: Rectangle {
-                color: "#1E000000"
-                implicitHeight: 1
-                implicitWidth: parent.width
-            }
-        }
-
-        ButtonGroup {
-            id: tabGroup
-        }
-
-        RowLayout {
+        RstDivider {
             Layout.fillWidth: true
-            Layout.rightMargin: 8
-            Layout.leftMargin: 8
+        }
 
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: answerView.width / 2
-
-                checkable: true
-                checked: answerView.currentIndex == 0
-                flat: true
-                text: qsTr("Body")
-                onClicked: {
+        RstTabGroup {
+            texts: [qsTr("Body"), qsTr("Meta")]
+            onClicked: idx => {
+                if (idx === 0) {
                     let size = Util.getAnswerSize(App.grpcQuery.lastAnswer.byteCount);
 
                     if (size.label === "Mb" && size.size > 1) {
                         loader.sourceComponent = bigBody;
-                    } else {
-                        answerView.setSource(0);
+                        return;
                     }
                 }
 
-                ButtonGroup.group: tabGroup
+                answerView.setSource(idx);
             }
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: answerView.width / 2
 
-                checkable: true
-                checked: answerView.currentIndex == 1
-                flat: true
-                text: qsTr("Meta")
-                onClicked: {
-                    answerView.setSource(1);
-                }
-
-                ButtonGroup.group: tabGroup
-            }
+            Layout.fillWidth: true
+            Layout.rightMargin: 8
+            Layout.leftMargin: 8
+            Layout.preferredHeight: answerView.consts.bottomButtonHeight
         }
         Rectangle {
             Layout.fillHeight: true
@@ -267,13 +230,7 @@ Item {
         return ((ms / 1000) / 60) + 'm';
     }
 
-    function getStatusColor(query: GrpcQuery): string {
-        if (!query || !query.lastAnswer) {
-            return 'lightgrey';
-        }
-
-        let statusCode = query.lastAnswer.status;
-
+    function getStatusColor(statusCode: int): string {
         if (statusCode === 0) {
             return '#73965b';
         }

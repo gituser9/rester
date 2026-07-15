@@ -19,7 +19,7 @@ Popup {
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
-    // property real halfWifth: createRequestDialog.width / 2
+    property Constants consts: Constants {}
 
     signal ok(string queryName, string queryType)
 
@@ -42,20 +42,21 @@ Popup {
                 placeholder: qsTr("Request Name")
                 value: ''
             }
-            MenuSeparator {
+            RstDivider {
                 Layout.fillWidth: true
-
-                contentItem: Rectangle {
-                    implicitWidth: parent.width
-                    implicitHeight: 1
-                    color: "#1E000000"
-                }
             }
         }
-        ComboBox {
+        RstDropdown {
             id: cbQueryType
-            Layout.fillWidth: true
+            currentText: "GET"
             model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "WS", "GRPC", "GRAPHQL"]
+
+            Layout.fillWidth: true
+            Layout.preferredHeight: createRequestDialog.consts.bottomButtonHeight
+
+            onItemSelected: (idx, value) => {
+                cbQueryType.currentText = value;
+            }
         }
         RowLayout {
             Layout.fillWidth: true

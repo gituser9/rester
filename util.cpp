@@ -110,6 +110,22 @@ QString Util::getBodyTypeString(RstEnums::BodyType type)
     }
 }
 
+Q_INVOKABLE QString Util::getHumanBodyTypeString(RstEnums::BodyType type)
+{
+    switch (type) {
+    case RstEnums::BodyType::JSON:
+        return "JSON";
+    case RstEnums::BodyType::XML:
+        return "XML";
+    case RstEnums::BodyType::MULTIPART_FORM:
+        return "Multipart Form";
+    case RstEnums::BodyType::URL_ENCODED_FORM:
+        return "Form URL Encoded";
+    default:
+        return "None";
+    }
+}
+
 QString Util::beautify(QString body, RstEnums::BodyType bodyType)
 {
     if (bodyType == RstEnums::BodyType::JSON) {

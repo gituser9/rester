@@ -3,12 +3,12 @@ pragma ValueTypeBehavior: Addressable
 pragma FunctionSignatureBehavior: Enforced
 
 import QtQuick
-import QtQuick.Controls.Imagine
 import QtQuick.Layouts
 
 import io.rester
 
 import "../../../common/components"
+import "../../../common/components/uikit"
 
 Rectangle {
     id: winHeader
@@ -20,112 +20,25 @@ Rectangle {
     }
     anchors.fill: parent
 
-    ListView {
-        id: headerList
+    RstPropertyList {
+        id: lstProps
         width: parent.width
         height: parent.height - 50
-        clip: true
-        model: headerModel
-        delegate: Rectangle {
-            id: headerDelegate
-            height: 60
-            width: parent.width
+        propertyModel: headerModel
 
-            required property bool isEnabled
-            required property int index
-            required property string name
-            required property string value
-
-            VarSyntaxHighlighter {
-                id: varHilighter
-            }
-
-            RowLayout {
-                spacing: 16
-                anchors.fill: parent
-
-                CheckBox {
-                    id: cbEnabled
-                    checked: headerDelegate.isEnabled
-                    onClicked: {
-                        headerModel.setProperty(headerDelegate.index, "isEnabled", cbEnabled.checkState === Qt.Checked);
-                        winHeader.changeHeader(headerDelegate.index);
-
-                        varHilighter.enabled = cbEnabled.checked;
-                    }
-                }
-                Column {
-                    Layout.fillWidth: true
-
-                    FlickableEdit {
-                        id: tfHeaderName
-                        width: headerList.width / 3
-                        height: 20
-                        isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: headerDelegate.name
-                        onEditingFinish: txt => {
-                            let header = headerModel.get(headerDelegate.index);
-
-                            App.query.setHeader(headerDelegate.index, header.name, header.value, header.isEnabled);
-                        }
-                        onTextChange: txt => {
-                            headerModel.setProperty(headerDelegate.index, "name", txt);
-                        }
-                    }
-                    MenuSeparator {
-                        width: parent.width
-                        contentItem: Rectangle {
-                            implicitWidth: parent.width
-                            implicitHeight: 1
-                            color: "#1E000000"
-                        }
-                    }
-                }
-                Column {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: 16
-
-                    FlickableEdit {
-                        id: tfHeaderValue
-                        width: parent.width
-                        height: 20
-                        isEnabled: cbEnabled.checkState === Qt.Checked
-                        value: headerDelegate.value
-                        onEditingFinish: txt => {
-                            let header = headerModel.get(headerDelegate.index);
-
-                            App.query.setHeader(headerDelegate.index, header.name, header.value, header.isEnabled);
-                        }
-                        onTextChange: txt => {
-                            headerModel.setProperty(headerDelegate.index, "value", txt);
-                        }
-
-                        Component.onCompleted: {
-                            varHilighter.setDocument(tfHeaderValue.textDocument);
-                            varHilighter.enabled = cbEnabled.checked;
-                        }
-                    }
-                    MenuSeparator {
-                        width: parent.width
-                        contentItem: Rectangle {
-                            implicitWidth: parent.width
-                            implicitHeight: 1
-                            color: "#1E000000"
-                        }
-                    }
-                }
-                Button {
-                    flat: true
-                    icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                    icon.width: 22
-                    icon.height: 22
-                    icon.color: 'black'
-                    onClicked: {
-                        App.query.removeHeader(headerDelegate.index);
-                        headerModel.remove(headerDelegate.index);
-                    }
-                }
-            }
+        onCheckBoxClicked: idx => {
+            winHeader.changeHeader(idx);
+        }
+        onNameChanged: (idx, value) => {
+            let header = headerModel.get(idx);
+            App.query.setHeader(idx, value, header.value, header.isEnabled);
+        }
+        onValueChanged: (idx, value) => {
+            let header = headerModel.get(idx);
+            App.query.setHeader(idx, header.name, value, header.isEnabled);
+        }
+        onRemoved: idx => {
+            App.query.removeHeader(idx);
         }
     }
     RowLayout {
@@ -137,13 +50,9 @@ Rectangle {
         anchors.bottomMargin: 8
         anchors.right: parent.right
 
-        Button {
+        RstButton {
             text: qsTr("Add")
-            flat: true
-            icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
-            icon.width: 22
-            icon.height: 22
-            icon.color: 'black'
+            icon: "qrc:/qt/qml/io/rester/resource/images/add.svg"
             onClicked: {
                 headerModel.append({
                     "name": '',

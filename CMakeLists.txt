@@ -63,6 +63,14 @@ qt_add_qml_module(
     VERSION 1.0
     RESOURCE_PREFIX /qt/qml
     QML_FILES
+        # UIKit
+        resource/qml/common/components/uikit/RstDropdown.qml
+        resource/qml/common/components/uikit/RstInput.qml
+        resource/qml/common/components/uikit/RstButton.qml
+        resource/qml/common/components/uikit/RstPropertyList.qml
+        resource/qml/common/components/uikit/RstTabGroup.qml
+        resource/qml/common/components/uikit/RstDivider.qml
+
         # General
         Main.qml
         resource/qml/Constants.qml

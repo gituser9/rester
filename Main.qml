@@ -8,6 +8,7 @@ import io.rester
 import "./resource/qml/home"
 import "resource/qml/workspace"
 import "resource/qml/common/components"
+import "resource/qml/common/components/uikit"
 import "resource/qml/colors"
 
 Window {
@@ -20,22 +21,12 @@ Window {
     property string currentQueryView: ''
     property string currentAnswerView: ''
 
-    Component.onCompleted: {
-        if (App.workspace.env === '') {
-            dbEnvs.currentEnv = 'No Env';
-        } else {
-            dbEnvs.currentEnv = App.workspace.env;
-            dbEnvs.setEnvs(App.workspace.getEnvNames());
-        }
-    }
-
     ColumnLayout {
         anchors.fill: parent
 
         Rectangle {
             Layout.fillWidth: true
-
-            height: 50
+            Layout.preferredHeight: 50
 
             RowLayout {
                 anchors.fill: parent
@@ -50,15 +41,43 @@ Window {
                     Layout.leftMargin: 8
                     Layout.rightMargin: 8
                 }
-                DropdownButton {
+                RstDropdown {
                     id: dbEnvs
-                    height: 50
-                    currentEnv: App.workspace.env
+                    currentText: (App.workspace && App.workspace.env !== '') ? App.workspace.env : 'No Env'
 
-                    Layout.rightMargin: 16
                     Layout.alignment: Qt.AlignVCenter
                     Layout.minimumWidth: 60
-                    Layout.maximumWidth: 200
+                    // Layout.maximumWidth: 200
+
+                    Component.onCompleted: {
+                        if (App.workspace) {
+                            dbEnvs.model = App.workspace.getEnvNames();
+                        }
+                    }
+
+                    onItemSelected: (index, modelData) => {
+                        if (App.workspace && App.workspace.env !== modelData) {
+                            App.setEnv(modelData);
+                        }
+                    }
+
+                    Connections {
+                        target: App
+
+                        function onWorkspaceChanged(): void {
+                            if (App.workspace) {
+                                dbEnvs.model = App.workspace.getEnvNames();
+                            }
+                        }
+                    }
+
+                    Connections {
+                        target: App.workspace
+
+                        function onVariablesChanged(): void {
+                            dbEnvs.model = App.workspace.getEnvNames();
+                        }
+                    }
                 }
                 Button {
                     flat: true

@@ -34,45 +34,33 @@ Item {
                 anchors.rightMargin: 8
                 anchors.topMargin: 12
 
-                Button {
-                    Layout.fillWidth: true
-                    flat: true
-                    icon.color: 'black'
-                    icon.height: 24
-                    icon.source: "qrc:/qt/qml/io/rester/resource/images/folder-add.svg"
-                    icon.width: 24
+                RstButton {
+                    size: RstButton.ButtonSize.Big
+                    icon: "qrc:/qt/qml/io/rester/resource/images/folder-add.svg"
                     text: qsTr("Add Folder")
-
                     onClicked: {
                         mdlAddFolder.open();
                     }
-                }
-                Button {
-                    Layout.fillWidth: true
-                    flat: true
-                    icon.color: 'black'
-                    icon.height: 24
-                    icon.source: "qrc:/qt/qml/io/rester/resource/images/arrow-up-down.svg"
-                    icon.width: 24
-                    text: qsTr("Add Request")
 
+                    Layout.fillWidth: true
+                }
+                RstButton {
+                    size: RstButton.ButtonSize.Big
+                    icon: "qrc:/qt/qml/io/rester/resource/images/arrow-up-down.svg"
+                    text: qsTr("Add Request")
                     onClicked: {
                         mdlAddQuery.open();
                     }
+
+                    Layout.fillWidth: true
                 }
             }
         }
         Item {
             Layout.preferredHeight: 3
         }
-        MenuSeparator {
+        RstDivider {
             Layout.fillWidth: true
-
-            contentItem: Rectangle {
-                color: "#1E000000"
-                implicitHeight: 1
-                implicitWidth: parent.width
-            }
         }
         Pins {
             Layout.fillWidth: true
@@ -83,15 +71,8 @@ Item {
                 App.setQueryByUuid(uuid);
             }
         }
-        MenuSeparator {
+        RstDivider {
             Layout.fillWidth: true
-            visible: App.workspace.pins.length !== 0
-
-            contentItem: Rectangle {
-                color: "#1E000000"
-                implicitHeight: 1
-                implicitWidth: parent.width
-            }
         }
         TreeView {
             id: treeViewItem

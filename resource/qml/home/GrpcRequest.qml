@@ -80,110 +80,68 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: grpcView.consts.bottomButtonHeight
+            Layout.leftMargin: grpcView.consts.space
+            Layout.rightMargin: grpcView.consts.space
 
             spacing: grpcView.consts.space
 
             // upload btn
-            Button {
-                Layout.leftMargin: grpcView.consts.space
-                Layout.preferredHeight: grpcView.consts.bottomButtonHeight
-
-                ToolTip.text: qsTr("Reload from filesystem")
-                ToolTip.visible: hovered
-
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/rotate-loop.svg"
-                icon.width: 18
-                icon.height: 18
+            RstButton {
+                implicitHeight: grpcView.consts.bottomButtonHeight
+                size: RstButton.ButtonSize.Small
+                tooltip: qsTr("Reload from filesystem")
+                tooltipAfter: qsTr("Reloaded")
+                icon: "qrc:/qt/qml/io/rester/resource/images/rotate-loop.svg"
                 onClicked: {
                     App.reloadProto();
                 }
             }
 
             // list of srv
-            Rectangle {
+            RstDropdown {
+                id: cbSrv
+                model: App.grpcQuery.availableSrv
+                placeholder: qsTr("Service")
+                currentText: App.grpcQuery.srv
+                onItemSelected: (idx, value) => {
+                    App.grpcQuery.srv = value;
+                }
+
                 Layout.fillWidth: true
                 Layout.preferredWidth: parent.width / 2
                 Layout.preferredHeight: grpcView.consts.bottomButtonHeight
-
-                ComboBox {
-                    id: cbSrv
-                    anchors.fill: parent
-                    height: grpcView.consts.bottomButtonHeight
-                    model: App.grpcQuery.availableSrv
-                    currentValue: App.grpcQuery.srv
-                    onActivated: {
-                        App.grpcQuery.srv = cbSrv.currentText;
-                    }
-                }
             }
 
             // list of rpc
-            Rectangle {
+            RstDropdown {
+                id: cbRpc
+                model: App.grpcQuery.availableRpc
+                placeholder: qsTr("RPC")
+                currentText: App.grpcQuery.rpc
+                onItemSelected: (idx, value) => {
+                    App.grpcQuery.rpc = value;
+                }
+
                 Layout.fillWidth: true
-                Layout.rightMargin: grpcView.consts.space
                 Layout.preferredWidth: parent.width / 2
                 Layout.preferredHeight: grpcView.consts.bottomButtonHeight
-
-                ComboBox {
-                    id: cbRpc
-                    anchors.fill: parent
-                    height: grpcView.consts.bottomButtonHeight
-                    model: App.grpcQuery.availableRpc
-                    currentValue: App.grpcQuery.rpc
-                    onActivated: {
-                        App.grpcQuery.rpc = cbRpc.currentText;
-                    }
-                }
             }
         }
-        MenuSeparator {
-            Layout.preferredWidth: parent.width
-
-            contentItem: Rectangle {
-                implicitWidth: parent.width
-                implicitHeight: 1
-                color: "#1E000000"
-            }
-        }
-
-        ButtonGroup {
-            id: tabGroup
-        }
-
-        RowLayout {
+        RstDivider {
             Layout.fillWidth: true
-            Layout.rightMargin: grpcView.consts.space
-            Layout.leftMargin: grpcView.consts.space
+        }
 
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: grpcView.width / 2
-
-                checkable: true
-                checked: grpcView.currentIndex == 0
-                flat: true
-                text: qsTr("Body")
-                onClicked: {
-                    grpcView.setSource(0);
-                }
-
-                ButtonGroup.group: tabGroup
+        RstTabGroup {
+            id: tabs
+            texts: [qsTr("Body"), qsTr("Meta")]
+            onClicked: idx => {
+                grpcView.setSource(idx);
             }
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: grpcView.width / 2
 
-                checkable: true
-                checked: grpcView.currentIndex == 1
-                flat: true
-                text: qsTr("Meta")
-                onClicked: {
-                    grpcView.setSource(1);
-                }
-
-                ButtonGroup.group: tabGroup
-            }
+            Layout.fillWidth: true
+            Layout.rightMargin: 8
+            Layout.leftMargin: 8
+            Layout.preferredHeight: grpcView.consts.bottomButtonHeight
         }
 
         Rectangle {

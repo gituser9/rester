@@ -15,15 +15,11 @@ Item {
     Rectangle {
         anchors.fill: parent
 
-        Button {
+        RstButton {
             anchors.centerIn: parent
-            checkable: true
-            flat: true
+            size: RstButton.ButtonSize.Tool
             text: qsTr("Upload Proto")
-            icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
-            icon.width: 20
-            icon.height: 20
-            icon.color: 'black'
+            icon: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
             onClicked: {
                 fileDialog.open();
             }

@@ -95,13 +95,8 @@ Item {
             ScrollBar.vertical: ScrollBar {}
         }
 
-        MenuSeparator {
-            width: parent.width
-            contentItem: Rectangle {
-                color: "#1E000000"
-                implicitHeight: 1
-                implicitWidth: parent.width
-            }
+        RstDivider {
+            Layout.fillWidth: true
         }
 
         // Filter big text row

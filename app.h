@@ -65,7 +65,7 @@ public:
     void setGraphqlClient(const std::shared_ptr<GraphqlClient> newHttpClient);
     void setPinModel(const std::shared_ptr<PinModel>& newPinModel);
 
-    // PROPERTIES
+    // Properties
     Workspace* workspace() const;
     Query* query() const;
     GrpcQuery* grpcQuery() const;
@@ -74,10 +74,13 @@ public:
     bool isActiveSocketConnect() const;
     void setIsActiveSocketConnect(bool newIsActiveSocketConnect);
 
+    // Models
     RoutesModel* routesModel() const;
     RoutesFilterModel* routesFilterModel() const;
     PinModel* pinModel() const;
     WorkspaceModel* workspaceModel() const;
+
+    // Clients
     HttpClient* httpClient() const;
     GrpcClient* grpcClient() const;
     GraphqlClient* graphqlClient() const;
@@ -89,7 +92,7 @@ signals:
     void socketReceived(const QString&);
     void socketError(const QString&);
 
-    // PROPERTIES
+    // Properties
     void queryChanged();
     void grpcQueryChanged();
     void graphqlQueryChanged();
@@ -123,7 +126,7 @@ private:
     QString _env;
     QVariantMap _vars;
 
-    // PROPERTIES
+    // Properties
     Query* _query = nullptr;
     GrpcQuery* _grpcQuery = nullptr;
     GraphqlQuery* _graphqlQuery = nullptr;

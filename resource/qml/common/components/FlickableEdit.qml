@@ -53,7 +53,7 @@ Item {
             font.family: "Monospace"
             focus: flickableEdit.isFocused
             onEditingFinished: {
-                // editingFinish(teMain.text)
+                flickableEdit.editingFinish(teMain.text);
             }
             onTextChanged: {
                 flickableEdit.value = teMain.text;
@@ -79,7 +79,7 @@ Item {
 
     Timer {
         id: syncTimer
-        interval: 500
+        interval: 300
         running: true
         repeat: false
     }

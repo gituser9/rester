@@ -46,10 +46,10 @@ Item {
         Item {
             height: 20
         }
-        Button {
+        RstButton {
             Layout.alignment: Qt.AlignHCenter
+            Layout.preferredHeight: waitView.consts.bottomButtonHeight
 
-            height: waitView.consts.bottomButtonHeight
             text: qsTr("Cancel")
             onClicked: {
                 if (App.query) {

@@ -95,13 +95,8 @@ Item {
             ScrollBar.vertical: ScrollBar {}
         }
 
-        MenuSeparator {
-            width: parent.width
-            contentItem: Rectangle {
-                color: "#1E000000"
-                implicitHeight: 1
-                implicitWidth: parent.width
-            }
+        RstDivider {
+            Layout.fillWidth: true
         }
 
         // Filter big text row
@@ -135,22 +130,16 @@ Item {
                 }
             }
 
-            Button {
+            RstButton {
                 Layout.bottomMargin: 7
 
                 visible: tfFilter.text.length !== 0
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                icon.width: 18
-                icon.height: 18
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
+                tooltip: qsTr("Clear")
                 onClicked: {
                     tfFilter.text = '';
                     answerBodyView.stringList = App.query.lastAnswer.body.split("\n");
                 }
-
-                ToolTip.text: qsTr("Clear")
-                ToolTip.visible: hovered
             }
         }
 
@@ -194,22 +183,16 @@ Item {
                     }
                 }
             }
-            Button {
+            RstButton {
                 Layout.bottomMargin: 7
 
                 visible: searchEngine.size > 0
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                icon.width: 18
-                icon.height: 18
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
+                tooltip: qsTr("Clear")
                 onClicked: {
                     searchTextInput.clear();
                     searchEngine.searchString = '';
                 }
-
-                ToolTip.text: qsTr("Clear")
-                ToolTip.visible: hovered
             }
             TextInput {
                 id: indexTextInput
@@ -270,53 +253,41 @@ Item {
                 rightPadding: 10
                 verticalAlignment: TextEdit.AlignVCenter
             }
-            Button {
+            RstButton {
                 id: backButton
-
-                Layout.bottomMargin: 7
-
                 visible: searchEngine.size > 1
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/arrow-up-s.svg"
-                icon.width: 18
-                icon.height: 18
-                icon.color: 'black'
-                onPressed: {
+                size: RstButton.ButtonSize.Small
+                icon: "qrc:/qt/qml/io/rester/resource/images/arrow-up-s.svg"
+                tooltip: qsTr("Previous Match")
+                onClicked: {
                     answerBodyView.highlightPrev();
                 }
 
-                ToolTip.text: qsTr("Previous Match")
-                ToolTip.visible: hovered
-            }
-            Button {
-                id: forwardButton
-
                 Layout.bottomMargin: 7
-
+            }
+            RstButton {
+                id: forwardButton
+                size: RstButton.ButtonSize.Small
                 visible: searchEngine.size > 1
                 flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/arrow-down-s.svg"
-                icon.width: 18
-                icon.height: 18
-                icon.color: 'black'
-                onPressed: {
+                icon: "qrc:/qt/qml/io/rester/resource/images/arrow-down-s.svg"
+                tooltip: qsTr("Next Match")
+                onClicked: {
                     answerBodyView.highlightNext();
                 }
 
-                ToolTip.text: qsTr("Next Match")
-                ToolTip.visible: hovered
+                Layout.bottomMargin: 7
             }
             Item {
                 Layout.fillWidth: true
             }
-            Button {
+            RstButton {
                 Layout.bottomMargin: answerBodyView.consts.defaultSpacing
 
                 implicitWidth: answerBodyView.btnWidth
                 implicitHeight: answerBodyView.consts.bottomButtonHeight
                 text: qsTr("Clear")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 onClicked: {
                     // for txt
                     if (!answerBodyView.isBig) {
@@ -340,15 +311,14 @@ Item {
                     }
                 }
             }
-            Button {
+            RstButton {
                 Layout.alignment: Qt.AlignRight
                 Layout.bottomMargin: answerBodyView.consts.defaultSpacing
 
                 implicitWidth: answerBodyView.btnWidth
                 implicitHeight: answerBodyView.consts.bottomButtonHeight
                 text: qsTr("Copy")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
-                flat: true
+                icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 onClicked: {
                     if (answerBodyView.isBig) {
                         // for list

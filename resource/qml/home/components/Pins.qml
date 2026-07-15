@@ -6,8 +6,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Imagine
 
-// import core.app 1.0
 import io.rester
+import "../components"
 
 Item {
     id: pinItem
@@ -46,14 +46,9 @@ Item {
 
                     text: pinDelegate.name
                 }
-                Button {
-                    flat: true
-                    icon {
-                        source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                        width: 18
-                        height: 18
-                        color: "black"
-                    }
+                RstButton {
+                    size: RstButton.ButtonSize.Small
+                    icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                     onClicked: {
                         App.pinModel.removeRows(pinDelegate.index, 1);
                     }

@@ -10,6 +10,7 @@ import io.rester
 
 import "../../modal"
 import "../../../common/components"
+import "../../../common/components/uikit"
 
 Rectangle {
     id: winParam
@@ -30,18 +31,17 @@ Rectangle {
             Layout.bottomMargin: 8
 
             Text {
-                width: parent.width
                 text: qsTr("URL Preview")
+
+                Layout.fillWidth: true
             }
             Item {
                 Layout.fillWidth: true
             }
-            Button {
+            RstButton {
+                size: RstButton.ButtonSize.Small
                 text: qsTr("Import from cURL")
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
-                icon.width: 18
-                icon.height: 18
+                icon: "qrc:/qt/qml/io/rester/resource/images/upload.svg"
                 onClicked: {
                     mdlImportQuery.open();
                 }
@@ -65,168 +65,65 @@ Rectangle {
                     urlHilighter.setDocument(tfFullUrl.textDocument);
                 }
             }
-            Button {
+            RstButton {
                 id: copybtn
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
-                icon.width: 22
-                icon.height: 22
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
+                tooltip: qsTr("Copy value")
+                tooltipAfter: qsTr("Copied")
                 onClicked: {
                     teCopy.text = tfFullUrl.text;
                     teCopy.selectAll();
                     teCopy.copy();
                     teCopy.clear();
-
-                    copybtn.tooltipText = qsTr("Copied");
-                }
-
-                property string tooltipText: qsTr("Copy value")
-
-                ToolTip.text: tooltipText
-                ToolTip.visible: hovered
-                ToolTip.toolTip.onVisibleChanged: {
-                    if (!hovered) {
-                        tooltipText = qsTr("Copy value");
-                    }
                 }
             }
         }
-
         Item {
-            height: 16
+            Layout.preferredHeight: 16
         }
         RowLayout {
             Text {
-                width: parent.width
                 text: qsTr("Query Parameters")
+
+                Layout.fillWidth: true
             }
             Item {
                 Layout.fillWidth: true
             }
-            Button {
-                flat: true
+            RstButton {
+                size: RstButton.ButtonSize.Small
                 text: qsTr("From URL")
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/download.svg"
-                icon.width: 18
-                icon.height: 18
+                icon: "qrc:/qt/qml/io/rester/resource/images/download.svg"
                 onClicked: {
                     winParam.fromUrl();
                 }
             }
         }
 
-        ListView {
-            id: paramList
+        RstPropertyList {
+            id: lstProps
+            propertyModel: paramModel
+
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: paramModel
-            clip: true
-            delegate: Rectangle {
-                id: paramDelegate
-                height: 50
-                width: winParam.width
 
-                required property bool isEnabled
-                required property int index
-                required property string name
-                required property string value
-
-                VarSyntaxHighlighter {
-                    id: varHighlighter
-                }
-
-                RowLayout {
-                    spacing: 8
-                    anchors.fill: parent
-
-                    CheckBox {
-                        id: cbEnabled
-                        checked: paramDelegate.isEnabled
-                        onClicked: {
-                            paramModel.setProperty(paramDelegate.index, "isEnabled", cbEnabled.checkState === Qt.Checked);
-                            winParam.fillUrl();
-                            winParam.changeParam(paramDelegate.index);
-
-                            varHighlighter.enabled = cbEnabled.checked;
-                        }
-                    }
-                    Column {
-                        Layout.fillWidth: true
-
-                        FlickableEdit {
-                            id: paramName
-                            isEnabled: cbEnabled.checkState === Qt.Checked
-                            width: paramList.width / 3
-                            height: 20
-                            value: paramDelegate.name
-                            onEditingFinish: txt => {
-                                let param = paramModel.get(paramDelegate.index);
-
-                                App.query.setParam(paramDelegate.index, param.name, param.value, param.isEnabled);
-                            }
-                            onTextChange: txt => {
-                                paramModel.setProperty(paramDelegate.index, "name", txt);
-                                winParam.fillUrl();
-                            }
-                        }
-                        MenuSeparator {
-                            width: parent.width
-                            contentItem: Rectangle {
-                                implicitWidth: parent.width
-                                implicitHeight: 1
-                                color: "#1E000000"
-                            }
-                        }
-                    }
-                    Column {
-                        Layout.fillWidth: true
-                        Layout.leftMargin: 16
-
-                        FlickableEdit {
-                            id: paramValue
-                            isEnabled: cbEnabled.checkState === Qt.Checked
-                            width: paramList.width / 3
-                            height: 20
-                            value: paramDelegate.value
-                            onEditingFinish: txt => {
-                                let param = paramModel.get(paramDelegate.index);
-
-                                App.query.setParam(paramDelegate.index, param.name, param.value, param.isEnabled);
-                            }
-                            onTextChange: txt => {
-                                paramModel.setProperty(paramDelegate.index, "value", txt);
-                                winParam.fillUrl();
-                            }
-
-                            Component.onCompleted: {
-                                varHighlighter.setDocument(paramValue.textDocument);
-                                varHighlighter.enabled = cbEnabled.checked;
-                            }
-                        }
-                        MenuSeparator {
-                            width: parent.width
-                            contentItem: Rectangle {
-                                implicitWidth: parent.width
-                                implicitHeight: 1
-                                color: "#1E000000"
-                            }
-                        }
-                    }
-                    Button {
-                        flat: true
-                        icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                        icon.width: 18
-                        icon.height: 18
-                        icon.color: 'black'
-                        onClicked: {
-                            App.query.removeParam(index);
-                            paramModel.remove(index);
-
-                            winParam.fillUrl();
-                        }
-                    }
-                }
+            onCheckBoxClicked: idx => {
+                winParam.fillUrl();
+                winParam.changeParam(idx);
+            }
+            onNameChanged: (idx, value) => {
+                let param = paramModel.get(idx);
+                App.query.setParam(idx, value, param.value, param.isEnabled);
+                winParam.fillUrl();
+            }
+            onValueChanged: (idx, value) => {
+                let param = paramModel.get(idx);
+                App.query.setParam(idx, param.name, value, param.isEnabled);
+                winParam.fillUrl();
+            }
+            onRemoved: idx => {
+                App.query.removeParam(idx);
+                winParam.fillUrl();
             }
         }
         RowLayout {
@@ -236,14 +133,10 @@ Rectangle {
 
             spacing: 8
 
-            Button {
+            RstButton {
                 visible: paramModel.count > 0
                 text: qsTr("Clear")
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                icon.width: 22
-                icon.height: 22
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 onClicked: {
                     paramModel.clear();
                     App.query.params = [];
@@ -252,13 +145,9 @@ Rectangle {
             Item {
                 Layout.fillWidth: true
             }
-            Button {
+            RstButton {
                 text: qsTr("Add")
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
-                icon.width: 22
-                icon.height: 22
-                icon.color: 'black'
+                icon: "qrc:/qt/qml/io/rester/resource/images/add.svg"
                 onClicked: {
                     paramModel.append({
                         "name": '',

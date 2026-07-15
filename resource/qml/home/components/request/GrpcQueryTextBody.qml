@@ -25,7 +25,7 @@ Item {
         taQueryBody.text = App.grpcQuery.body;
     }
 
-    Button {
+    RstButton {
         z: 100
         visible: taQueryBody.text.length === 0
         anchors.right: root.right
@@ -33,8 +33,7 @@ Item {
         anchors.topMargin: 8
         anchors.rightMargin: 8
         text: qsTr("Generate")
-        icon.source: "qrc:/qt/qml/io/rester/resource/images/magic.svg"
-        flat: true
+        icon: "qrc:/qt/qml/io/rester/resource/images/magic.svg"
         onClicked: {
             let emptyBoby = App.grpcClient.generateBody(App.grpcQuery);
             App.grpcQuery.body = emptyBoby;

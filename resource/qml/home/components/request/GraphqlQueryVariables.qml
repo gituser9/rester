@@ -66,13 +66,8 @@ Rectangle {
                             headerModel.setProperty(metaDelegate.index, "name", txt);
                         }
                     }
-                    MenuSeparator {
+                    RstDivider {
                         width: parent.width
-                        contentItem: Rectangle {
-                            implicitWidth: parent.width
-                            implicitHeight: 1
-                            color: "#1E000000"
-                        }
                     }
                 }
                 Column {
@@ -98,13 +93,8 @@ Rectangle {
                             varHilighter.setDocument(tfHeaderValue.textDocument);
                         }
                     }
-                    MenuSeparator {
+                    RstDivider {
                         width: parent.width
-                        contentItem: Rectangle {
-                            implicitWidth: parent.width
-                            implicitHeight: 1
-                            color: "#1E000000"
-                        }
                     }
                 }
                 Button {

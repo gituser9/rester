@@ -53,30 +53,16 @@ Item {
                     Item {
                         Layout.fillWidth: true
                     }
-                    Button {
+                    RstButton {
                         id: copybtn
-
-                        property string tooltipText: qsTr("Copy value")
-                        flat: true
-                        icon.source: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
-                        icon.width: 18
-                        icon.height: 18
-                        icon.color: 'black'
+                        icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
+                        tooltip: qsTr("Copy value")
+                        tooltipAfter: qsTr("Copied")
                         onClicked: {
                             teCopy.text = cookieDelegate.value;
                             teCopy.selectAll();
                             teCopy.copy();
                             teCopy.clear();
-
-                            copybtn.tooltipText = qsTr("Copied");
-                        }
-
-                        ToolTip.text: tooltipText
-                        ToolTip.visible: hovered
-                        ToolTip.toolTip.onVisibleChanged: {
-                            if (!hovered) {
-                                tooltipText = qsTr("Copy value");
-                            }
                         }
                     }
                 }
@@ -222,14 +208,8 @@ Item {
                         wrapMode: TextEdit.WrapAnywhere
                     }
                 }
-                MenuSeparator {
+                RstDivider {
                     Layout.fillWidth: true
-
-                    contentItem: Rectangle {
-                        implicitWidth: parent.width
-                        implicitHeight: 1
-                        color: "#1E000000"
-                    }
                 }
             }
         }

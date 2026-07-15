@@ -23,7 +23,7 @@ Item {
             text: qsTr("Response over 1MB hidden for performance reasons")
         }
 
-        Button {
+        RstButton {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
 
@@ -33,7 +33,7 @@ Item {
             }
         }
 
-        Button {
+        RstButton {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
 
@@ -43,7 +43,7 @@ Item {
             }
         }
 
-        Button {
+        RstButton {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
 
