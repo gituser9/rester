@@ -18,7 +18,7 @@ Item {
     id: answerView
 
     property bool isBig: false
-    property int currentIndex: 0
+    property int currentIndex: -1
     property Constants consts: Constants {}
 
     ColumnLayout {
@@ -104,7 +104,7 @@ Item {
             texts: [qsTr("Body"), qsTr("Headers"), qsTr("Cookies")]
             onClicked: idx => {
                 if (idx === 0) {
-                    let size = Util.getAnswerSize(App.query.lastAnswer.byteCount);
+                    let size = Util.getAnswerSize(App.query?.lastAnswer?.byteCount ?? 0);
 
                     if (size.label === "Mb" && size.size > 1) {
                         loader.sourceComponent = bigBody;
@@ -173,7 +173,7 @@ Item {
 
     Timer {
         id: loaderTimer
-        interval: 500
+        interval: 300
         running: true
         repeat: false
     }

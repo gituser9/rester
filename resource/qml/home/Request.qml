@@ -32,11 +32,11 @@ Item {
 
             RstDropdown {
                 id: cbQueryType
-                currentText: Util.getQueryTypeString(App.query.queryType)
-                model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]
+                currentText: Util.getQueryTypeString(App.query?.queryType ?? RstEnums.QueryType.GET)
+                model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
 
                 Layout.leftMargin: 8
-                Layout.preferredWidth: 100
+                Layout.preferredWidth: 110
                 Layout.preferredHeight: requestView.consts.bottomButtonHeight
 
                 onItemSelected: (idx, value) => {

@@ -159,7 +159,6 @@ Item {
     }
 
     // Connections
-
     Connections {
         target: App.grpcQuery
 

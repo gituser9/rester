@@ -58,10 +58,10 @@ signals:
 
 private:
     int _status;
-    QString _body;
-    QVariantMap _headers;
     long _duration;
     long _byteCount;
+    QString _body;
+    QVariantMap _headers;
     QVariantList _cookies;
     const QSet<QString> _cookieFields = {
         "name",

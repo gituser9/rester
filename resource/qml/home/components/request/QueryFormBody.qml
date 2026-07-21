@@ -121,7 +121,7 @@ Item {
                     }
 
                     RstDivider {
-                        Layout.fillWidth: true
+                        width: colVal.width
                         visible: formDelegate.value.indexOf("file://") === -1
                     }
                 }

@@ -220,7 +220,7 @@ QString CurlParser::generateCurl(Query* query) const noexcept // TODO: can stati
     QString currentEnv = vars.value("env", "").toString();
     QVariantList envVars = vars.value(currentEnv).toList();
 
-    QString url = "  --url '" + CurlUtils::buildUrl(query->url(), envVars) + "' \\" + "\n";
+    QString url = "  --url '" + CurlUtils::buildUrl(query->url(), envVars, query->paramList()) + "' \\" + "\n";
     QString method = " --request " + Util::getQueryTypeString(query->queryType()) + " \\" + "\n";
     QString headers = CurlUtils::buildHeaders(query->headerList(), envVars);
     QString curlCommand = "curl" + method + url + headers + buildCurlBody(query);

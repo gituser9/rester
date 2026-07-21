@@ -49,7 +49,7 @@ Popup {
         RstDropdown {
             id: cbQueryType
             currentText: "GET"
-            model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "WS", "GRPC", "GRAPHQL"]
+            model: ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "WS", "GRPC", "GRAPHQL"]
 
             Layout.fillWidth: true
             Layout.preferredHeight: createRequestDialog.consts.bottomButtonHeight

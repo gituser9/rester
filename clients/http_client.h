@@ -62,7 +62,7 @@ private:
     QVariantList _vars;
     QRegularExpression _varRegex;
     std::chrono::steady_clock::time_point _startTime;
-    bool _isRequestWork;
+    bool _isRequestWork = false;
 
     void sendMultipartForm(Query* query, QNetworkRequest request);
     void sendFormUrlEncoded(Query* query, QNetworkRequest request);

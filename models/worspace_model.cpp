@@ -18,6 +18,10 @@ WorkspaceModel::~WorkspaceModel()
 
 int WorkspaceModel::rowCount(const QModelIndex& parent) const
 {
+    if (parent.isValid()) {
+        return 0;
+    }
+
     return _workspaces.count();
 }
 
@@ -105,18 +109,23 @@ QHash<int, QByteArray> WorkspaceModel::roleNames() const
 
 void WorkspaceModel::loadWorkspaces()
 {
+    beginResetModel();
+
     QDir workspacesDir(_workspacesPath);
 
     _workspaces.clear();
+    _allWorkspaces.clear();
 
     QStringList dirs = workspacesDir.entryList();
     auto cap = dirs.size();
     _workspaces.reserve(cap);
     _allWorkspaces.reserve(cap);
 
-    beginResetModel();
-
     for (const QString& fileName : dirs) {
+        if (fileName == "." || fileName == "..") {
+            continue;
+        }
+
         QString path = _workspacesPath + fileName;
         QJsonObject json = Util::getJsonFromFile(path);
 

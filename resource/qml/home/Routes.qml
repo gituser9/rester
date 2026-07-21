@@ -62,6 +62,8 @@ Item {
         RstDivider {
             Layout.fillWidth: true
         }
+
+        // pins
         Pins {
             Layout.fillWidth: true
             Layout.preferredHeight: App.workspace.pins.length * 40
@@ -72,8 +74,11 @@ Item {
             }
         }
         RstDivider {
+            visible: App.workspace.pins.length > 0
             Layout.fillWidth: true
         }
+
+        // routes
         TreeView {
             id: treeViewItem
             clip: true
@@ -248,8 +253,9 @@ Item {
             id: tfFilter
             text: ""
             selectByMouse: true
-            placeholderText: qsTr("Filter (name, body)")
+            placeholderText: qsTr("Filter by name, URL")
             rightPadding: clearBtn.width + 8
+            font.pixelSize: 13
             onTextChanged: {
                 App.routesFilterModel.setFilterText(tfFilter.text);
             }
@@ -259,17 +265,12 @@ Item {
             Layout.leftMargin: 8
             Layout.rightMargin: 8
 
-            Button {
+            RstPlacementButton {
                 id: clearBtn
                 anchors.right: parent.right
+                anchors.rightMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.rightMargin: 4
-                visible: tfFilter.text.length > 0
-                flat: true
-                icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                icon.width: 18
-                icon.height: 18
-                icon.color: 'black'
+                visible: tfFilter.text !== ""
                 onClicked: {
                     tfFilter.clear();
                     tfFilter.forceActiveFocus();
@@ -330,10 +331,6 @@ Item {
         onButtonClicked: (button, role) => {
             switch (button) {
             case MessageDialog.Ok:
-                if (App.query && routesItem.removeUuid === App.query.uuid) {
-                    App.resetQuery();
-                }
-
                 App.routesFilterModel.removeRows(routesItem.currentIndex.row, 1, routesItem.currentIndex.parent);
                 dlgRemoveQuery.close();
 

@@ -32,6 +32,10 @@ RstEnums::QueryType Util::getQueryType(QString typeString)
         return RstEnums::QueryType::HEAD;
     }
 
+    if (typeString == "OPTIONS") {
+        return RstEnums::QueryType::OPTIONS;
+    }
+
     if (typeString == "WS") {
         return RstEnums::QueryType::WS;
     }
@@ -83,6 +87,8 @@ QString Util::getQueryTypeString(RstEnums::QueryType type)
         return "DELETE";
     case RstEnums::QueryType::HEAD:
         return "HEAD";
+    case RstEnums::QueryType::OPTIONS:
+        return "OPTIONS";
     case RstEnums::QueryType::WS:
         return "WS";
     case RstEnums::QueryType::GRPC:

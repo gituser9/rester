@@ -56,14 +56,7 @@ public:
     Q_INVOKABLE void sendToSocket(const QString& data);
     Q_INVOKABLE void loadProto(const QString& filePath);
     Q_INVOKABLE void reloadProto();
-    Q_INVOKABLE void resetQuery();
-
-    void setRoutesModel(const std::shared_ptr<RoutesModel>& newRoutesModel);
-    void setWorkspaceModel(const std::shared_ptr<WorkspaceModel>& newWorkspaceModel);
-    void setHttpClient(const std::shared_ptr<HttpClient>& newHttpClient);
-    void setGrpcClient(const std::shared_ptr<GrpcClient> newHttpClient);
-    void setGraphqlClient(const std::shared_ptr<GraphqlClient> newHttpClient);
-    void setPinModel(const std::shared_ptr<PinModel>& newPinModel);
+    // Q_INVOKABLE void resetQuery(QString uuid);
 
     // Properties
     Workspace* workspace() const;
@@ -103,22 +96,23 @@ signals:
 public slots:
     void setWorkspace(std::shared_ptr<Workspace> workspace);
     void getSocketError(const QString& msg);
+    void resetQuery(const QString &uuid);
 
     // test grpc slot
     // void grpcRequestFinished(const QString& jsonResponse);
     // void requestError(const QString& errorMessage);
 
 private:
-    std::shared_ptr<RoutesModel> _routesModel;
-    std::shared_ptr<RoutesFilterModel> _routesFilterModel;
-    std::shared_ptr<WorkspaceModel> _workspaceModel;
-    std::shared_ptr<PinModel> _pinModel;
+    std::shared_ptr<RoutesModel> _routesModel = nullptr;
+    std::shared_ptr<RoutesFilterModel> _routesFilterModel = nullptr;
+    std::shared_ptr<WorkspaceModel> _workspaceModel = nullptr;
+    std::shared_ptr<PinModel> _pinModel = nullptr;
 
-    std::shared_ptr<HttpClient> _httpClient;
-    std::shared_ptr<GrpcClient> _grpcClient;
-    std::shared_ptr<GraphqlClient> _graphqlClient;
-    std::shared_ptr<WebsocketClient> _webSocketClient;
-    std::shared_ptr<Saver> _saver;
+    std::shared_ptr<HttpClient> _httpClient = nullptr;
+    std::shared_ptr<GrpcClient> _grpcClient = nullptr;
+    std::shared_ptr<GraphqlClient> _graphqlClient = nullptr;
+    std::shared_ptr<WebsocketClient> _webSocketClient = nullptr;
+    std::shared_ptr<Saver> _saver = nullptr;
 
     QThread* _saverThread = nullptr;
     QThread* _wsClientThread = nullptr;
@@ -130,12 +124,21 @@ private:
     Query* _query = nullptr;
     GrpcQuery* _grpcQuery = nullptr;
     GraphqlQuery* _graphqlQuery = nullptr;
-    std::shared_ptr<Workspace> _workspace;
-    std::shared_ptr<Settings> _settings;
+    std::shared_ptr<Workspace> _workspace = nullptr;
+    std::shared_ptr<Settings> _settings = nullptr;
     bool _isActiveSocketConnect;
+
+    void setupWorkspaceModel();
+    void setupRoutesModel();
+    void setupHttpClient();
+    void setupGrpcClient();
+    void setupGraphqlClient();
+    void setupPinModel();
 
     void loadSettings() noexcept;
     void disconnectQueries() noexcept;
+    void disconnectClients() noexcept;
+    void setVars();
 
 private slots:
     // workspace model

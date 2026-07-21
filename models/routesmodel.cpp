@@ -149,15 +149,13 @@ bool RoutesModel::removeRows(int row, int count, const QModelIndex& parent)
     }
 
     QString uuid = child->uuid();
+    emit queryRemoved(uuid);
 
     beginRemoveRows(parent, row, row + count - 1);
-    // beginResetModel();
     parentNode->removeNode(row);
-    // endResetModel();
     endRemoveRows();
 
     emit treeChanged(_currentWorkspace);
-    emit queryRemoved(uuid);
 
     return true;
 }

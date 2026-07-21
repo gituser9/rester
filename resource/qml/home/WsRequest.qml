@@ -88,49 +88,6 @@ Item {
                 }
             }
         }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: 8
-            Layout.rightMargin: 8
-
-            visible: App.isActiveSocketConnect
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 22
-
-                FlickableEdit {
-                    id: tfMsg
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 20
-                    value: ''
-                }
-                RstDivider {
-                    Layout.fillWidth: true
-                }
-            }
-
-            Button {
-                Layout.leftMargin: 8
-                Layout.preferredHeight: wsView.consts.bottomButtonHeight
-
-                text: qsTr("SEND")
-                onClicked: {
-                    if (!tfMsg.value) {
-                        return;
-                    }
-
-                    msgModel.append({
-                        message: tfMsg.value,
-                        type: 'sended'
-                    });
-                    App.sendToSocket(tfMsg.value);
-                    tfMsg.value = '';
-                }
-            }
-        }
-
         ListView {
             id: msgList
             Layout.fillWidth: true
@@ -205,6 +162,46 @@ Item {
                         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                         cursorShape: Qt.PointingHandCursor
                     }
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: 8
+            Layout.rightMargin: 8
+            Layout.bottomMargin: 8
+
+            visible: App.isActiveSocketConnect
+
+            ColumnLayout {
+                Layout.fillWidth: true
+
+                TextField {
+                    id: tfMsg
+                    text: ''
+                    placeholderText: qsTr("Message")
+
+                    Layout.fillWidth: true
+                }
+            }
+
+            Button {
+                Layout.leftMargin: 8
+                Layout.preferredHeight: wsView.consts.bottomButtonHeight
+
+                text: qsTr("SEND")
+                onClicked: {
+                    if (!tfMsg.text) {
+                        return;
+                    }
+
+                    msgModel.append({
+                        message: tfMsg.text,
+                        type: 'sended'
+                    });
+                    App.sendToSocket(tfMsg.text);
+                    tfMsg.text = '';
                 }
             }
         }

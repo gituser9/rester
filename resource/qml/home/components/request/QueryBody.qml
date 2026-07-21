@@ -50,7 +50,7 @@ Item {
 
             RstDropdown {
                 id: cbBodyType
-                currentText: Util.getHumanBodyTypeString(App.query.bodyType)
+                currentText: Util.getHumanBodyTypeString(App.query?.bodyType ?? "None")
                 model: lstBodytype
 
                 Layout.preferredWidth: 180

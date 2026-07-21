@@ -258,6 +258,9 @@ void HttpClient::send(Query* query, QNetworkRequest& request)
     case RstEnums::QueryType::HEAD:
         _reply = _manager->head(request);
         break;
+    case RstEnums::QueryType::OPTIONS:
+        _reply = _manager->sendCustomRequest(request, "OPTIONS");
+        break;
     case RstEnums::QueryType::WS:
     case RstEnums::QueryType::GRPC:
     case RstEnums::QueryType::GRAPHQL:

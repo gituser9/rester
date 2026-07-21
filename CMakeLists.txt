@@ -70,6 +70,7 @@ qt_add_qml_module(
         resource/qml/common/components/uikit/RstPropertyList.qml
         resource/qml/common/components/uikit/RstTabGroup.qml
         resource/qml/common/components/uikit/RstDivider.qml
+        resource/qml/common/components/uikit/RstPlacementButton.qml
 
         # General
         Main.qml
@@ -120,6 +121,7 @@ qt_add_qml_module(
         resource/qml/home/components/answer/AnswerHeaders.qml
         resource/qml/home/components/answer/AnswerPreview.qml
         resource/qml/home/components/answer/AnswerWait.qml
+        resource/qml/home/components/answer/AnswerJsonTree.qml
         resource/qml/home/components/request/QueryBody.qml
         resource/qml/home/components/request/QueryFormBody.qml
         resource/qml/home/components/request/QueryHeaders.qml
@@ -141,6 +143,7 @@ qt_add_qml_module(
         "resource/images/arrow-down-s.svg"
         "resource/images/arrow-up-s.svg"
         "resource/images/arrow-up-down.svg"
+        "resource/images/arrow-right.svg"
         "resource/images/close.svg"
         "resource/images/copy.svg"
         "resource/images/download.svg"
@@ -161,6 +164,8 @@ qt_add_qml_module(
         "resource/images/sound-module-line.svg"
         "resource/images/upload.svg"
         "resource/images/indent-increase.svg"
+        "resource/images/node-tree.svg"
+        "resource/images/text.svg"
 
     DEPENDENCIES
         QtQuick

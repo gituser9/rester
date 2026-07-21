@@ -102,7 +102,7 @@ Item {
             texts: [qsTr("Body"), qsTr("Headers"), qsTr("Cookies")]
             onClicked: idx => {
                 if (idx === 0) {
-                    let size = Util.getAnswerSize(App.graphqlQuery.lastAnswer.byteCount);
+                    let size = Util.getAnswerSize(App.graphqlQuery?.lastAnswer?.byteCount ?? 0);
 
                     if (size.label === "Mb" && size.size > 1) {
                         loader.sourceComponent = bigBody;

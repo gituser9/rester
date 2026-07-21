@@ -27,6 +27,8 @@ Window {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 50
+            Layout.leftMargin: 8
+            Layout.rightMargin: 8
 
             RowLayout {
                 anchors.fill: parent
@@ -37,9 +39,26 @@ Window {
                     text: App.workspace.name === '' ? "Workspace name" : App.workspace.name
                     font.weight: Font.Bold
                     font.pointSize: 18
+                }
+                RstButton {
+                    size: RstButton.ButtonSize.Big
+                    icon: "qrc:/qt/qml/io/rester/resource/images/repeat-line.svg"
+                    onClicked: {
+                        popWorkspaces.open();
 
-                    Layout.leftMargin: 8
-                    Layout.rightMargin: 8
+                        wsLoader.sourceComponent = wsList;
+                    }
+                }
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: parent.height
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: App.query ? App.workspace.nodeFullPath(App.query.uuid) : ""
+                        font.pointSize: 16
+                        font.family: "Monospace"
+                    }
                 }
                 RstDropdown {
                     id: dbEnvs
@@ -80,32 +99,6 @@ Window {
                     }
                 }
                 Button {
-                    flat: true
-                    icon.source: "qrc:/qt/qml/io/rester/resource/images/repeat-line.svg"
-                    icon.width: 24
-                    icon.height: 24
-                    icon.color: 'black'
-                    onClicked: {
-                        popWorkspaces.open();
-
-                        wsLoader.sourceComponent = wsList;
-                    }
-                }
-                Item {
-                    Layout.fillWidth: true
-
-                    height: parent.height
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: App.query ? App.workspace.nodeFullPath(App.query.uuid) : ""
-                        font.pointSize: 16
-                        font.family: "Monospace"
-                    }
-                }
-                Button {
-                    Layout.rightMargin: 8
-
                     text: qsTr("Env")
                     flat: true
                     icon.source: "qrc:/qt/qml/io/rester/resource/images/exchange-dollar.svg"
@@ -282,17 +275,16 @@ Window {
 
     function setSource(typ: int): void {
         let path = "./resource/qml/home/";
-        let typStr = Util.getQueryTypeString(typ);
         let view = '';
 
-        switch (typStr) {
-        case 'WS':
+        switch (typ) {
+        case RstEnums.QueryType.WS:
             view = 'WsRequest.qml';
             break;
-        case 'GRPC':
+        case RstEnums.QueryType.GRPC:
             view = 'GrpcRequest.qml';
             break;
-        case 'GRAPHQL':
+        case RstEnums.QueryType.GRAPHQL:
             view = 'GraphqlRequest.qml';
             break;
         default:
@@ -308,19 +300,18 @@ Window {
         ldrQuery.setSource(path + view);
     }
 
-    function setAnswerSource(typ): void {
+    function setAnswerSource(typ: int): void {
         let path = "./resource/qml/home/";
-        let typStr = Util.getQueryTypeString(typ);
         let view = '';
 
-        switch (typStr) {
-        case 'WS':
+        switch (typ) {
+        case RstEnums.QueryType.WS:
             view = 'Answer.qml';
             break;
-        case 'GRPC':
+        case RstEnums.QueryType.GRPC:
             view = 'GrpcAnswer.qml';
             break;
-        case 'GRAPHQL':
+        case RstEnums.QueryType.GRAPHQL:
             view = 'GraphqlAnswer.qml';
             break;
         default:

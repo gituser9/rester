@@ -255,15 +255,21 @@ Rectangle {
         target: App
 
         function onQueryChanged(): void {
-            requestNode.setState(App.query.uuid);
+            if (App.query) {
+                requestNode.setState(App.query.uuid);
+            }
         }
 
         function onGrpcQueryChanged(): void {
-            requestNode.setState(App.grpcQuery.uuid);
+            if (App.grpcQuery) {
+                requestNode.setState(App.grpcQuery.uuid);
+            }
         }
 
         function onGraphqlQueryChanged(): void {
-            requestNode.setState(App.graphqlQuery.uuid);
+            if (App.graphqlQuery) {
+                requestNode.setState(App.graphqlQuery.uuid);
+            }
         }
     }
 
@@ -281,6 +287,8 @@ Rectangle {
             return '#ff0000';
         case 'HEAD':
             return '#5100cb';
+        case 'OPTIONS':
+            return '#607D8B';
         case 'WS':
             return '#FFA500';
         case 'GRPC':

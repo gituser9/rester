@@ -25,22 +25,10 @@ App::App(QObject* parent) : QObject{parent}
     _saver = std::make_shared<Saver>();
     _saver->moveToThread(_saverThread);
 
-    // setup ws
-    _wsClientThread = new QThread(this);
-    _wsClientThread->start();
-
-    _webSocketClient = std::make_shared<WebsocketClient>();
-    _webSocketClient->moveToThread(_wsClientThread);
-
     // saver connects
     connect(_saver.get(), &Saver::saveError, this, &App::showError);
     connect(this, &App::wsChanged, _saver.get(), &Saver::saveWorkspace, Qt::QueuedConnection);
     connect(this, &App::settingsChanged, _saver.get(), &Saver::saveSettings, Qt::QueuedConnection);
-
-    // ws connects
-    connect(_webSocketClient.get(), &WebsocketClient::received, this, &App::socketReceived);
-    connect(_webSocketClient.get(), &WebsocketClient::connected, this, &App::socketConnected);
-    connect(_webSocketClient.get(), &WebsocketClient::receivedError, this, &App::getSocketError);
 }
 
 App::~App()
@@ -54,6 +42,9 @@ App::~App()
 
 void App::setup()
 {
+    setupRoutesModel();
+    setupPinModel();
+    setupWorkspaceModel();
     loadSettings();
 }
 
@@ -88,9 +79,7 @@ void App::setWorkspace(shared_ptr<Workspace> workspace)
     emit workspaceChanged();
 
     auto currentVars = _vars[_workspace->env()].toList();
-    _httpClient->setVars(currentVars);
-    _grpcClient->setVars(currentVars);
-    _graphqlClient->setVars(currentVars);
+    setVars();
 
     connect(_workspace.get(), &Workspace::pinsChanged, this, &App::queryUpdated);
     connect(_routesModel.get(), &RoutesModel::queryRemoved, _pinModel.get(), &PinModel::remove);
@@ -101,39 +90,66 @@ void App::getSocketError(const QString& msg)
     emit socketError(msg);
 }
 
-void App::setPinModel(const std::shared_ptr<PinModel>& newPinModel)
+void App::setupPinModel()
 {
-    _pinModel = newPinModel;
+    if (_pinModel) {
+        return;
+    }
+
+    _pinModel = std::make_shared<PinModel>(this);
 
     connect(this, &App::wsReload, _pinModel.get(), &PinModel::setWorkspace, Qt::QueuedConnection);
 }
 
-void App::setHttpClient(const std::shared_ptr<HttpClient>& newHttpClient)
+void App::setupHttpClient()
 {
-    _httpClient = newHttpClient;
+    if (_httpClient) {
+        return;
+    }
 
-    // http client model connects
+    disconnectClients();
+
+    _httpClient = std::make_shared<HttpClient>();
+    setVars();
+
     connect(_httpClient.get(), &HttpClient::finished, this, &App::setAnswer, Qt::QueuedConnection);
 }
 
-void App::setGrpcClient(const std::shared_ptr<GrpcClient> newGrpcClient)
+void App::setupGrpcClient()
 {
-    _grpcClient = newGrpcClient;
+    if (_grpcClient) {
+        return;
+    }
+
+    disconnectClients();
+
+    _grpcClient = std::make_shared<GrpcClient>();
+    setVars();
 
     connect(_grpcClient.get(), &GrpcClient::requestFinished, this, &App::setGrpcAnswer, Qt::QueuedConnection);
 }
 
-void App::setGraphqlClient(const std::shared_ptr<GraphqlClient> newHttpClient)
+void App::setupGraphqlClient()
 {
-    _graphqlClient = newHttpClient;
+    if (_graphqlClient) {
+        return;
+    }
+
+    disconnectClients();
+
+    _graphqlClient = std::make_shared<GraphqlClient>();
+    setVars();
 
     connect(_graphqlClient.get(), &GraphqlClient::finished, this, &App::setGraphqlAnswer, Qt::QueuedConnection);
 }
 
-void App::setWorkspaceModel(const std::shared_ptr<WorkspaceModel>& newWorkspaceModel)
+void App::setupWorkspaceModel()
 {
-    _workspaceModel = newWorkspaceModel;
-    _routesFilterModel->setSourceModel(_routesModel.get());
+    if (_workspaceModel) {
+        return;
+    }
+
+    _workspaceModel = std::make_shared<WorkspaceModel>(this);
 
     // workspace model connects
     connect(_workspaceModel.get(), &WorkspaceModel::varsUpdate, this, &App::updateEnvVars);
@@ -143,9 +159,14 @@ void App::setWorkspaceModel(const std::shared_ptr<WorkspaceModel>& newWorkspaceM
     connect(_workspaceModel.get(), &WorkspaceModel::error, this, &App::showError);
 }
 
-void App::setRoutesModel(const std::shared_ptr<RoutesModel>& newRoutesModel)
+void App::setupRoutesModel()
 {
-    _routesModel = newRoutesModel;
+    if (_routesModel) {
+        return;
+    }
+
+    _routesModel = std::make_shared<RoutesModel>(this);
+    _routesFilterModel->setSourceModel(_routesModel.get());
 
     // routes model connects
     connect(_routesModel.get(), &RoutesModel::treeChanged, _saver.get(), &Saver::saveWorkspace, Qt::QueuedConnection);
@@ -153,6 +174,7 @@ void App::setRoutesModel(const std::shared_ptr<RoutesModel>& newRoutesModel)
     connect(_routesModel.get(), &RoutesModel::setGrpcQuery, this, &App::setGrpcQuery);
     connect(_routesModel.get(), &RoutesModel::setGraphqlQuery, this, &App::setGraphqlQuery);
     connect(_routesModel.get(), &RoutesModel::error, this, &App::showError);
+    connect(_routesModel.get(), &RoutesModel::queryRemoved, this, &App::resetQuery, Qt::DirectConnection);
 
     connect(this, &App::wsReload, _routesModel.get(), &RoutesModel::loadTree, Qt::QueuedConnection);
 }
@@ -198,11 +220,7 @@ void App::setFromCurl(const QString& curl)
 void App::setEnv(const QString& env)
 {
     _workspace->setEnv(env);
-
-    auto currentVars = _workspace->variables()[env].toList();
-    _httpClient->setVars(currentVars);
-    _grpcClient->setVars(currentVars);
-    _graphqlClient->setVars(currentVars);
+    setVars();
 }
 
 void App::send()
@@ -239,6 +257,7 @@ void App::setQueryByUuid(const QString& uuid)
         emit queryChanged();
 
         connect(_query, &Query::dataChanged, this, &App::queryUpdated);
+        setupHttpClient();
     }
 
     if (node->nodeType() == RstEnums::NodeType::GrpcQueryNode) {
@@ -250,6 +269,7 @@ void App::setQueryByUuid(const QString& uuid)
         emit grpcQueryChanged();
 
         connect(_grpcQuery, &GrpcQuery::dataChanged, this, &App::queryUpdated);
+        setupGrpcClient();
     }
 
     if (node->nodeType() == RstEnums::NodeType::GraphqlQueryNode) {
@@ -261,20 +281,46 @@ void App::setQueryByUuid(const QString& uuid)
         emit graphqlQueryChanged();
 
         connect(_graphqlQuery, &GraphqlQuery::dataChanged, this, &App::queryUpdated);
+        setupGraphqlClient();
     }
 }
 
 void App::connectToSocket()
 {
+    if (_isActiveSocketConnect) {
+        return;
+    }
+
+    _wsClientThread = new QThread(this);
+    _wsClientThread->start();
+
+    _webSocketClient = std::make_shared<WebsocketClient>();
+    _webSocketClient->moveToThread(_wsClientThread);
+
+    // ws connects
+    connect(_webSocketClient.get(), &WebsocketClient::received, this, &App::socketReceived);
+    connect(_webSocketClient.get(), &WebsocketClient::connected, this, &App::socketConnected);
+    connect(_webSocketClient.get(), &WebsocketClient::receivedError, this, &App::getSocketError);
+
     QString env = _workspace->env();
     QVariantList currentVars = _workspace->variables()[env].toList();
 
     _webSocketClient->open(_query->url(), currentVars);
+    setIsActiveSocketConnect(true);
 }
 
 void App::disconnectSocket()
 {
-    _webSocketClient->close();
+    if (_webSocketClient) {
+        _webSocketClient->close();
+        _webSocketClient->disconnect();
+        _webSocketClient.reset();
+    }
+
+    if (_wsClientThread && _wsClientThread->isRunning()) {
+        _wsClientThread->quit();
+    }
+
     setIsActiveSocketConnect(false);
 }
 
@@ -307,6 +353,8 @@ void App::loadProto(const QString& filePath)
     if (srv.count() == 1) {
         _grpcQuery->setSrv(srv[0]);
     }
+
+    emit grpcQueryChanged();
 }
 
 void App::reloadProto()
@@ -324,13 +372,24 @@ void App::reloadProto()
     loadProto(_grpcQuery->filePath());
 }
 
-void App::resetQuery()
+void App::resetQuery(const QString& uuid)
 {
     disconnectQueries();
 
-    _query = nullptr;
-    _grpcQuery = nullptr;
-    _graphqlQuery = nullptr;
+    if (_query && _query->uuid() == uuid) {
+        _query = nullptr;
+        emit queryChanged();
+    }
+
+    if (_grpcQuery && _grpcQuery->uuid() == uuid) {
+        _grpcQuery = nullptr;
+        emit grpcQueryChanged();
+    }
+
+    if (_graphqlQuery && _graphqlQuery->uuid() == uuid) {
+        _graphqlQuery = nullptr;
+        emit graphqlQueryChanged();
+    }
 }
 
 Query* App::query() const
@@ -345,6 +404,8 @@ GrpcQuery* App::grpcQuery() const
 
 void App::setQuery(Query* query)
 {
+    setupHttpClient();
+
     if (_query == query) {
         return;
     }
@@ -364,6 +425,8 @@ void App::setQuery(Query* query)
 
 void App::setGrpcQuery(GrpcQuery* query)
 {
+    setupGrpcClient();
+
     if (_grpcQuery == query) {
         return;
     }
@@ -383,6 +446,8 @@ void App::setGrpcQuery(GrpcQuery* query)
 
 void App::setGraphqlQuery(GraphqlQuery* query)
 {
+    setupGraphqlClient();
+
     if (_graphqlQuery == query) {
         return;
     }
@@ -454,10 +519,6 @@ void App::loadSettings() noexcept
         }
 
         _vars = _workspace->variables();
-
-        auto currentVars = _vars[_workspace->env()].toList();
-        _httpClient->setVars(currentVars);
-        _grpcClient->setVars(currentVars);
     }
 
     _workspace->setLastUsageAt(QDateTime::currentMSecsSinceEpoch());
@@ -489,15 +550,46 @@ void App::disconnectQueries() noexcept
     }
 }
 
+void App::disconnectClients() noexcept
+{
+    if (_httpClient) {
+        _httpClient->disconnect();
+        _httpClient.reset();
+    }
+
+    if (_grpcClient) {
+        _grpcClient->disconnect();
+        _grpcClient.reset();
+    }
+
+    if (_graphqlClient) {
+        _graphqlClient->disconnect();
+        _graphqlClient.reset();
+    }
+}
+
+void App::setVars()
+{
+    QString currentEnv = _workspace->env();
+    QVariantList currentVars = _workspace->variables()[currentEnv].toList();
+
+    if (_httpClient) {
+        _httpClient->setVars(currentVars);
+    }
+
+    if (_grpcClient) {
+        _grpcClient->setVars(currentVars);
+    }
+
+    if (_graphqlClient) {
+        _graphqlClient->setVars(currentVars);
+    }
+}
+
 void App::updateEnvVars(const QVariantMap& vars)
 {
     _vars = vars;
     _workspace->setVariables(vars);
-
-    auto currentVars = vars[_workspace->env()].toList();
-    _httpClient->setVars(currentVars);
-    _grpcClient->setVars(currentVars);
-    _graphqlClient->setVars(currentVars);
 
     emit wsChanged(_workspace);
     emit workspaceChanged();

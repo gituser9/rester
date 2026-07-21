@@ -42,9 +42,10 @@ public:
         PATCH = 3,
         DELETE = 4,
         HEAD = 5,
-        WS = 6,
-        GRPC = 7,
-        GRAPHQL = 8
+        OPTIONS = 6,
+        WS = 7,
+        GRPC = 8,
+        GRAPHQL = 9
     };
     Q_ENUM(QueryType)
 

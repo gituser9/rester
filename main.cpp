@@ -29,20 +29,8 @@ int main(int argc, char* argv[])
 #endif
 
     auto util = std::make_shared<Util>();
-    auto routesModel = std::make_shared<RoutesModel>();
-    auto workspaceModel = std::make_shared<WorkspaceModel>();
-    auto pinModel = std::make_shared<PinModel>();
-    auto httpClient = std::make_shared<HttpClient>();
-    auto grpcClient = std::make_shared<GrpcClient>();
-    auto graphqlClient = std::make_shared<GraphqlClient>();
 
     App* core = new App(&app);
-    core->setRoutesModel(routesModel);
-    core->setWorkspaceModel(workspaceModel);
-    core->setPinModel(pinModel);
-    core->setHttpClient(httpClient);
-    core->setGrpcClient(grpcClient);
-    core->setGraphqlClient(graphqlClient);
     core->setup();
 
     QQmlEngine::setObjectOwnership(core, QQmlEngine::CppOwnership);
