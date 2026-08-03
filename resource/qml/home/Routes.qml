@@ -91,7 +91,7 @@ Item {
 
             delegate: ItemDelegate {
                 id: root
-                implicitHeight: rowHeight
+                implicitHeight: rowHeight + 4
                 implicitWidth: treeViewItem.width
 
                 required property bool current
@@ -133,12 +133,18 @@ Item {
                 Rectangle {
                     id: dragContainer
                     color: 'transparent'
-                    implicitHeight: 45
                     implicitWidth: treeViewItem.width
 
                     Loader {
                         id: nodeLoader
-                        sourceComponent: root.nodeType === RstEnums.NodeType.FolderNode ? folderComponent : queryComponent
+                        sourceComponent: {
+                            switch (root.nodeType) {
+                            case RstEnums.NodeType.FolderNode:
+                                return folderComponent;
+                            default:
+                                return queryComponent;
+                            }
+                        }
                     }
                 }
                 Component {

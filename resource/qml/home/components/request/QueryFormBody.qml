@@ -13,18 +13,22 @@ import io.rester
 import "../../../common/components"
 
 Item {
-    id: queryFormBody
+    id: root
     anchors.fill: parent
 
-    property bool isMultipart: true
+    required property int bodyType
     property string fileFieldName
     property int fileIndex: -1
+    readonly property Constants consts: Constants {}
 
     signal changeFormValue(int index)
 
+    onBodyTypeChanged: {
+        root.fillData();
+    }
+
     Component.onCompleted: {
-        queryFormBody.checkIsMultipart();
-        queryFormBody.fillData();
+        root.fillData();
     }
 
     ListView {
@@ -53,7 +57,7 @@ Item {
                     checked: formDelegate.isEnabled
                     onClicked: {
                         formDataModel.setProperty(formDelegate.index, "isEnabled", cbEnabled.checkState === Qt.Checked);
-                        queryFormBody.changeFormValue(formDelegate.index);
+                        root.changeFormValue(formDelegate.index);
                     }
                 }
 
@@ -94,13 +98,13 @@ Item {
 
                         RowLayout {
                             anchors.centerIn: parent
-                            spacing: 8
+                            spacing: root.consts.space
 
                             Text {
                                 Layout.maximumWidth: colVal.width - 30
 
                                 clip: true
-                                text: queryFormBody.extractFileName(formDelegate.value)
+                                text: root.extractFileName(formDelegate.value)
                             }
                             Image {
                                 sourceSize.width: 14
@@ -127,25 +131,19 @@ Item {
                 }
                 // file button
                 Row {
-                    Button {
-                        visible: isMultipart
-                        flat: true
-                        icon.source: "qrc:/qt/qml/io/rester/resource/images/file-upload.svg"
-                        icon.width: 18
-                        icon.height: 18
-                        icon.color: 'black'
+                    RstButton {
+                        visible: App.query.queryType === RstEnums.BodyType.MULTIPART_FORM
+                        size: RstButton.ButtonSize.Tool
+                        icon: "qrc:/qt/qml/io/rester/resource/images/file-upload.svg"
                         onClicked: {
                             fileIndex = formDelegate.index;
                             fileFieldName = tfFormDataName.value;
                             fileDialog.open();
                         }
                     }
-                    Button {
-                        flat: true
-                        icon.source: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                        icon.width: 18
-                        icon.height: 18
-                        icon.color: 'black'
+                    RstButton {
+                        size: RstButton.ButtonSize.Tool
+                        icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                         onClicked: {
                             App.query.removeFormDateItem(formDelegate.index);
                             formDataModel.remove(formDelegate.index);
@@ -159,18 +157,15 @@ Item {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignRight
 
-        spacing: 8
+        spacing: root.consts.space
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8
+        anchors.bottomMargin: root.consts.space
         anchors.right: parent.right
 
-        Button {
+        RstButton {
+            size: RstButton.ButtonSize.Tool
             text: qsTr("Add")
-            flat: true
-            icon.source: "qrc:/qt/qml/io/rester/resource/images/add.svg"
-            icon.width: 22
-            icon.height: 22
-            icon.color: 'black'
+            icon: "qrc:/qt/qml/io/rester/resource/images/add.svg"
             onClicked: {
                 formDataModel.append({
                     "name": '',
@@ -211,25 +206,21 @@ Item {
         target: App
 
         function onQueryChanged(): void {
-            queryFormBody.checkIsMultipart();
-
-            if (isMultipart) {
-                queryFormBody.fillData();
-            }
+            root.fillData();
         }
     }
 
     Connections {
-        target: queryFormBody
+        target: root
 
         function changeFormValue(idx: int): void {
-            queryFormBody.sync(idx);
+            root.sync(idx);
         }
     }
 
     Timer {
         id: syncTimer
-        interval: 500
+        interval: 300
         running: true
         repeat: false
     }
@@ -252,14 +243,6 @@ Item {
                 "name": fd.name,
                 "value": fd.value
             });
-        }
-    }
-
-    function checkIsMultipart(): void {
-        if (App.query !== null) {
-            isMultipart = App.query.bodyType === 2;
-        } else {
-            isMultipart = false;
         }
     }
 

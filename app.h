@@ -33,9 +33,9 @@ class App : public QObject
     Q_PROPERTY(RoutesModel* routesModel READ routesModel CONSTANT)
     Q_PROPERTY(PinModel* pinModel READ pinModel CONSTANT)
     Q_PROPERTY(WorkspaceModel* workspaceModel READ workspaceModel CONSTANT)
-    Q_PROPERTY(HttpClient* httpClient READ httpClient CONSTANT)
-    Q_PROPERTY(GrpcClient* grpcClient READ grpcClient CONSTANT)
-    Q_PROPERTY(GraphqlClient* graphqlClient READ graphqlClient CONSTANT)
+    Q_PROPERTY(HttpClient* httpClient READ httpClient NOTIFY httpClientChanged FINAL)
+    Q_PROPERTY(GrpcClient* grpcClient READ grpcClient NOTIFY grpcClientChanged FINAL)
+    Q_PROPERTY(GraphqlClient* graphqlClient READ graphqlClient NOTIFY graphqlClientChanged FINAL)
     Q_PROPERTY(RoutesFilterModel* routesFilterModel READ routesFilterModel CONSTANT)
 
 public:
@@ -92,11 +92,14 @@ signals:
     void workspaceChanged();
     void settingsChanged(std::shared_ptr<Settings>);
     void isActiveSocketConnectChanged();
+    void httpClientChanged();
+    void grpcClientChanged();
+    void graphqlClientChanged();
 
 public slots:
     void setWorkspace(std::shared_ptr<Workspace> workspace);
     void getSocketError(const QString& msg);
-    void resetQuery(const QString &uuid);
+    void resetQuery(const QString& uuid);
 
     // test grpc slot
     // void grpcRequestFinished(const QString& jsonResponse);

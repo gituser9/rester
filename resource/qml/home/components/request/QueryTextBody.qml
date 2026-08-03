@@ -11,26 +11,32 @@ import io.rester
 import "../../../"
 
 Item {
-    id: txtBodyView
+    id: root
     anchors.fill: parent
 
+    required property int bodyType
+    required property string body
     property bool isQueryExists: false
 
-    Component.onCompleted: {
-        if (App.query === null) {
-            return;
+    signal editingFinished(string txt)
+
+    onBodyTypeChanged: {
+        root.setHighlighter();
+    }
+
+    RstButton {
+        z: 100
+        visible: App.grpcQuery && taQueryBody.text.length === 0
+        anchors.right: root.right
+        anchors.top: root.top
+        anchors.topMargin: 8
+        anchors.rightMargin: 8
+        text: qsTr("Generate")
+        icon: "qrc:/qt/qml/io/rester/resource/images/magic.svg"
+        onClicked: {
+            let emptyBoby = App.grpcClient.generateBody(App.grpcQuery);
+            App.grpcQuery.body = emptyBoby;
         }
-
-        txtBodyView.setHighlighter();
-        taQueryBody.text = App.query.body;
-    }
-
-    HtmlSyntaxHighlighter {
-        id: htmlHilighter
-    }
-
-    JsonSyntaxHighlighter {
-        id: jsonHilighter
     }
 
     ScrollView {
@@ -40,70 +46,44 @@ Item {
             id: taQueryBody
             verticalAlignment: TextEdit.AlignTop
             font.family: "Monospace"
+            text: root.body
             tabStopDistance: 32
             onEditingFinished: {
-                App.query.body = taQueryBody.text;
+                root.editingFinished(taQueryBody.text);
             }
         }
     }
 
-    Connections {
-        target: App
-
-        function onQueryChanged(): void {
-            if (App.query === null) {
-                return;
-            }
-
-            txtBodyView.setHighlighter();
-            taQueryBody.text = App.query.body;
-        }
+    // Types
+    HtmlSyntaxHighlighter {
+        id: htmlHilighter
     }
 
-    Connections {
-        target: App.query
-
-        function onBodyChanged(): void {
-            taQueryBody.text = App.query.body;
-        }
-
-        function onBodyTypeChanged(): void {
-            txtBodyView.setHighlighter();
-        }
+    JsonSyntaxHighlighter {
+        id: jsonHilighter
     }
 
-    function clear(): void {
-        App.query.body = '';
+    GraphqlSyntaxHighlighter {
+        id: graphqlSyntaxHighlighter
     }
 
+    // Funcs
     function copy(): void {
         taQueryBody.selectAll();
         taQueryBody.copy();
     }
 
     function setHighlighter(): void {
-        let bodyType = getBodyType();
-
-        switch (bodyType) {
-        case 'json':
+        switch (root.bodyType) {
+        case RstEnums.BodyType.JSON:
             jsonHilighter.setDocument(taQueryBody.textDocument);
             break;
-        case 'html':
-        case 'xml':
+        case RstEnums.BodyType.GRAPHQL:
+            graphqlSyntaxHighlighter.setDocument(taQueryBody.textDocument);
+            break;
+        case RstEnums.BodyType.HTML:
+        case RstEnums.BodyType.XML:
             htmlHilighter.setDocument(taQueryBody.textDocument);
-        }
-    }
-
-    function getBodyType(): string {
-        switch (App.query.bodyType) {
-        case 1:
-            return 'json';
-        case 4:
-            return 'xml';
-        case 5:
-            return 'html';
-        default:
-            return '';
         }
     }
 }

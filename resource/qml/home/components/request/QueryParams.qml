@@ -14,6 +14,8 @@ import "../../../common/components/uikit"
 
 Rectangle {
     id: winParam
+
+    required property var params
     property string fullUrl: ""
 
     signal changeParam(int index)
@@ -100,67 +102,23 @@ Rectangle {
             }
         }
 
-        RstPropertyList {
-            id: lstProps
-            propertyModel: paramModel
+        QueryParamList {
+            params: winParam.params
+            onParamsChanged: {
+                winParam.fillUrl();
+            }
+            onAddParam: {
+                App.query.addParam('', '');
+            }
+            onRemoveParam: idx => {
+                App.query.removeParam(idx);
+            }
+            onSetParam: (idx, name, val, enabled) => {
+                App.query.setParam(idx, name, val, enabled);
+            }
 
             Layout.fillWidth: true
             Layout.fillHeight: true
-
-            onCheckBoxClicked: idx => {
-                winParam.fillUrl();
-                winParam.changeParam(idx);
-            }
-            onNameChanged: (idx, value) => {
-                let param = paramModel.get(idx);
-                App.query.setParam(idx, value, param.value, param.isEnabled);
-                winParam.fillUrl();
-            }
-            onValueChanged: (idx, value) => {
-                let param = paramModel.get(idx);
-                App.query.setParam(idx, param.name, value, param.isEnabled);
-                winParam.fillUrl();
-            }
-            onRemoved: idx => {
-                App.query.removeParam(idx);
-                winParam.fillUrl();
-            }
-        }
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignRight | Qt.AlignBottom
-            Layout.bottomMargin: 8
-
-            spacing: 8
-
-            RstButton {
-                visible: paramModel.count > 0
-                text: qsTr("Clear")
-                icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
-                onClicked: {
-                    paramModel.clear();
-                    App.query.params = [];
-                }
-            }
-            Item {
-                Layout.fillWidth: true
-            }
-            RstButton {
-                text: qsTr("Add")
-                icon: "qrc:/qt/qml/io/rester/resource/images/add.svg"
-                onClicked: {
-                    paramModel.append({
-                        "name": '',
-                        "value": '',
-                        "isEnabled": true
-                    });
-                    App.query.addParam('', '');
-                }
-            }
-        }
-
-        ListModel {
-            id: paramModel
         }
     }
 
@@ -176,7 +134,7 @@ Rectangle {
 
     Timer {
         id: syncTimer
-        interval: 500
+        interval: 300
         running: true
         repeat: false
     }
@@ -185,18 +143,10 @@ Rectangle {
         target: App
 
         function onQueryChanged(): void {
-            paramModel.clear();
+            // paramModel.clear();
             winParam.fullUrl = "";
 
             winParam.fillData();
-        }
-    }
-
-    Connections {
-        target: winParam
-
-        function onChangeParam(idx: int): void {
-            winParam.sync(idx);
         }
     }
 
@@ -255,15 +205,7 @@ Rectangle {
         }
 
         // params
-        paramModel.clear();
-
         for (let p of App.query.params) {
-            paramModel.append({
-                "name": p.name,
-                "value": p.value,
-                "isEnabled": p.isEnabled
-            });
-
             let pValue = p.value;
 
             if (vars) {
@@ -299,9 +241,7 @@ Rectangle {
 
         url = urlArr[0] + '?';
 
-        for (let i = 0; i < paramModel.count; ++i) {
-            const param = paramModel.get(i);
-
+        for (let param of App.query.params) {
             if (!param.isEnabled) {
                 continue;
             }

@@ -14,12 +14,15 @@ import "../../../common/components/uikit"
 Rectangle {
     id: answerHeadersView
 
+    required property var headers
     property int rowHeight: 40
 
+    onHeadersChanged: {
+        answerHeadersView.fillHeaders(answerHeadersView.headers);
+    }
+
     Component.onCompleted: {
-        if (App.query?.lastAnswer) {
-            answerHeadersView.fillHeaders(App.query.lastAnswer.headers);
-        }
+        answerHeadersView.fillHeaders(answerHeadersView.headers);
     }
 
     ListView {
@@ -109,26 +112,27 @@ Rectangle {
     }
 
     Connections {
-        target: App.httpClient
-
-        // TODO: type
-        function onFinished(answer: var): void {
-            answerHeadersView.fillHeaders(answer.headers);
-        }
-    }
-
-    Connections {
         target: App
 
         function onQueryChanged(): void {
-            if (App.query?.lastAnswer) {
-                answerHeadersView.fillHeaders(App.query.lastAnswer.headers);
-            }
+            answerHeadersView.fillHeaders(answerHeadersView.headers);
+        }
+
+        function onGrpcQueryChanged(): void {
+            answerHeadersView.fillHeaders(answerHeadersView.headers);
+        }
+
+        function onGraphqlQueryChanged(): void {
+            answerHeadersView.fillHeaders(answerHeadersView.headers);
         }
     }
 
     function fillHeaders(headers: var): void {
         answerHeadersModel.clear();
+
+        if (!headers) {
+            return;
+        }
 
         for (let key in headers) {
             let data = {

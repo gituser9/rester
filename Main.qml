@@ -1,3 +1,7 @@
+pragma ComponentBehavior: Bound
+pragma ValueTypeBehavior: Addressable
+pragma FunctionSignatureBehavior: Enforced
+
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls.Imagine
@@ -66,7 +70,6 @@ Window {
 
                     Layout.alignment: Qt.AlignVCenter
                     Layout.minimumWidth: 60
-                    // Layout.maximumWidth: 200
 
                     Component.onCompleted: {
                         if (App.workspace) {
@@ -233,16 +236,24 @@ Window {
         anchors.centerIn: parent
         height: parent.height / 1.5
         width: parent.width / 2
-        modal: true
+        modal: false
+        dim: true
         focus: true
-        popupType: Popup.Item
-        // popupType: Popup.Window
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         onClosed: {
             wsLoader.active = false;
         }
         onOpened: {
             wsLoader.active = true;
+        }
+
+        Overlay.modeless: Rectangle {
+            color: Qt.rgba(0, 0, 0, 0.3)
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: popWorkspaces.close()
+            }
         }
 
         Loader {
@@ -309,10 +320,10 @@ Window {
             view = 'Answer.qml';
             break;
         case RstEnums.QueryType.GRPC:
-            view = 'GrpcAnswer.qml';
+            view = 'Answer.qml';
             break;
         case RstEnums.QueryType.GRAPHQL:
-            view = 'GraphqlAnswer.qml';
+            view = 'Answer.qml';
             break;
         default:
             view = 'Answer.qml';
@@ -340,12 +351,6 @@ Window {
             return true;
         }
 
-        let typStr = '';
-
-        if (App.query) {
-            typStr = Util.getQueryTypeString(App.query.queryType);
-        }
-
-        return typStr !== 'WS';
+        return App.query.queryType !== RstEnums.QueryType.WS;
     }
 }

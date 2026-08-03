@@ -13,14 +13,14 @@ import "../common/components"
 import "../common/components/uikit"
 
 Item {
-    id: requestView
+    id: root
 
     property Constants consts: Constants {}
     property int currentIndex: 0
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 8
+        spacing: root.consts.space
 
         RowLayout {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
@@ -37,7 +37,7 @@ Item {
 
                 Layout.leftMargin: 8
                 Layout.preferredWidth: 110
-                Layout.preferredHeight: requestView.consts.bottomButtonHeight
+                Layout.preferredHeight: root.consts.bottomButtonHeight
 
                 onItemSelected: (idx, value) => {
                     App.query.queryType = Util.getQueryType(value);
@@ -46,7 +46,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredWidth: 80
-                Layout.preferredHeight: requestView.consts.bottomButtonHeight
+                Layout.preferredHeight: root.consts.bottomButtonHeight
 
                 border.width: 1
                 border.color: 'lightgrey'
@@ -68,11 +68,11 @@ Item {
             Rectangle {
                 Layout.rightMargin: 8
                 Layout.preferredWidth: 80
-                Layout.preferredHeight: requestView.consts.bottomButtonHeight
+                Layout.preferredHeight: root.consts.bottomButtonHeight
 
                 Button {
                     anchors.fill: parent
-                    height: requestView.consts.bottomButtonHeight
+                    height: root.consts.bottomButtonHeight
                     text: qsTr("SEND")
                     onClicked: {
                         if (tfUrl.text.indexOf('curl ') !== -1) {
@@ -91,26 +91,78 @@ Item {
         RstTabGroup {
             id: tabs
             texts: [qsTr("Body"), qsTr("Query"), qsTr("Headers")]
-            onClicked: idx => {
-                requestView.setSource(idx);
-            }
 
             Layout.fillWidth: true
-            Layout.rightMargin: 8
-            Layout.leftMargin: 8
-            Layout.preferredHeight: requestView.consts.bottomButtonHeight
+            Layout.rightMargin: root.consts.space
+            Layout.leftMargin: root.consts.space
+            Layout.preferredHeight: root.consts.bottomButtonHeight
         }
 
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.rightMargin: 8
-            Layout.leftMargin: 8
+            Layout.rightMargin: root.consts.space
+            Layout.leftMargin: root.consts.space
 
             Loader {
                 id: loader
                 asynchronous: true
                 anchors.fill: parent
+                sourceComponent: {
+                    switch (tabs.currentIdx) {
+                    case 0:
+                        return queryBody;
+                    case 1:
+                        return queryParams;
+                    case 2:
+                        return headers;
+                    default:
+                        return queryBody;
+                    }
+                }
+            }
+        }
+    }
+
+    // Components
+    Component {
+        id: queryParams
+
+        QueryParams {
+            params: App.query.params
+        }
+    }
+    Component {
+        id: headers
+
+        QueryParamList {
+            params: App.query.headers
+            onAddParam: {
+                App.query.addHeader('', '');
+            }
+            onRemoveParam: idx => {
+                App.query.removeHeader(idx);
+            }
+            onSetParam: (idx, name, val, enabled) => {
+                App.query.setHeader(idx, name, val, enabled);
+            }
+        }
+    }
+    Component {
+        id: queryBody
+
+        QueryBody {
+            body: App.query.body
+            bodyType: App.query.bodyType
+            onEditingFinished: txt => {
+                App.query.body = txt;
+            }
+            onSetBodyType: typ => {
+                App.query.bodyType = typ;
+                root.setContentTypeHeader(typ);
+            }
+            onClear: {
+                App.query.body = '';
             }
         }
     }
@@ -130,26 +182,29 @@ Item {
     }
 
     // Funcs
-    function setSource(idx: int): string {
-        currentIndex = idx;
-        let path = "./components/request/";
-
-        switch (idx) {
-        case 0:
-            path += "QueryBody.qml";
-            break;
-        case 1:
-            path += "QueryParams.qml";
-            break;
-        case 2:
-            path += "QueryHeaders.qml";
-            break;
-        default:
-            path += "QueryBody.qml";
+    function setContentTypeHeader(bodyType: int): void {
+        if (!App.query) {
+            return;
         }
 
-        loader.setSource(path);
+        let headers = App.query.headers;
 
-        return path;
+        switch (bodyType) {
+        case RstEnums.BodyType.JSON:
+            App.query.setHeader("Content-Type", "application/json; charset=UTF-8");
+            break;
+        case RstEnums.BodyType.XML:
+            App.query.setHeader("Content-Type", "application/xml");
+            break;
+        case RstEnums.BodyType.MULTIPART_FORM:
+            App.query.setHeader("Content-Type", "multipart/form-data");
+            break;
+        case RstEnums.BodyType.URL_ENCODED_FORM:
+            App.query.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            break;
+        case RstEnums.BodyType.NONE:
+            App.query.removeHeader("Content-Type");
+            break;
+        }
     }
 }

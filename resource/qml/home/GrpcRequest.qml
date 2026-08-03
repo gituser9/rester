@@ -14,35 +14,33 @@ import "./../"
 import "../common/components"
 
 Item {
-    id: grpcView
+    id: root
 
     property Constants consts: Constants {}
     property int currentIndex: 0
 
     Component.onCompleted: {
         if (isEmptyQuery()) {
-            grpcView.currentIndex = -1;
+            root.currentIndex = -1;
         }
-
-        grpcView.setSource(grpcView.currentIndex);
     }
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 8
+        spacing: root.consts.space
 
         RowLayout {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.topMargin: grpcView.consts.space
+            Layout.topMargin: root.consts.space
             Layout.bottomMargin: 5
             Layout.preferredWidth: parent.width
 
-            spacing: 8
+            spacing: root.consts.space
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.leftMargin: grpcView.consts.space
-                Layout.preferredHeight: grpcView.consts.bottomButtonHeight
+                Layout.leftMargin: root.consts.space
+                Layout.preferredHeight: root.consts.bottomButtonHeight
 
                 border.width: 1
                 border.color: 'lightgrey'
@@ -63,13 +61,13 @@ Item {
                 }
             }
             Rectangle {
-                Layout.rightMargin: grpcView.consts.space
+                Layout.rightMargin: root.consts.space
                 Layout.preferredWidth: 80
-                Layout.preferredHeight: grpcView.consts.bottomButtonHeight
+                Layout.preferredHeight: root.consts.bottomButtonHeight
 
                 Button {
                     anchors.fill: parent
-                    height: grpcView.consts.bottomButtonHeight
+                    height: root.consts.bottomButtonHeight
                     text: qsTr("SEND")
                     onClicked: {
                         App.callGrpc();
@@ -79,15 +77,16 @@ Item {
         }
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: grpcView.consts.bottomButtonHeight
-            Layout.leftMargin: grpcView.consts.space
-            Layout.rightMargin: grpcView.consts.space
+            Layout.preferredHeight: root.consts.bottomButtonHeight
+            Layout.leftMargin: root.consts.space
+            Layout.rightMargin: root.consts.space
 
-            spacing: grpcView.consts.space
+            visible: root.currentIndex !== -1
+            spacing: root.consts.space
 
             // upload btn
             RstButton {
-                implicitHeight: grpcView.consts.bottomButtonHeight
+                implicitHeight: root.consts.bottomButtonHeight
                 size: RstButton.ButtonSize.Small
                 tooltip: qsTr("Reload from filesystem")
                 tooltipAfter: qsTr("Reloaded")
@@ -109,7 +108,7 @@ Item {
 
                 Layout.fillWidth: true
                 Layout.preferredWidth: parent.width / 2
-                Layout.preferredHeight: grpcView.consts.bottomButtonHeight
+                Layout.preferredHeight: root.consts.bottomButtonHeight
             }
 
             // list of rpc
@@ -124,7 +123,7 @@ Item {
 
                 Layout.fillWidth: true
                 Layout.preferredWidth: parent.width / 2
-                Layout.preferredHeight: grpcView.consts.bottomButtonHeight
+                Layout.preferredHeight: root.consts.bottomButtonHeight
             }
         }
         RstDivider {
@@ -133,29 +132,83 @@ Item {
 
         RstTabGroup {
             id: tabs
+            visible: root.currentIndex !== -1
             texts: [qsTr("Body"), qsTr("Meta")]
             onClicked: idx => {
-                grpcView.setSource(idx);
+                if (idx === 0 && root.isEmptyQuery()) {
+                    root.currentIndex = -1;
+                    return;
+                }
+                root.currentIndex = idx;
             }
 
             Layout.fillWidth: true
-            Layout.rightMargin: 8
-            Layout.leftMargin: 8
-            Layout.preferredHeight: grpcView.consts.bottomButtonHeight
+            Layout.rightMargin: root.consts.space
+            Layout.leftMargin: root.consts.space
+            Layout.preferredHeight: root.consts.bottomButtonHeight
         }
 
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.rightMargin: grpcView.consts.space
-            Layout.leftMargin: grpcView.consts.space
+            Layout.rightMargin: root.consts.space
+            Layout.leftMargin: root.consts.space
 
             Loader {
                 id: loader
                 asynchronous: true
                 anchors.fill: parent
+                sourceComponent: {
+                    switch (root.currentIndex) {
+                    case 0:
+                        return queryBody;
+                    case 1:
+                        return meta;
+                    case -1:
+                        return emptyQuery;
+                    default:
+                        return queryBody;
+                    }
+                }
             }
         }
+    }
+
+    // Components
+    Component {
+        id: meta
+
+        QueryParamList {
+            params: App.grpcQuery.meta
+            onAddParam: {
+                App.grpcQuery.addMetaItem('', '');
+            }
+            onRemoveParam: idx => {
+                App.grpcQuery.removeMetaItem(idx);
+            }
+            onSetParam: (idx, name, val, enabled) => {
+                App.grpcQuery.setMetaItem(idx, name, val, enabled);
+            }
+        }
+    }
+    Component {
+        id: queryBody
+
+        QueryBody {
+            body: App.grpcQuery.body
+            bodyType: RstEnums.BodyType.JSON
+            onEditingFinished: txt => {
+                App.grpcQuery.body = txt;
+            }
+            onClear: {
+                App.grpcQuery.body = '';
+            }
+        }
+    }
+    Component {
+        id: emptyQuery
+
+        GrpcEmpty {}
     }
 
     // Connections
@@ -163,9 +216,8 @@ Item {
         target: App.grpcQuery
 
         function onDataChanged(): void {
-            if (grpcView.currentIndex === -1) {
-                grpcView.currentIndex = grpcView.isEmptyQuery() ? -1 : 0;
-                grpcView.setSource(grpcView.currentIndex);
+            if (root.currentIndex === -1) {
+                root.currentIndex = root.isEmptyQuery() ? -1 : 0;
             }
         }
     }
@@ -173,28 +225,6 @@ Item {
     // Types
     VarSyntaxHighlighter {
         id: varHilighter
-    }
-
-    // Funcs
-    function setSource(idx: int): void {
-        currentIndex = idx;
-        let path = "./components/request/";
-
-        switch (idx) {
-        case -1:
-            path += 'GrpcEmpty.qml';
-            break;
-        case 0:
-            path += "GrpcQueryBody.qml";
-            break;
-        case 1:
-            path += "GrpcQueryMeta.qml";
-            break;
-        default:
-            path += "GrpcQueryBody.qml";
-        }
-
-        loader.setSource(path);
     }
 
     function isEmptyQuery(): bool {

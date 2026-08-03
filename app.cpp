@@ -113,6 +113,7 @@ void App::setupHttpClient()
     setVars();
 
     connect(_httpClient.get(), &HttpClient::finished, this, &App::setAnswer, Qt::QueuedConnection);
+    emit httpClientChanged();
 }
 
 void App::setupGrpcClient()
@@ -127,6 +128,7 @@ void App::setupGrpcClient()
     setVars();
 
     connect(_grpcClient.get(), &GrpcClient::requestFinished, this, &App::setGrpcAnswer, Qt::QueuedConnection);
+    emit grpcClientChanged();
 }
 
 void App::setupGraphqlClient()
@@ -141,6 +143,7 @@ void App::setupGraphqlClient()
     setVars();
 
     connect(_graphqlClient.get(), &GraphqlClient::finished, this, &App::setGraphqlAnswer, Qt::QueuedConnection);
+    emit graphqlClientChanged();
 }
 
 void App::setupWorkspaceModel()
@@ -555,16 +558,19 @@ void App::disconnectClients() noexcept
     if (_httpClient) {
         _httpClient->disconnect();
         _httpClient.reset();
+        emit httpClientChanged();
     }
 
     if (_grpcClient) {
         _grpcClient->disconnect();
         _grpcClient.reset();
+        emit grpcClientChanged();
     }
 
     if (_graphqlClient) {
         _graphqlClient->disconnect();
         _graphqlClient.reset();
+        emit graphqlClientChanged();
     }
 }
 

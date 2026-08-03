@@ -19,10 +19,6 @@ Item {
     property Constants consts: Constants {}
     property int currentIndex: 0
 
-    Component.onCompleted: {
-        graphqlView.setSource(graphqlView.currentIndex);
-    }
-
     ColumnLayout {
         anchors.fill: parent
         spacing: graphqlView.consts.space
@@ -81,43 +77,6 @@ Item {
             id: tabGroup
         }
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.rightMargin: graphqlView.consts.space
-            Layout.leftMargin: graphqlView.consts.space
-
-            visible: false
-
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: graphqlView.width / 2
-
-                checkable: true
-                checked: graphqlView.currentIndex == 0
-                flat: true
-                text: qsTr("Body")
-                onClicked: {
-                    graphqlView.setSource(0);
-                }
-
-                ButtonGroup.group: tabGroup
-            }
-            Button {
-                Layout.fillWidth: true
-                Layout.preferredWidth: graphqlView.width / 2
-
-                checkable: true
-                checked: graphqlView.currentIndex == 1
-                flat: true
-                text: qsTr("Variables")
-                onClicked: {
-                    graphqlView.setSource(1);
-                }
-
-                ButtonGroup.group: tabGroup
-            }
-        }
-
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -128,6 +87,16 @@ Item {
                 id: loader
                 asynchronous: true
                 anchors.fill: parent
+                sourceComponent: QueryBody {
+                    body: App.graphqlQuery.body
+                    bodyType: RstEnums.BodyType.GRAPHQL
+                    onEditingFinished: txt => {
+                        App.graphqlQuery.body = txt;
+                    }
+                    onClear: {
+                        App.graphqlQuery.body = '';
+                    }
+                }
             }
         }
     }
@@ -135,24 +104,5 @@ Item {
     // Types
     VarSyntaxHighlighter {
         id: varHilighter
-    }
-
-    // Funcs
-    function setSource(idx: int): void {
-        currentIndex = idx;
-        let path = "./components/request/";
-
-        switch (idx) {
-        case 0:
-            path += "GraphqlQueryBody.qml";
-            break;
-        case 1:
-            path += "GraphqlQueryVariables.qml";
-            break;
-        default:
-            path += "GraphqlQueryBody.qml";
-        }
-
-        loader.setSource(path);
     }
 }

@@ -45,6 +45,7 @@ Item {
                 flat: true
                 text: root.texts[tabDelegate.index]
                 onClicked: {
+                    root.currentIdx = tabDelegate.index;
                     root.clicked(tabDelegate.index);
                 }
 

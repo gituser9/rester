@@ -11,44 +11,45 @@ import io.rester
 import "../../../../qml"
 
 Item {
-    id: answerBodyView
+    id: root
 
-    property Constants consts: Constants {}
-    property int btnWidth: 100
+    required property HttpAnswer answer
+    required property int queryType
+
+    readonly property Constants consts: Constants {}
+    readonly property int btnWidth: 100
     property int mode: AnswerBody.BodyMode.Text
     property int bodyType: AnswerBody.AnswerType.Other
 
-    Component.onCompleted: {
-        answerBodyView.bodyType = answerBodyView.getAnswerBodyType(App.query.lastAnswer);
-        let canSet = App.query !== null && App.query.lastAnswer !== null;
-
-        if (canSet) {
-            answerBodyView.setJson(App.query.lastAnswer);
-        }
+    onAnswerChanged: {
+        root.bodyType = root.getAnswerBodyType(root.answer);
+    }
+    onQueryTypeChanged: {
+        root.bodyType = root.getAnswerBodyType(root.answer);
     }
 
     RstButton {
         z: 100
-        anchors.right: answerBodyView.right
-        anchors.top: answerBodyView.top
-        anchors.topMargin: answerBodyView.consts.space
-        anchors.rightMargin: answerBodyView.consts.space
-        visible: answerBodyView.bodyType === AnswerBody.AnswerType.Json
+        anchors.right: root.right
+        anchors.top: root.top
+        anchors.topMargin: root.consts.space
+        anchors.rightMargin: root.consts.space
+        visible: root.bodyType === AnswerBody.AnswerType.Json
         size: RstButton.ButtonSize.Small
-        icon: answerBodyView.getModeIconBtn(answerBodyView.mode)
-        tooltip: answerBodyView.getModeTooltip(answerBodyView.mode)
+        icon: root.getModeIconBtn(root.mode)
+        tooltip: root.getModeTooltip(root.mode)
         onClicked: {
-            if (answerBodyView.mode === AnswerBody.BodyMode.Text) {
-                answerBodyView.mode = AnswerBody.BodyMode.JsonTree;
+            if (root.mode === AnswerBody.BodyMode.Text) {
+                root.mode = AnswerBody.BodyMode.JsonTree;
             } else {
-                answerBodyView.mode = AnswerBody.BodyMode.Text;
+                root.mode = AnswerBody.BodyMode.Text;
             }
         }
     }
     Loader {
         id: loader
         anchors.fill: parent
-        sourceComponent: answerBodyView.getView(answerBodyView.mode)
+        sourceComponent: root.getView(root.mode)
     }
 
     TextEdit {
@@ -68,7 +69,7 @@ Item {
                 Layout.fillWidth: true
 
                 Component.onCompleted: {
-                    answerBodyView.setSyntaxHighlighter(txtAnswerBody.textDocument);
+                    root.setSyntaxHighlighter(txtAnswerBody.textDocument);
                 }
 
                 TextArea {
@@ -77,7 +78,7 @@ Item {
                     readOnly: true
                     selectByMouse: true
                     verticalAlignment: TextEdit.AlignTop
-                    text: App.query?.lastAnswer?.body ?? ''
+                    text: root.answer?.body ?? ''
 
                     Layout.fillHeight: true
                     Layout.fillWidth: true
@@ -86,7 +87,7 @@ Item {
 
             // Search row
             RowLayout {
-                spacing: answerBodyView.consts.defaultSpacing
+                spacing: root.consts.defaultSpacing
 
                 TextField {
                     id: searchTextInput
@@ -219,24 +220,24 @@ Item {
                     Layout.fillWidth: true
                 }
                 RstButton {
-                    Layout.bottomMargin: answerBodyView.consts.defaultSpacing
+                    Layout.bottomMargin: root.consts.defaultSpacing
 
-                    implicitWidth: answerBodyView.btnWidth
-                    implicitHeight: answerBodyView.consts.bottomButtonHeight
+                    implicitWidth: root.btnWidth
+                    implicitHeight: root.consts.bottomButtonHeight
                     text: qsTr("Clear")
                     icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                     onClicked: {
-                        if (App.query && App.query.lastAnswer) {
-                            App.query.lastAnswer.body = '';
+                        if (root.answer) {
+                            root.answer.body = '';
                         }
                     }
                 }
                 RstButton {
                     Layout.alignment: Qt.AlignRight
-                    Layout.bottomMargin: answerBodyView.consts.defaultSpacing
+                    Layout.bottomMargin: root.consts.defaultSpacing
 
-                    implicitWidth: answerBodyView.btnWidth
-                    implicitHeight: answerBodyView.consts.bottomButtonHeight
+                    implicitWidth: root.btnWidth
+                    implicitHeight: root.consts.bottomButtonHeight
                     text: qsTr("Copy")
                     icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                     onClicked: {
@@ -257,7 +258,7 @@ Item {
                     txtAnswerBody.cursorPosition = searchEngine.cursorPosition;
                 }
                 onNoSearch: {
-                    answerBodyView.setSyntaxHighlighter(txtAnswerBody.textDocument);
+                    root.setSyntaxHighlighter(txtAnswerBody.textDocument);
                 }
             }
 
@@ -265,7 +266,7 @@ Item {
                 target: App
 
                 function onQueryChanged(): void {
-                    answerBodyView.setSyntaxHighlighter(txtAnswerBody.textDocument);
+                    root.setSyntaxHighlighter(txtAnswerBody.textDocument);
                 }
             }
 
@@ -282,7 +283,6 @@ Item {
             }
         }
     }
-
     Component {
         id: bigAnswer
 
@@ -298,7 +298,7 @@ Item {
                 Layout.topMargin: 10
 
                 Component.onCompleted: {
-                    idContentListView.stringList = App.query.lastAnswer.body.split("\n");
+                    idContentListView.stringList = root.answer.body.split("\n");
                 }
 
                 model: idContentListView.stringList
@@ -339,8 +339,8 @@ Item {
 
             // Search row
             RowLayout {
-                visible: answerBodyView.mode === AnswerBody.BodyMode.Big
-                spacing: answerBodyView.consts.defaultSpacing
+                visible: root.mode === AnswerBody.BodyMode.Big
+                spacing: root.consts.defaultSpacing
 
                 TextField {
                     id: tfFilter
@@ -351,9 +351,9 @@ Item {
 
                     onTextEdited: {
                         if (tfFilter.text.length === 0) {
-                            idContentListView.stringList = App.query.lastAnswer.body.split("\n");
+                            idContentListView.stringList = root.answer.body.split("\n");
                         } else {
-                            idContentListView.stringList = Util.filterBigBody(App.query.lastAnswer.body, tfFilter.text);
+                            idContentListView.stringList = Util.filterBigBody(root.answer.body, tfFilter.text);
                         }
                     }
 
@@ -377,20 +377,19 @@ Item {
                     onClicked: {
                         idContentListView.stringList = [];
 
-                        if (App.query && App.query.lastAnswer) {
-                            App.query.lastAnswer.body = '';
+                        if (root.answer) {
+                            root.answer.body = '';
                         }
                     }
                 }
             }
         }
     }
-
     Component {
         id: jsonTree
 
         AnswerJsonTree {
-            jsonText: App.query?.lastAnswer?.body ?? '{}'
+            jsonText: root.answer?.body ?? '{}'
         }
     }
 
@@ -420,34 +419,47 @@ Item {
         target: App
 
         function onQueryChanged(): void {
-            if (!App.query?.lastAnswer) {
-                return;
-            }
+            root.updateHighlighter();
+        }
 
-            answerBodyView.bodyType = answerBodyView.getAnswerBodyType(App.query.lastAnswer);
-            answerBodyView.setJson(App.query.lastAnswer);
+        function onGrpcQueryChanged(): void {
+            root.updateHighlighter();
+        }
+
+        function onGraphqlQueryChanged(): void {
+            root.updateHighlighter();
         }
     }
 
     // Functions
-    // TODO: answer type
-    function setJson(answer: var): void {
+    function setJson(answer: HttpAnswer): void {
         let size = Util.getAnswerSize(answer.byteCount);
         let isBig = size.label === "Mb" && size.size > 1;
 
         if (isBig) {
-            // for big
-            answerBodyView.mode = AnswerBody.BodyMode.Big;
+            root.mode = AnswerBody.BodyMode.Big;
         } else {
-            if (answerBodyView.bodyType !== AnswerBody.AnswerType.Json) {
-                if (answerBodyView.mode !== AnswerBody.BodyMode.Text) {
-                    answerBodyView.mode = AnswerBody.BodyMode.Text;
+            if (root.bodyType !== AnswerBody.AnswerType.Json) {
+                if (root.mode !== AnswerBody.BodyMode.Text) {
+                    root.mode = AnswerBody.BodyMode.Text;
                 }
             }
         }
     }
 
-    function getAnswerBodyType(answer: var): int {
+    function getAnswerBodyType(answer: HttpAnswer): int {
+        if (root.queryType === RstEnums.QueryType.GRPC) {
+            return AnswerBody.AnswerType.Json;
+        }
+
+        if (root.queryType === RstEnums.QueryType.GRAPHQL) {
+            return AnswerBody.AnswerType.Json;
+        }
+
+        if (!answer || !answer.headers) {
+            return AnswerBody.AnswerType.Other;
+        }
+
         let ct = '';
 
         if (answer.headers['Content-Type']) {
@@ -478,11 +490,11 @@ Item {
     }
 
     function setSyntaxHighlighter(textDocument: var): void {
-        if (!App.query?.lastAnswer) {
+        if (!root.answer) {
             return;
         }
 
-        switch (answerBodyView.bodyType) {
+        switch (root.bodyType) {
         case AnswerBody.AnswerType.Json:
             jsonHilighter.setDocument(textDocument);
             break;
@@ -490,6 +502,15 @@ Item {
         case AnswerBody.AnswerType.Xml:
             htmlHilighter.setDocument(textDocument);
         }
+    }
+
+    function updateHighlighter() {
+        if (!root.answer) {
+            return;
+        }
+
+        root.bodyType = root.getAnswerBodyType(root.answer);
+        root.setJson(root.answer);
     }
 
     function getView(bodyMode: int): Component {

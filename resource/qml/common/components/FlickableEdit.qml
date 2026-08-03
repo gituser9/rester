@@ -7,9 +7,8 @@ import QtQuick
 Item {
     id: flickableEdit
 
-    required property string value
-
     property alias text: teMain.text
+    property alias value: teMain.text
     property alias textDocument: teMain.textDocument
 
     property bool isEnabled: true
@@ -56,7 +55,6 @@ Item {
                 flickableEdit.editingFinish(teMain.text);
             }
             onTextChanged: {
-                flickableEdit.value = teMain.text;
                 flickableEdit.textChange(teMain.text);
 
                 if (!syncTimer.running) {

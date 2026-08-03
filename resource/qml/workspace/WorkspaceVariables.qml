@@ -83,10 +83,12 @@ Item {
 
         ListView {
             id: varList
-            Layout.preferredWidth: wsVars.width
-            Layout.preferredHeight: wsVars.height - 50
             clip: true
             model: varModel
+
+            Layout.preferredWidth: wsVars.width
+            Layout.preferredHeight: wsVars.height - 50
+
             delegate: Rectangle {
                 id: varDeleagate
                 height: 60

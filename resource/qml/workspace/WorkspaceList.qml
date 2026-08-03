@@ -23,6 +23,12 @@ Item {
     property bool isLoading: true
     property Constants consts: Constants {}
 
+    Component.onCompleted: {
+        // Принудительно даём фокус ScrollView после загрузки
+        scroller.forceActiveFocus();
+        showLoader();
+    }
+
     ColumnLayout {
         anchors.fill: parent
 
@@ -133,8 +139,9 @@ Item {
         // WS
         ScrollView {
             id: scroller
-            // clip: true
-            contentHeight: grid.rows * 290
+            clip: true
+            focus: true
+            contentHeight: grid.implicitHeight
             contentWidth: ws.width
 
             Layout.fillHeight: true
@@ -150,7 +157,8 @@ Item {
 
             GridLayout {
                 id: grid
-                anchors.fill: parent
+                // anchors.fill: parent
+                width: scroller.width
                 columns: Math.max(Math.floor(parent.width / elementWidth), 1)
                 rows: Math.max(Math.ceil(children.length / columns), 1)
                 rowSpacing: 16
@@ -165,7 +173,9 @@ Item {
                     ColumnLayout {
                         id: wsCol
                         width: grid.elementWidth
-                        height: grid.elementWidth + 60
+                        // height: grid.elementWidth + 60
+                        implicitWidth: grid.elementWidth
+                        implicitHeight: grid.elementWidth + 60
 
                         required property string uuid
                         required property string name
@@ -174,8 +184,8 @@ Item {
 
                         Rectangle {
                             id: wsRect
-                            width: grid.elementWidth
-                            height: grid.elementWidth
+                            implicitHeight: grid.elementWidth
+                            implicitWidth: grid.elementWidth
                             radius: 4
                             border.color: App.workspace.uuid === wsCol.uuid ? '#6366F1' : '#E0E0E0'
                             border.width: App.workspace.uuid === wsCol.uuid ? 2 : 1
@@ -222,6 +232,7 @@ Item {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                onWheel: wheel => wheel.accepted = false
                                 onClicked: mouse => {
                                     if (mouse.button === Qt.LeftButton) {
                                         if (App.workspace.uuid === wsCol.uuid) {

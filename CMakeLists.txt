@@ -76,7 +76,6 @@ qt_add_qml_module(
         Main.qml
         resource/qml/Constants.qml
         resource/qml/colors/Colors.qml
-        resource/qml/common/components/DropdownButton.qml
         resource/qml/common/components/FlickableEdit.qml
         resource/qml/common/components/Toast.qml
         resource/qml/common/components/ToastManager.qml
@@ -85,10 +84,8 @@ qt_add_qml_module(
         resource/qml/home/modal/UpdateNodeDialog.qml
 
         # Containers
-        resource/qml/home/GrpcAnswer.qml
         resource/qml/home/GrpcRequest.qml
         resource/qml/home/GraphqlRequest.qml
-        resource/qml/home/GraphqlAnswer.qml
         resource/qml/home/Answer.qml
         resource/qml/home/Request.qml
         resource/qml/home/Routes.qml
@@ -100,18 +97,10 @@ qt_add_qml_module(
         resource/qml/home/components/Pins.qml
 
         # GraphQL
-        resource/qml/home/components/request/GraphqlQueryBody.qml
         resource/qml/home/components/request/GraphqlQueryVariables.qml
-        resource/qml/home/components/answer/GraphqlAnswerBody.qml
-        resource/qml/home/components/answer/GraphqlAnswerHeaders.qml
-        resource/qml/home/components/answer/GraphqlAnswerCookies.qml
 
         # gRPC
         resource/qml/home/components/request/GrpcEmpty.qml
-        resource/qml/home/components/request/GrpcQueryBody.qml
-        resource/qml/home/components/request/GrpcQueryMeta.qml
-        resource/qml/home/components/request/GrpcQueryTextBody.qml
-        resource/qml/home/components/answer/GrpcAnswerBody.qml
 
         # HTTP
         resource/qml/home/components/answer/AnswerBigBody.qml
@@ -124,8 +113,8 @@ qt_add_qml_module(
         resource/qml/home/components/answer/AnswerJsonTree.qml
         resource/qml/home/components/request/QueryBody.qml
         resource/qml/home/components/request/QueryFormBody.qml
-        resource/qml/home/components/request/QueryHeaders.qml
         resource/qml/home/components/request/QueryParams.qml
+        resource/qml/home/components/request/QueryParamList.qml
         resource/qml/home/components/request/QueryTextBody.qml
 
         # Workspace
@@ -170,7 +159,6 @@ qt_add_qml_module(
     DEPENDENCIES
         QtQuick
         QtQuick.Controls.Imagine 6.0
-    # ENABLE_TYPE_COMPILER
     IMPORT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resource/qml
 )
 

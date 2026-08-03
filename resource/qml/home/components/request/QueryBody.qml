@@ -12,17 +12,16 @@ import "../../../../qml"
 import "../../../common/components/uikit"
 
 Item {
-    id: queryBodyView
+    id: root
 
-    property Constants consts: Constants {}
-    property bool isForm: false
+    required property int bodyType
+    required property string body
+    readonly property Constants consts: Constants {}
 
     signal clear
     signal copy
-
-    Component.onCompleted: {
-        queryBodyView.checkIsForm();
-    }
+    signal setBodyType(int typ)
+    signal editingFinished(string txt)
 
     ColumnLayout {
         anchors.fill: parent
@@ -35,7 +34,17 @@ Item {
                 id: loader
                 asynchronous: true
                 anchors.fill: parent
-                sourceComponent: queryBodyView.isForm ? formBody : textBody
+                sourceComponent: {
+                    switch (root.bodyType) {
+                    case RstEnums.BodyType.URL_ENCODED_FORM:
+                    case RstEnums.BodyType.MULTIPART_FORM:
+                        return formBody;
+                    case RstEnums.BodyType.NONE:
+                        return noBody;
+                    default:
+                        return textBody;
+                    }
+                }
 
                 Layout.topMargin: 10
                 Layout.bottomMargin: 20
@@ -44,23 +53,22 @@ Item {
 
         // buttons
         RowLayout {
-            spacing: 8
+            spacing: root.consts.space
 
             Layout.fillWidth: true
 
             RstDropdown {
                 id: cbBodyType
-                currentText: Util.getHumanBodyTypeString(App.query?.bodyType ?? "None")
+                visible: root.isShowQueryType()
+                currentText: Util.getHumanBodyTypeString(root.bodyType)
                 model: lstBodytype
 
                 Layout.preferredWidth: 180
-                Layout.preferredHeight: 40
-                Layout.bottomMargin: 8
+                Layout.preferredHeight: root.consts.bottomButtonHeight
+                Layout.bottomMargin: root.consts.space
 
                 onItemSelected: (idx, bodyType) => {
-                    App.query.bodyType = bodyType.value;
-                    queryBodyView.checkIsForm();
-                    queryBodyView.setContentTypeHeader(bodyType.value);
+                    root.setBodyType(bodyType.value);
                 }
             }
 
@@ -68,22 +76,24 @@ Item {
                 text: qsTr("Clear")
                 icon: "qrc:/qt/qml/io/rester/resource/images/close.svg"
                 onClicked: {
-                    queryBodyView.clear();
+                    root.clear();
                 }
 
                 Layout.fillWidth: true
-                Layout.bottomMargin: 8
+                Layout.preferredHeight: root.consts.bottomButtonHeight
+                Layout.bottomMargin: root.consts.space
             }
 
             RstButton {
                 text: qsTr("Copy")
                 icon: "qrc:/qt/qml/io/rester/resource/images/copy.svg"
                 onClicked: {
-                    queryBodyView.copy();
+                    root.copy();
                 }
 
                 Layout.fillWidth: true
-                Layout.bottomMargin: 8
+                Layout.preferredHeight: root.consts.bottomButtonHeight
+                Layout.bottomMargin: root.consts.space
             }
 
             RstButton {
@@ -94,7 +104,8 @@ Item {
                 }
 
                 Layout.fillWidth: true
-                Layout.bottomMargin: 8
+                Layout.preferredHeight: root.consts.bottomButtonHeight
+                Layout.bottomMargin: root.consts.space
             }
         }
     }
@@ -126,90 +137,53 @@ Item {
         }
     }
 
-    Connections {
-        target: App
-
-        function onQueryChanged(): void {
-            if (App.query === null) {
-                return;
-            }
-
-            queryBodyView.checkIsForm();
-        }
-    }
-
     Component {
         id: textBody
 
         QueryTextBody {
             id: tb
+            bodyType: root.bodyType
+            body: root.body
+            onEditingFinished: txt => {
+                root.editingFinished(txt);
+            }
+
             Component.onCompleted: {
-                queryBodyView.clear.connect(tb.clear);
-                queryBodyView.copy.connect(tb.copy);
+                root.copy.connect(tb.copy);
             }
             Component.onDestruction: {
-                queryBodyView.clear.disconnect(textBody.tb.clear);
-                queryBodyView.clear.disconnect(textBody.tb.copy);
+                root.copy.disconnect(tb.copy);
             }
-            visible: !queryBodyView.isForm
         }
     }
-
     Component {
         id: formBody
 
         QueryFormBody {
             id: tf
+            bodyType: root.bodyType
+
             Component.onCompleted: {
-                queryBodyView.clear.connect(tf.clear);
-                queryBodyView.copy.connect(tf.copy);
+                root.clear.connect(tf.clear);
+                root.copy.connect(tf.copy);
             }
             Component.onDestruction: {
-                queryBodyView.clear.disconnect(tf.clear);
-                queryBodyView.copy.disconnect(tf.copy);
+                root.clear.disconnect(tf.clear);
+                root.copy.disconnect(tf.copy);
             }
         }
     }
+    Component {
+        id: noBody
 
-    function setContentTypeHeader(bodyType: int): void {
-        let headers = App.query.headers;
-
-        switch (bodyType) {
-        case RstEnums.BodyType.JSON:
-            App.query.setHeader("Content-Type", "application/json; charset=UTF-8");
-
-            break;
-        case RstEnums.BodyType.XML:
-            App.query.setHeader("Content-Type", "application/xml");
-
-            break;
-        case RstEnums.BodyType.MULTIPART_FORM:
-            App.query.setHeader("Content-Type", "multipart/form-data");
-
-            break;
-        case RstEnums.BodyType.URL_ENCODED_FORM:
-            App.query.setHeader("Content-Type", "application/x-www-form-urlencoded");
-
-            break;
-        case RstEnums.BodyType.NONE:
-            App.query.removeHeader("Content-Type");
-
-            break;
-        }
+        Item {}
     }
 
-    function checkIsForm(): void {
-        if (App.query === null) {
-            return;
+    function isShowQueryType(): bool {
+        if (App.query) {
+            return true;
         }
 
-        switch (App.query.bodyType) {
-        case 2:
-        case 3:
-            queryBodyView.isForm = true;
-            break;
-        default:
-            queryBodyView.isForm = false;
-        }
+        return false;
     }
 }

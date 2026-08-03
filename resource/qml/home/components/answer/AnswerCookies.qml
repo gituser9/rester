@@ -12,6 +12,12 @@ Item {
     id: cookiePage
     anchors.fill: parent
 
+    required property var cookies
+
+    onCookiesChanged: {
+        cookiePage.fillModel();
+    }
+
     Component.onCompleted: {
         cookiePage.fillModel();
     }
@@ -24,7 +30,7 @@ Item {
         delegate: Rectangle {
             id: cookieDelegate
             height: clCookie.height + 20
-            width: parent.width
+            width: cookiePage.width
 
             required property string name
             required property string expires
@@ -224,26 +230,14 @@ Item {
         id: lmCookies
     }
 
-    Connections {
-        target: App.query
-
-        function onLastAnswerChanged(): void {
-            cookiePage.fillModel();
-        }
-    }
-
-    Connections {
-        target: App
-
-        function onQueryChanged(): void {
-            cookiePage.fillModel();
-        }
-    }
-
     function fillModel(): void {
         lmCookies.clear();
 
-        for (let cookie of App.query.lastAnswer.cookies) {
+        if (!cookiePage.cookies) {
+            return;
+        }
+
+        for (let cookie of cookiePage.cookies) {
             let cookObj = {
                 "name": cookie["name"] ?? "",
                 "expires": cookie["expires"] ?? "",
