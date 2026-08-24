@@ -6,28 +6,34 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import io.rester
-
 ColumnLayout {
     id: root
     spacing: 0
 
-    property string jsonText: ""
+    property string xmlText: ""
     property int fontSize: 11
     readonly property Constants consts: Constants {}
 
-    JsonTreeModel {
-        id: jsonModel
-        jsonText: root.jsonText
+    XmlTreeModel {
+        id: xmlModel
+        xmlText: root.xmlText
         filterText: searchField.text
     }
 
     ListView {
         id: listView
         clip: true
-        model: jsonModel
+        model: xmlModel
+
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+
         flickableDirection: Flickable.AutoFlickIfNeeded
         contentWidth: contentItem.childrenRect.width
+
+        ScrollBar.vertical: ScrollBar {}
+        ScrollBar.horizontal: ScrollBar {}
+
         add: Transition {
             NumberAnimation {
                 property: "opacity"
@@ -51,35 +57,30 @@ ColumnLayout {
             }
         }
 
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-
-        ScrollBar.vertical: ScrollBar {}
-        ScrollBar.horizontal: ScrollBar {}
-
         delegate: RowLayout {
             id: delegateRoot
-            implicitWidth: indentItem.implicitWidth + iconItem.implicitWidth + keyEdit.implicitWidth + valEdit.implicitWidth + 30
             spacing: 4
+            implicitWidth: indentItem.implicitWidth + iconItem.implicitWidth + xmlTextEdit.implicitWidth + 20
 
             required property int index
             required property int nodeDepth
             required property bool nodeIsContainer
             required property bool nodeExpanded
             required property bool nodeIsClosing
-            required property string nodeKey
-            required property string nodeDisplayValue
+            required property string nodeRichText
 
+            // 1. Отступ дерева
             Item {
                 id: indentItem
-                Layout.preferredWidth: delegateRoot.nodeDepth * 16
+                implicitWidth: delegateRoot.nodeDepth * 16
                 Layout.fillHeight: true
             }
+
+            // 2. Иконка стрелочки
             Item {
                 id: iconItem
-
-                Layout.preferredWidth: 24
-                Layout.preferredHeight: 24
+                implicitWidth: 24
+                implicitHeight: 24
                 Layout.alignment: Qt.AlignTop
 
                 Rectangle {
@@ -95,6 +96,7 @@ ColumnLayout {
                         }
                     }
                 }
+
                 Image {
                     source: "qrc:/qt/qml/io/rester/resource/images/arrow-right.svg"
                     sourceSize.width: 18
@@ -109,60 +111,27 @@ ColumnLayout {
                         }
                     }
                 }
+
                 MouseArea {
                     id: imgMouseArea
                     anchors.fill: parent
                     enabled: delegateRoot.nodeIsContainer && !delegateRoot.nodeIsClosing
                     hoverEnabled: delegateRoot.nodeIsContainer && !delegateRoot.nodeIsClosing
                     cursorShape: delegateRoot.nodeIsContainer ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    onClicked: jsonModel.toggleExpand(delegateRoot.index)
+                    onClicked: xmlModel.toggleExpand(delegateRoot.index)
                 }
             }
+
+            // 3. Форматированный XML/HTML текст
             TextEdit {
-                id: keyEdit
+                id: xmlTextEdit
                 readOnly: true
                 selectByMouse: true
-                text: delegateRoot.nodeKey ? `"${delegateRoot.nodeKey}": ` : ""
+                textFormat: TextEdit.RichText
+                text: delegateRoot.nodeRichText
                 font.family: "monospace"
                 font.pointSize: root.fontSize
-                font.bold: true
-                color: "#8B008B"
-                visible: !delegateRoot.nodeIsClosing && delegateRoot.nodeKey !== ""
-
                 Layout.alignment: Qt.AlignTop
-            }
-            TextEdit {
-                id: valEdit
-                readOnly: true
-                selectByMouse: true
-                text: delegateRoot.nodeDisplayValue
-                font.family: "monospace"
-                font.pointSize: root.fontSize
-                color: {
-                    if (delegateRoot.nodeIsContainer && !delegateRoot.nodeExpanded)
-                        return "#888888";
-                    if (delegateRoot.nodeIsClosing || delegateRoot.nodeIsContainer)
-                        return "#333333";
-                    if (delegateRoot.nodeDisplayValue === "null")
-                        return "#777777";
-                    if (delegateRoot.nodeDisplayValue.startsWith("\""))
-                        return "#006400";
-                    if (delegateRoot.nodeDisplayValue === "true" || delegateRoot.nodeDisplayValue === "false")
-                        return "#00008B";
-
-                    return "#8B0000";
-                }
-
-                Layout.alignment: Qt.AlignTop
-
-                MouseArea {
-                    id: valMouseArea
-                    anchors.fill: parent
-                    enabled: delegateRoot.nodeIsContainer && !delegateRoot.nodeExpanded
-                    visible: delegateRoot.nodeIsContainer && !delegateRoot.nodeExpanded
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: jsonModel.toggleExpand(delegateRoot.index)
-                }
             }
         }
     }

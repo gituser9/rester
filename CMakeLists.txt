@@ -111,6 +111,7 @@ qt_add_qml_module(
         resource/qml/home/components/answer/AnswerPreview.qml
         resource/qml/home/components/answer/AnswerWait.qml
         resource/qml/home/components/answer/AnswerJsonTree.qml
+        resource/qml/home/components/answer/AnswerXmlTree.qml
         resource/qml/home/components/request/QueryBody.qml
         resource/qml/home/components/request/QueryFormBody.qml
         resource/qml/home/components/request/QueryParams.qml

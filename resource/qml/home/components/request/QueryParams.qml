@@ -13,15 +13,19 @@ import "../../../common/components"
 import "../../../common/components/uikit"
 
 Rectangle {
-    id: winParam
+    id: root
 
     required property var params
     property string fullUrl: ""
 
     signal changeParam(int index)
 
+    onParamsChanged: {
+        root.fillUrl();
+    }
+
     Component.onCompleted: {
-        winParam.fillData();
+        root.fillData();
     }
 
     ColumnLayout {
@@ -55,8 +59,7 @@ Rectangle {
 
             TextEdit {
                 id: tfFullUrl
-                width: parent.width
-                text: fullUrl
+                text: root.fullUrl
                 readOnly: true
                 font.family: "Monospace"
                 wrapMode: Text.Wrap
@@ -93,20 +96,18 @@ Rectangle {
                 Layout.fillWidth: true
             }
             RstButton {
+                visible: App.query.url.trim().length > 0 && App.query.url.includes("?")
                 size: RstButton.ButtonSize.Small
                 text: qsTr("From URL")
                 icon: "qrc:/qt/qml/io/rester/resource/images/download.svg"
                 onClicked: {
-                    winParam.fromUrl();
+                    App.query.paramsFromUrl();
                 }
             }
         }
 
         QueryParamList {
-            params: winParam.params
-            onParamsChanged: {
-                winParam.fillUrl();
-            }
+            params: root.params
             onAddParam: {
                 App.query.addParam('', '');
             }
@@ -132,21 +133,13 @@ Rectangle {
         visible: false
     }
 
-    Timer {
-        id: syncTimer
-        interval: 300
-        running: true
-        repeat: false
-    }
-
     Connections {
         target: App
 
         function onQueryChanged(): void {
-            // paramModel.clear();
-            winParam.fullUrl = "";
+            root.fullUrl = "";
 
-            winParam.fillData();
+            root.fillData();
         }
     }
 
@@ -154,7 +147,7 @@ Rectangle {
         target: App.query
 
         function onUrlChanged(): void {
-            winParam.rebuildUrl();
+            root.rebuildUrl();
         }
     }
 
@@ -162,7 +155,7 @@ Rectangle {
         target: App.workspace
 
         function onEnvChanged(): void {
-            winParam.rebuildUrl();
+            root.rebuildUrl();
         }
     }
 
@@ -180,24 +173,13 @@ Rectangle {
         }
     }
 
-    function sync(idx: int): void {
-        syncTimer.triggered.connect(function () {
-            let param = paramModel.get(idx);
-
-            App.query.setParam(idx, param.name, param.value, param.isEnabled);
-        });
-        syncTimer.start();
-    }
-
     function fillData(): void {
         // url
         let newUrl = App.query.url;
         let vars = App.workspace.variables[App.workspace.env];
 
         if (vars) {
-            for (let varr of vars) {
-                newUrl = winParam.replaceVariables(newUrl, varr);
-            }
+            newUrl = Util.fillVars(App.query.url, vars);
         }
 
         if (Object.keys(App.query.params).length != 0) {
@@ -209,9 +191,7 @@ Rectangle {
             let pValue = p.value;
 
             if (vars) {
-                for (let varr of vars) {
-                    pValue = winParam.replaceVariables(pValue, varr);
-                }
+                pValue = Util.fillVars(p.value, vars);
             }
 
             newUrl += p.name + '=' + pValue + '&';
@@ -219,24 +199,20 @@ Rectangle {
 
         // set full url
         if (newUrl.slice(-1) === '&') {
-            winParam.fullUrl = newUrl.substring(0, newUrl.length - 1);
+            root.fullUrl = newUrl.substring(0, newUrl.length - 1);
         } else {
-            winParam.fullUrl = newUrl;
+            root.fullUrl = newUrl;
         }
     }
 
     function fillUrl(): void {
-        let url = winParam.fullUrl;
+        let url = root.fullUrl;
         let urlArr = url.split("?");
-
         let vars = [];
 
         if (App.workspace.env !== '') {
             vars = App.workspace.variables[App.workspace.env];
-
-            for (let varr of vars) {
-                urlArr[0] = winParam.replaceVariables(urlArr[0], varr);
-            }
+            urlArr[0] = Util.fillVars(urlArr[0], vars);
         }
 
         url = urlArr[0] + '?';
@@ -249,80 +225,23 @@ Rectangle {
             let pValue = param.value;
 
             if (vars) {
-                for (let varr of vars) {
-                    pValue = winParam.replaceVariables(pValue, varr);
-                }
+                pValue = Util.fillVars(param.value, vars);
             }
 
             url += param.name + '=' + pValue + '&';
         }
 
         if (url.slice(-1) === '&') {
-            winParam.fullUrl = url.substring(0, url.length - 1);
+            root.fullUrl = url.substring(0, url.length - 1);
         } else {
-            winParam.fullUrl = url;
+            root.fullUrl = url;
         }
-    }
-
-    function fromUrl(): void {
-        if (App.query.url === '') {
-            return;
-        }
-
-        // get all params
-        let url = App.query.url;
-        const paramArr = url.slice(url.indexOf('?') + 1).split('&');
-        const params = {};
-        paramArr.map(param => {
-            const arr = param.split('=');
-            params[arr[0]] = decodeURIComponent(arr[1]);
-        });
-
-        if (params.length <= 1) {
-            return;
-        }
-
-        // get url without params
-        let urlArr = App.query.url.split('?');
-        let route = urlArr[0];
-
-        // fill model from params
-        paramModel.clear();
-
-        for (let key in params) {
-            paramModel.append({
-                "name": key,
-                "value": params[key],
-                "isEnabled": true
-            });
-            App.query.addParam(key, params[key]);
-        }
-
-        // set new data in query objecrt
-        App.query.url = route;
-
-        // set full url preview
-        winParam.fillUrl();
-    }
-
-    // TODO: type
-    function replaceVariables(inputString: string, varr: var): string {
-        let regex = new RegExp(`{{\s*(${varr.name})\s*}}`);
-        let replacedString = inputString.replace(regex, varr.value);
-
-        return replacedString;
     }
 
     function rebuildUrl(): void {
         // url
-        let newUrl = App.query.url;
         let vars = App.workspace.variables[App.workspace.env];
-
-        if (vars) {
-            for (let varr of vars) {
-                newUrl = winParam.replaceVariables(newUrl, varr);
-            }
-        }
+        let newUrl = Util.fillVars(App.query.url, vars);
 
         if (Object.keys(App.query.params).length != 0) {
             newUrl += "?";
@@ -337,20 +256,17 @@ Rectangle {
             let pValue = p.value;
 
             if (vars) {
-                for (let varr of vars) {
-                    pValue = winParam.replaceVariables(pValue, varr);
-                }
+                pValue = Util.fillVars(p.value, vars);
             }
 
-            // newUrl += p.name + '=' + p.value + '&';
             newUrl += p.name + '=' + pValue + '&';
         }
 
         // set full url
         if (newUrl.slice(-1) === '&') {
-            winParam.fullUrl = newUrl.substring(0, newUrl.length - 1);
+            root.fullUrl = newUrl.substring(0, newUrl.length - 1);
         } else {
-            winParam.fullUrl = newUrl;
+            root.fullUrl = newUrl;
         }
     }
 }

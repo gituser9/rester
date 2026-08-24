@@ -70,8 +70,8 @@ public:
     Q_INVOKABLE void addMetaItem(const QString& name, const QString& value);
 
     // Methods
-    void fromJson(QJsonObject json);
-    QJsonObject toJson() const;
+    void fromJson(const QJsonObject& json) override;
+    QJsonObject toJson() override;
 
 signals:
     void dataChanged();

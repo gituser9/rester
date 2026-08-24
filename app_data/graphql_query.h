@@ -64,8 +64,8 @@ public:
     Q_INVOKABLE void removeVariable(const QString& name);
 
     // Methods
-    void fromJson(QJsonObject json);
-    QJsonObject toJson() const;
+    void fromJson(const QJsonObject& json) override;
+    QJsonObject toJson() override;
 
 signals:
     void urlChanged();

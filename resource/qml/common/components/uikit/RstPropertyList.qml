@@ -12,7 +12,6 @@ Item {
     id: root
 
     required property ListModel propertyModel
-    property bool withCheckbox: true
     property bool withVariables: true
 
     signal nameChanged(int index, string value)
@@ -45,8 +44,6 @@ Item {
 
                 CheckBox {
                     id: cbEnabled
-                    visible: root.withCheckbox
-                    enabled: root.withCheckbox
                     checked: propertyDelegate.isEnabled
                     onClicked: {
                         root.propertyModel.setProperty(propertyDelegate.index, "isEnabled", cbEnabled.checkState === Qt.Checked);

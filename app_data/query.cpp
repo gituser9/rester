@@ -168,7 +168,7 @@ void Query::setUrl(const QString& newUrl)
     emit dataChanged();
 }
 
-void Query::fromJson(QJsonObject json)
+void Query::fromJson(const QJsonObject& json)
 {
     _url = json.value("url").toString("");
     _queryType = Util::getQueryType(json.value("query_type").toString("GET"));
@@ -215,7 +215,7 @@ void Query::fromJson(QJsonObject json)
     }
 }
 
-QJsonObject Query::toJson() const
+QJsonObject Query::toJson()
 {
     QJsonObject json;
     json["url"] = _url;
@@ -277,6 +277,31 @@ void Query::setAnswer(QSharedPointer<HttpAnswer> ptr)
 void Query::beautify() noexcept
 {
     setBody(Util::beautify(_body, _bodyType));
+}
+
+void Query::paramsFromUrl()
+{
+    if (_url.isEmpty()) {
+        return;
+    }
+
+    QUrl newUrl(_url);
+    QUrlQuery params(newUrl);
+
+    auto parameters = params.queryItems(QUrl::FullyDecoded);
+    _paramList.clear();
+    _paramList.reserve(parameters.count());
+
+    for (const auto& pair : parameters) {
+        _paramList << QueryParam(pair.first, pair.second);
+    }
+
+    newUrl.setQuery("");
+    _url = newUrl.toString();
+
+    emit urlChanged();
+    emit paramsChanged();
+    emit dataChanged();
 }
 
 void Query::addHeader(const QString& name, const QString& value)

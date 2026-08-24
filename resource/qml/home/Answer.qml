@@ -22,6 +22,7 @@ Item {
     property int queryType: RstEnums.QueryType.GET
     property int viewState: Answer.ViewState.Reg
     property HttpAnswer answer
+    property string lastError: ''
 
     Component.onCompleted: {
         if (App.query) {
@@ -125,13 +126,11 @@ Item {
                     let size = Util.getAnswerSize(root.answer?.byteCount ?? 0);
 
                     if (size.label === "Mb" && size.size > 1) {
-                        loader.sourceComponent = bigBody;
+                        loader.sourceComponent = bigBodyComponent;
                         root.viewState = Answer.ViewState.Big;
                         return;
                     }
                 }
-
-                root.setSource(idx);
             }
 
             Layout.fillWidth: true
@@ -149,6 +148,18 @@ Item {
                 id: loader
                 anchors.fill: parent
                 asynchronous: true
+                sourceComponent: {
+                    switch (tabs.currentIdx) {
+                    case 0:
+                        return smallQueryComponent;
+                    case 1:
+                        return headerListComponent;
+                    case 2:
+                        return cookieListComponent;
+                    default:
+                        return smallQueryComponent;
+                    }
+                }
             }
         }
     }
@@ -170,7 +181,7 @@ Item {
 
     // Components
     Component {
-        id: bigBody
+        id: bigBodyComponent
 
         AnswerBigBody {
             onShow: {
@@ -186,7 +197,44 @@ Item {
         }
     }
     Component {
-        id: smallQuery
+        id: smallQueryComponent
+
+        Loader {
+            anchors.fill: parent
+            asynchronous: true
+            sourceComponent: {
+                switch (root.viewState) {
+                case Answer.ViewState.Reg:
+                    return regAnswerComponent;
+                case Answer.ViewState.Error:
+                    return errorComponent;
+                case Answer.ViewState.Wait:
+                    return waitComponent;
+                case Answer.ViewState.Big:
+                    return bigBodyComponent;
+                default:
+                    return regAnswerComponent;
+                }
+            }
+        }
+    }
+    Component {
+        id: headerListComponent
+
+        AnswerHeaders {
+            headers: root.answer?.headers
+        }
+    }
+    Component {
+        id: cookieListComponent
+
+        AnswerCookies {
+            cookies: root.answer?.cookies
+        }
+    }
+
+    Component {
+        id: regAnswerComponent
 
         AnswerBody {
             answer: root.answer
@@ -194,17 +242,16 @@ Item {
         }
     }
     Component {
-        id: headerList
+        id: waitComponent
 
-        AnswerHeaders {
-            headers: root.answer?.headers
-        }
+        AnswerWait {}
     }
     Component {
-        id: cookieList
+        id: errorComponent
 
-        AnswerCookies {
-            cookies: root.answer?.cookies
+        AnswerError {
+            id: answErr
+            errString: root.lastError
         }
     }
 
@@ -223,17 +270,17 @@ Item {
 
         function onQueryChanged() {
             root.queryType = App.query.queryType;
-            root.answer = App.query.lastAnswer;
+            root.setClientAnswer(false, App.query.lastAnswer);
         }
 
         function onGrpcQueryChanged() {
             root.queryType = RstEnums.QueryType.GRPC;
-            root.answer = App.grpcQuery.lastAnswer;
+            root.setClientAnswer(false, App.grpcQuery.lastAnswer);
         }
 
         function onGraphqlQueryChanged() {
             root.queryType = RstEnums.QueryType.GRAPHQL;
-            root.answer = App.graphqlQuery.lastAnswer;
+            root.setClientAnswer(false, App.graphqlQuery.lastAnswer);
         }
     }
     Connections {
@@ -327,43 +374,8 @@ Item {
         return 'lightgrey';
     }
 
-    function setSource(idx: int): void {
-        currentIndex = idx;
-
-        switch (idx) {
-        case 0:
-            loader.sourceComponent = smallQuery;
-            return;
-        case 1:
-            loader.sourceComponent = headerList;
-            return;
-        case 2:
-            loader.sourceComponent = cookieList;
-            return;
-        default:
-            loader.sourceComponent = smallQuery;
-            return;
-        }
-    }
-
     function showLoader(): void {
         loaderTimer.triggered.connect(() => {
-            if (App.httpClient && App.httpClient.isRequestWork) {
-                let path = "./components/answer/AnswerWait.qml";
-                loader.setSource(path);
-                // loader.sourceComponent = AnswerWait{}
-            }
-            if (App.grpcClient && App.grpcClient.isRequestWork) {
-                let path = "./components/answer/AnswerWait.qml";
-                loader.setSource(path);
-                // loader.sourceComponent = AnswerWait{}
-            }
-            if (App.graphqlClient && App.graphqlClient.isRequestWork) {
-                let path = "./components/answer/AnswerWait.qml";
-                loader.setSource(path);
-                // loader.sourceComponent = AnswerWait{}
-            }
-
             root.viewState = Answer.ViewState.Wait;
         });
         loaderTimer.start();
@@ -374,21 +386,21 @@ Item {
             loaderTimer.stop();
         }
 
-        let path = "./components/answer/AnswerError.qml";
-        loader.setSource(path, {
-            "errString": errorString
-        });
         root.viewState = Answer.ViewState.Error;
+        root.lastError = errorString;
     }
 
     function setClientAnswer(isWork: bool, answ: HttpAnswer): void {
-        if (isWork) {
+        if (!loaderTimer.running) {
             root.showLoader();
+        }
 
+        if (isWork) {
             return;
         }
 
         root.answer = answ;
+        root.lastError = '';
 
         if (loaderTimer.running) {
             loaderTimer.stop();
@@ -397,14 +409,13 @@ Item {
         let size = Util.getAnswerSize(answ?.byteCount ?? 0);
 
         if (size.label === "Mb" && size.size > 1) {
-            loader.sourceComponent = bigBody;
+            loader.sourceComponent = bigBodyComponent;
             root.viewState = Answer.ViewState.Big;
 
             return;
         }
 
         if (root.viewState !== Answer.ViewState.Reg) {
-            root.setSource(currentIndex);
             root.viewState = Answer.ViewState.Reg;
         }
     }

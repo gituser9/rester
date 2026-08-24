@@ -34,18 +34,17 @@ public:
     explicit Workspace(TreeNode* parent = nullptr);
     ~Workspace() override = default;
 
-    void fromJson(const QJsonObject& json);
+    void fromJson(const QJsonObject& json) override;
     void fromJsonShort(const QJsonObject& json) noexcept;
     void createDefault();
     void reloadVariables() noexcept;
     QString getFileName() const;
-    QList<TreeNode*> getAllFolders(TreeNode* node = nullptr);
     TreeNode* getByUuid(QString uuid) noexcept;
     TreeNode* getQueryByUuid(QString uuid) noexcept;
     static Workspace* getByQuery(TreeNode* query);
 
     // QML
-    Q_INVOKABLE QJsonObject toJson();
+    Q_INVOKABLE QJsonObject toJson() override;
     Q_INVOKABLE QStringList getEnvNames() const noexcept;
     Q_INVOKABLE void addPin(const QString& newPin);
     Q_INVOKABLE void removePin(const QString& pin);
@@ -83,13 +82,6 @@ private:
 
     void buildTree(const QJsonObject& json, TreeNode* parent);
     void buildFolder(const QJsonObject& json, TreeNode* parent);
-    QJsonObject buildJsonTree(QObject* node) const;
-    QJsonObject serializeNode(TreeNode* node) const;
-    QJsonObject serializeFolder(Folder* node) const;
-    QJsonObject serializeQuery(Query* node) const;
-    QJsonObject serializeGrpcQuery(GrpcQuery* node) const;
-    QJsonObject serializeGraphqlQuery(GraphqlQuery* node) const;
-    QJsonObject serializeAnswer(HttpAnswer* node) const;
     TreeNode* getByUuid(QString uuid, TreeNode* node) const noexcept;
     TreeNode* getQueryByUuid(QString uuid, TreeNode* node) const noexcept;
     QString getParentName(const TreeNode* node) const noexcept;

@@ -16,7 +16,7 @@ Rectangle {
     required property var params
     readonly property Constants consts: Constants {}
 
-    signal changeHeader(int index)
+    signal changeParam(int index)
     signal setParam(int idx, string name, string val, bool enabled)
     signal removeParam(int idx)
     signal addParam
@@ -32,7 +32,15 @@ Rectangle {
         propertyModel: paramModel
 
         onCheckBoxClicked: idx => {
-            root.changeHeader(idx);
+            let param = paramModel.get(idx);
+            let exists = root.params[idx];
+
+            if (param.isEnabled === exists.isEnabled) {
+                return;
+            }
+
+            root.setParam(idx, param.name, param.value, param.isEnabled);
+            root.changeParam(idx);
         }
         onNameChanged: (idx, value) => {
             let param = paramModel.get(idx);
@@ -78,30 +86,6 @@ Rectangle {
 
     ListModel {
         id: paramModel
-    }
-
-    Connections {
-        target: root
-
-        function onChangeHeader(idx: int): void {
-            root.sync(idx);
-        }
-    }
-
-    Timer {
-        id: syncTimer
-        interval: 300
-        running: true
-        repeat: false
-    }
-
-    function sync(idx: int): void {
-        syncTimer.triggered.connect(() => {
-            let param = paramModel.get(idx);
-
-            root.setParam(idx, param.name, param.value, param.isEnabled);
-        });
-        syncTimer.start();
     }
 
     function fillData(): void {

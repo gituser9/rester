@@ -111,13 +111,13 @@ Item {
                 sourceComponent: {
                     switch (tabs.currentIdx) {
                     case 0:
-                        return queryBody;
+                        return bodyComponent;
                     case 1:
-                        return queryParams;
+                        return paramsComponent;
                     case 2:
-                        return headers;
+                        return headersComponent;
                     default:
-                        return queryBody;
+                        return bodyComponent;
                     }
                 }
             }
@@ -126,14 +126,14 @@ Item {
 
     // Components
     Component {
-        id: queryParams
+        id: paramsComponent
 
         QueryParams {
             params: App.query.params
         }
     }
     Component {
-        id: headers
+        id: headersComponent
 
         QueryParamList {
             params: App.query.headers
@@ -149,7 +149,7 @@ Item {
         }
     }
     Component {
-        id: queryBody
+        id: bodyComponent
 
         QueryBody {
             body: App.query.body

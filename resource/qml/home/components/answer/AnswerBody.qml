@@ -34,22 +34,46 @@ Item {
         anchors.top: root.top
         anchors.topMargin: root.consts.space
         anchors.rightMargin: root.consts.space
-        visible: root.bodyType === AnswerBody.AnswerType.Json
+        visible: root.bodyType === AnswerBody.AnswerType.Json || root.bodyType === AnswerBody.AnswerType.Xml
         size: RstButton.ButtonSize.Small
         icon: root.getModeIconBtn(root.mode)
         tooltip: root.getModeTooltip(root.mode)
         onClicked: {
-            if (root.mode === AnswerBody.BodyMode.Text) {
-                root.mode = AnswerBody.BodyMode.JsonTree;
-            } else {
-                root.mode = AnswerBody.BodyMode.Text;
+            switch (root.bodyType) {
+            case AnswerBody.AnswerType.Json:
+                if (root.mode === AnswerBody.BodyMode.Text) {
+                    root.mode = AnswerBody.BodyMode.JsonTree;
+                } else {
+                    root.mode = AnswerBody.BodyMode.Text;
+                }
+                break;
+            case AnswerBody.AnswerType.Xml:
+                if (root.mode === AnswerBody.BodyMode.Text) {
+                    root.mode = AnswerBody.BodyMode.XmlTree;
+                } else {
+                    root.mode = AnswerBody.BodyMode.Text;
+                }
+                break;
             }
         }
     }
     Loader {
         id: loader
         anchors.fill: parent
-        sourceComponent: root.getView(root.mode)
+        sourceComponent: {
+            switch (root.mode) {
+            case AnswerBody.BodyMode.Text:
+                return smallAnswerComponent;
+            case AnswerBody.BodyMode.Big:
+                return bigAnswerComponent;
+            case AnswerBody.BodyMode.JsonTree:
+                return jsonTreeComponent;
+            case AnswerBody.BodyMode.XmlTree:
+                return xmlTreeComponent;
+            default:
+                return smallAnswerComponent;
+            }
+        }
     }
 
     TextEdit {
@@ -59,7 +83,7 @@ Item {
 
     // Components
     Component {
-        id: smallAnswer
+        id: smallAnswerComponent
 
         ColumnLayout {
             id: answerCol
@@ -284,7 +308,7 @@ Item {
         }
     }
     Component {
-        id: bigAnswer
+        id: bigAnswerComponent
 
         ColumnLayout {
             ListView {
@@ -386,10 +410,17 @@ Item {
         }
     }
     Component {
-        id: jsonTree
+        id: jsonTreeComponent
 
         AnswerJsonTree {
             jsonText: root.answer?.body ?? '{}'
+        }
+    }
+    Component {
+        id: xmlTreeComponent
+
+        AnswerXmlTree {
+            xmlText: root.answer?.body ?? ''
         }
     }
 
@@ -405,6 +436,7 @@ Item {
     enum BodyMode {
         Big,
         JsonTree,
+        XmlTree,
         Text
     }
     enum AnswerType {
@@ -513,28 +545,16 @@ Item {
         root.setJson(root.answer);
     }
 
-    function getView(bodyMode: int): Component {
-        if (bodyMode === AnswerBody.BodyMode.Text) {
-            return smallAnswer;
-        }
-
-        if (bodyMode === AnswerBody.BodyMode.Big) {
-            return bigAnswer;
-        }
-
-        if (bodyMode === AnswerBody.BodyMode.JsonTree) {
-            return jsonTree;
-        }
-
-        return smallAnswer;
-    }
-
     function getModeIconBtn(bodyMode: int): string {
         if (bodyMode === AnswerBody.BodyMode.Text) {
             return "qrc:/qt/qml/io/rester/resource/images/node-tree.svg";
         }
 
         if (bodyMode === AnswerBody.BodyMode.JsonTree) {
+            return "qrc:/qt/qml/io/rester/resource/images/text.svg";
+        }
+
+        if (bodyMode === AnswerBody.BodyMode.XmlTree) {
             return "qrc:/qt/qml/io/rester/resource/images/text.svg";
         }
 
@@ -547,6 +567,10 @@ Item {
         }
 
         if (bodyMode === AnswerBody.BodyMode.JsonTree) {
+            return qsTr('Text Mode');
+        }
+
+        if (bodyMode === AnswerBody.BodyMode.XmlTree) {
             return qsTr('Text Mode');
         }
 

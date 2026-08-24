@@ -70,9 +70,9 @@ private:
 
     QString _jsonText;
     QString _filterText;
-
-    QVector<JsonNode> _rawNodes;      // Полное дерево
-    QVector<int> _visibleNodeIndices; // Индексы узлов, видимых в данный момент
+    QVector<JsonNode> _rawNodes;
+    QVector<int> _visibleNodeIndices;
+    QHash<int, QByteArray> _names;
 };
 
 #endif // JSON_TREE_MODEL_H

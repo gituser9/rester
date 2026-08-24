@@ -9,6 +9,8 @@
 #include <QSharedPointer>
 #include <QUuid>
 #include <QVariantMap>
+#include <QUrl>
+#include <QUrlQuery>
 #include <qqml.h>
 
 #include "../util.h"
@@ -58,8 +60,8 @@ public:
     HttpAnswer* lastAnswer() const;
     void setLastAnswer(HttpAnswer* newLastAnswer);
 
-    void fromJson(QJsonObject json);
-    QJsonObject toJson() const;
+    void fromJson(const QJsonObject& json) override;
+    QJsonObject toJson() override;
 
     void setAnswer(QSharedPointer<HttpAnswer> ptr);
 
@@ -76,6 +78,7 @@ public:
 
     // For QML
     Q_INVOKABLE void beautify() noexcept;
+    Q_INVOKABLE void paramsFromUrl();
     Q_INVOKABLE void addHeader(const QString& name, const QString& value);
     Q_INVOKABLE void addHeader(const QString& name, const QString& value, bool isEnabled);
     Q_INVOKABLE void addParam(const QString& name, const QString& value);
@@ -104,13 +107,13 @@ signals:
 
 private:
     QString _url;
+    QString _body;
     RstEnums::QueryType _queryType;
     RstEnums::BodyType _bodyType;
     QList<QueryParam> _headers;
-    QString _body;
-    QSharedPointer<HttpAnswer> _lastAnswer;
     QList<QueryParam> _paramList;
     QList<QueryParam> _formDataList;
+    QSharedPointer<HttpAnswer> _lastAnswer;
 };
 
 #endif // QUERY_H

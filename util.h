@@ -35,7 +35,7 @@ public:
     static QString uuid() noexcept;
     static QString getHeaderValue(const QString& name, const QList<QueryParam>& headers) noexcept;
     static QString getHeaderValue(const QString& name, const QVariantMap& headers) noexcept;
-    static QString fillVars(const QString& str, const QVariantList& vars) noexcept;
+    Q_INVOKABLE static QString fillVars(const QString& str, const QVariantList& vars) noexcept;
     static QString fillVars(const QString& str, const QVariantList& vars, QRegularExpression varRegex) noexcept;
     static QJsonObject getJsonFromFile(const QString& path) noexcept;
     static void writeJsonToFile(const QString& path, const QJsonObject& json) noexcept;

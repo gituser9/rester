@@ -275,7 +275,7 @@ void GraphqlQuery::removeVariable(const QString& name)
     emit dataChanged();
 }
 
-void GraphqlQuery::fromJson(QJsonObject json)
+void GraphqlQuery::fromJson(const QJsonObject& json)
 {
     _queryType = RstEnums::QueryType::GRAPHQL;
     _url = json.value("url").toString("");
@@ -314,7 +314,7 @@ void GraphqlQuery::fromJson(QJsonObject json)
     }
 }
 
-QJsonObject GraphqlQuery::toJson() const
+QJsonObject GraphqlQuery::toJson()
 {
     QJsonObject json;
     json["uuid"] = uuid();

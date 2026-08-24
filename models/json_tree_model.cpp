@@ -2,6 +2,16 @@
 
 JsonTreeModel::JsonTreeModel(QObject* parent) : QAbstractListModel(parent)
 {
+    _names.insert({
+        {static_cast<int>(NodeRoles::KeyRole), "nodeKey"},
+        {static_cast<int>(NodeRoles::DepthRole), "nodeDepth"},
+        {static_cast<int>(NodeRoles::IsContainerRole), "nodeIsContainer"},
+        {static_cast<int>(NodeRoles::IsArrayRole), "nodeIsArray"},
+        {static_cast<int>(NodeRoles::IsObjectRole), "nodeIsObject"},
+        {static_cast<int>(NodeRoles::ExpandedRole), "nodeExpanded"},
+        {static_cast<int>(NodeRoles::IsClosingRole), "nodeIsClosing"},
+        {static_cast<int>(NodeRoles::DisplayValueRole), "nodeDisplayValue"} //
+    });
 }
 
 int JsonTreeModel::rowCount(const QModelIndex& parent) const
@@ -43,10 +53,18 @@ QVariant JsonTreeModel::data(const QModelIndex& index, int role) const
             return node.closingText;
         }
         if (node.isObject) {
-            return node.expanded ? "{" : "{...}";
+            if (node.expanded) {
+                return "{";
+            }
+            int count = node.value.toObject().size();
+            return QString("{ Object(%1) }").arg(count);
         }
         if (node.isArray) {
-            return node.expanded ? "[" : "[...]";
+            if (node.expanded) {
+                return "[";
+            }
+            int count = node.value.toArray().size();
+            return QString("[ Array(%1) ]").arg(count);
         }
         if (node.value.isNull()) {
             return "null";
@@ -70,16 +88,7 @@ QVariant JsonTreeModel::data(const QModelIndex& index, int role) const
 
 QHash<int, QByteArray> JsonTreeModel::roleNames() const
 {
-    return {
-        {static_cast<int>(NodeRoles::KeyRole), "nodeKey"},
-        {static_cast<int>(NodeRoles::DepthRole), "nodeDepth"},
-        {static_cast<int>(NodeRoles::IsContainerRole), "nodeIsContainer"},
-        {static_cast<int>(NodeRoles::IsArrayRole), "nodeIsArray"},
-        {static_cast<int>(NodeRoles::IsObjectRole), "nodeIsObject"},
-        {static_cast<int>(NodeRoles::ExpandedRole), "nodeExpanded"},
-        {static_cast<int>(NodeRoles::IsClosingRole), "nodeIsClosing"},
-        {static_cast<int>(NodeRoles::DisplayValueRole), "nodeDisplayValue"} //
-    };
+    return _names;
 }
 
 void JsonTreeModel::setJsonText(const QString& text)

@@ -21,6 +21,9 @@ public:
     bool isExpanded() const;
     void setIsExpanded(bool newIsExpanded);
 
+    void fromJson(const QJsonObject& json) override;
+    virtual QJsonObject toJson() override;
+
 signals:
     void isExpandedChanged();
 

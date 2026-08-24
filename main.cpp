@@ -12,6 +12,7 @@
 #include "highliters/var_syntax_highlighter.h"
 #include "highliters/url_highlighter.h"
 #include "models/json_tree_model.h"
+#include "models/xml_tree_model.h"
 #include "search_engine.h"
 #include "util.h"
 
@@ -34,6 +35,7 @@ int main(int argc, char* argv[])
     qmlRegisterSingletonInstance<App>("io.rester", 1, 0, "App", core);
     qmlRegisterSingletonInstance<Util>("io.rester", 1, 0, "Util", util.get());
     qmlRegisterType<JsonTreeModel>("io.rester", 1, 0, "JsonTreeModel");
+    qmlRegisterType<XmlTreeModel>("io.rester", 1, 0, "XmlTreeModel");
     qmlRegisterType<HtmlSyntaxHighlighter>("io.rester", 1, 0, "HtmlSyntaxHighlighter");
     qmlRegisterType<JsonSyntaxHighlighter>("io.rester", 1, 0, "JsonSyntaxHighlighter");
     qmlRegisterType<GraphqlSyntaxHighlighter>("io.rester", 1, 0, "GraphqlSyntaxHighlighter");

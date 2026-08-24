@@ -38,9 +38,12 @@ public:
     void softRemoveNode(qsizetype index);
     void removeNodes();
     void moveNode(qsizetype from, qsizetype to);
-    virtual void setParent(TreeNode* node);
     bool isHasChild(TreeNode* child) const noexcept;
     QList<TreeNode*> nodes() noexcept;
+
+    virtual QJsonObject toJson() = 0;
+    virtual void fromJson(const QJsonObject& json) = 0;
+    virtual void setParent(TreeNode* node);
     virtual TreeNode* parent() const noexcept;
 
 signals:

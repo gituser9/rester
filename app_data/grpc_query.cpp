@@ -239,7 +239,7 @@ void GrpcQuery::addMetaItem(const QString& name, const QString& value)
     emit dataChanged();
 }
 
-void GrpcQuery::fromJson(QJsonObject json)
+void GrpcQuery::fromJson(const QJsonObject& json)
 {
     _queryType = RstEnums::QueryType::GRPC;
     _url = json.value("url").toString();
@@ -305,7 +305,7 @@ void GrpcQuery::fromJson(QJsonObject json)
     }
 }
 
-QJsonObject GrpcQuery::toJson() const
+QJsonObject GrpcQuery::toJson()
 {
     QJsonObject json;
     json["uuid"] = uuid();
