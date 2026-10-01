@@ -289,6 +289,12 @@ inline QMap<QByteArray, QByteArray> prepareHeaders(const QVariantList& vars, con
     return result;
 }
 
+inline QByteArray prepareBody(const QString& body, const QVariantList& vars, const QRegularExpression& varRegex)
+{
+    QString gg = Util::fillVars(body, vars, varRegex);
+    return Util::fillVars(body, vars, varRegex).toUtf8();
+}
+
 } // namespace HttpUtils
 
 #endif // HTTP_UTILS_H

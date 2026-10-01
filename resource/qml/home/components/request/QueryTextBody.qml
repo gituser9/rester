@@ -16,7 +16,6 @@ Item {
 
     required property int bodyType
     required property string body
-    property bool isQueryExists: false
 
     signal editingFinished(string txt)
 

@@ -1,18 +1,19 @@
 #include "json_syntax_highlighter.h"
 
-JsonSyntaxHighlighter::JsonSyntaxHighlighter(QQuickTextDocument *parent) : QSyntaxHighlighter{parent}
+JsonSyntaxHighlighter::JsonSyntaxHighlighter(QQuickTextDocument* parent) : QSyntaxHighlighter{parent}
 {
+    highlightingRules.resize(9);
+
     // JSON keywords
     keywordFormat.setForeground(Qt::darkBlue);
 
     const QStringList keywords = {
         QStringLiteral("\\bnull\\b"),
         QStringLiteral("\\btrue\\b"),
-        QStringLiteral("\\bfalse\\b")
-    };
+        QStringLiteral("\\bfalse\\b")};
     HighlightingRule keywordRule;
 
-    for (const QString &pattern : keywords) {
+    for (const QString& pattern : keywords) {
         keywordRule.pattern = QRegularExpression(pattern);
         keywordRule.pattern.optimize();
         keywordRule.format = keywordFormat;
@@ -66,16 +67,25 @@ JsonSyntaxHighlighter::JsonSyntaxHighlighter(QQuickTextDocument *parent) : QSynt
     identRule.pattern.optimize();
     identRule.format = indentationFormat;
     highlightingRules.append(identRule);
+
+    // Vars
+    HighlightingRule varRule;
+    varFormat.setForeground(Qt::blue);
+    varFormat.setFontWeight(QFont::DemiBold);
+    varRule.pattern = QRegularExpression(RstConstant::varRegexPattern);
+    varRule.pattern.optimize();
+    varRule.format = varFormat;
+    highlightingRules.append(varRule);
 }
 
-void JsonSyntaxHighlighter::setDocument(QQuickTextDocument *pDoc)
+void JsonSyntaxHighlighter::setDocument(QQuickTextDocument* pDoc)
 {
     QSyntaxHighlighter::setDocument(pDoc->textDocument());
 }
 
-void JsonSyntaxHighlighter::highlightBlock(const QString &text)
+void JsonSyntaxHighlighter::highlightBlock(const QString& text)
 {
-    for (const HighlightingRule &rule : highlightingRules) {
+    for (const HighlightingRule& rule : highlightingRules) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
 
         while (matchIterator.hasNext()) {

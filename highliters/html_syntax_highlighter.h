@@ -7,6 +7,7 @@
 #include <QQuickTextDocument>
 
 #include "../app_data/highlighting_rule.h"
+#include "../app_data/constant.h"
 
 class HtmlSyntaxHighlighter : public QSyntaxHighlighter
 {
@@ -27,5 +28,6 @@ private:
     QTextCharFormat attributeFormat;
     QTextCharFormat attributeValueFormat;
     QTextCharFormat valueFormat;
+    QTextCharFormat varFormat;
 };
 #endif // HTMLSYNTAXHIGHLIGHTER_H

@@ -6,6 +6,7 @@
 #include <QQuickTextDocument>
 
 #include "../app_data/highlighting_rule.h"
+#include "../app_data/constant.h"
 
 class JsonSyntaxHighlighter : public QSyntaxHighlighter
 {
@@ -30,6 +31,7 @@ private:
     QTextCharFormat indentationFormat;
     QTextCharFormat objectFormat;
     QTextCharFormat arrayFormat;
+    QTextCharFormat varFormat;
 };
 
 #endif // JSONSYNTAXHIGHLIGHTER_H

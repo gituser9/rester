@@ -2,9 +2,9 @@
 
 using namespace std;
 
-
-HtmlSyntaxHighlighter::HtmlSyntaxHighlighter(QQuickTextDocument *parent) : QSyntaxHighlighter{parent}
+HtmlSyntaxHighlighter::HtmlSyntaxHighlighter(QQuickTextDocument* parent) : QSyntaxHighlighter{parent}
 {
+    // Tags
     HighlightingRule tagRule;
     tagFormat.setForeground(Qt::red);
     tagRule.pattern = QRegularExpression("<([^\\s>]+)(\\s|>)+");
@@ -12,6 +12,7 @@ HtmlSyntaxHighlighter::HtmlSyntaxHighlighter(QQuickTextDocument *parent) : QSynt
     tagRule.format = tagFormat;
     highlightingRules.append(tagRule);
 
+    // Attribute names
     HighlightingRule attributeRule;
     attributeFormat.setForeground(Qt::darkMagenta);
     attributeRule.pattern = QRegularExpression("\\w+(?:-\\w+)*(?=\\s*=\\s*[\"'])");
@@ -19,6 +20,7 @@ HtmlSyntaxHighlighter::HtmlSyntaxHighlighter(QQuickTextDocument *parent) : QSynt
     attributeRule.format = attributeFormat;
     highlightingRules.append(attributeRule);
 
+    // Attribute values
     HighlightingRule attributeValueRule;
     attributeValueFormat.setForeground(Qt::darkGreen);
     attributeValueRule.pattern = QRegularExpression("\\s*=\\s*[\"']([^\"']*)[\"']");
@@ -31,16 +33,25 @@ HtmlSyntaxHighlighter::HtmlSyntaxHighlighter(QQuickTextDocument *parent) : QSynt
     // valueRule.pattern = QRegularExpression("([\"'])(?:(?=(\\\\?))\\2.)*?\\1");
     // valueRule.format = valueFormat;
     // highlightingRules.append(valueRule);
+
+    // Vars
+    HighlightingRule varRule;
+    varFormat.setForeground(Qt::blue);
+    varFormat.setFontWeight(QFont::DemiBold);
+    varRule.pattern = QRegularExpression(RstConstant::varRegexPattern);
+    varRule.pattern.optimize();
+    varRule.format = varFormat;
+    highlightingRules.append(varRule);
 }
 
-void HtmlSyntaxHighlighter::setDocument(QQuickTextDocument *pDoc)
+void HtmlSyntaxHighlighter::setDocument(QQuickTextDocument* pDoc)
 {
     QSyntaxHighlighter::setDocument(pDoc->textDocument());
 }
 
-void HtmlSyntaxHighlighter::highlightBlock(const QString &text)
+void HtmlSyntaxHighlighter::highlightBlock(const QString& text)
 {
-    for (const HighlightingRule &rule : std::as_const(highlightingRules)) {
+    for (const HighlightingRule& rule : std::as_const(highlightingRules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
 
         while (matchIterator.hasNext()) {
