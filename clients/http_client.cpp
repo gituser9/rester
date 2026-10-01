@@ -47,7 +47,7 @@ void HttpClient::makeRequest(Query* query)
     // set headers
     auto preparedHeaders = HttpUtils::prepareHeaders(_vars, _varRegex, query->headerList());
 
-    for (auto& k : preparedHeaders.keys()) {
+    for (const auto& k : preparedHeaders.keys()) {
         request.setRawHeader(k, preparedHeaders[k]);
     }
 
@@ -244,13 +244,13 @@ void HttpClient::send(Query* query, QNetworkRequest& request)
         _reply = _manager->get(request);
         break;
     case RstEnums::QueryType::POST:
-        _reply = _manager->post(request, query->body().toUtf8());
+        _reply = _manager->post(request, HttpUtils::prepareBody(query->body(), _vars, _varRegex));
         break;
     case RstEnums::QueryType::PUT:
-        _reply = _manager->put(request, query->body().toUtf8());
+        _reply = _manager->put(request, HttpUtils::prepareBody(query->body(), _vars, _varRegex));
         break;
     case RstEnums::QueryType::PATCH:
-        _reply = _manager->sendCustomRequest(request, "PATCH", query->body().toUtf8());
+        _reply = _manager->sendCustomRequest(request, "PATCH", HttpUtils::prepareBody(query->body(), _vars, _varRegex));
         break;
     case RstEnums::QueryType::DELETE:
         _reply = _manager->deleteResource(request);

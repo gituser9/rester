@@ -23,6 +23,7 @@
 #include "../app_data/http_answer.h"
 #include "../app_data/grpc_query.h"
 #include "../util.h"
+#include "./http_utils.h"
 
 struct RpcMethodInfo {
     QString name;
@@ -84,6 +85,7 @@ private:
     std::unique_ptr<google::protobuf::compiler::Importer> _importer = nullptr;
     QVariantList _vars = {};
     QFutureWatcher<CallResult> _watcher;
+    QRegularExpression _varRegex;
 
     CallResult performCall(GrpcQuery* query);
     const google::protobuf::MethodDescriptor* descriptor(GrpcQuery* query, const QString& fullMethodName);

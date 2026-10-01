@@ -596,6 +596,7 @@ void App::updateEnvVars(const QVariantMap& vars)
 {
     _vars = vars;
     _workspace->setVariables(vars);
+    setVars();
 
     emit wsChanged(_workspace);
     emit workspaceChanged();

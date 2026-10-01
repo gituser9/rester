@@ -41,8 +41,11 @@ static bool ParseFromByteBuffer(grpc::ByteBuffer* buffer, Message* msg)
     return msg->ParseFromString(serializedStr);
 }
 
-GrpcClient::GrpcClient(QObject* parent) : QObject{parent}
+GrpcClient::GrpcClient(QObject* parent) :
+    QObject{parent},
+    _varRegex(RstConstant::varRegexPattern)
 {
+    _varRegex.optimize();
     connect(&_watcher, &QFutureWatcher<CallResult>::finished, this, &GrpcClient::onCallFinished);
 }
 
@@ -133,7 +136,7 @@ CallResult GrpcClient::performCall(GrpcQuery* query)
     std::unique_ptr<Message> responseMsg(_factory->GetPrototype(methodDesc->output_type())->New());
 
     // JSON payload to Protobuf Message
-    std::string jsonBody = query->body().toStdString();
+    std::string jsonBody = HttpUtils::prepareBody(query->body(), _vars, _varRegex).toStdString();
 
     if (jsonBody.empty()) {
         jsonBody = "{}";
